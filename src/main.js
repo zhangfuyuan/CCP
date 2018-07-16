@@ -12,6 +12,7 @@ import App from './App'
 import router from './router'
 import store from './store'
 
+import i18n from './lang' // Internationalization
 import '@/icons' // icon
 import '@/permission' // permission control
 
@@ -23,5 +24,6 @@ new Vue({
   el: '#app',
   router,
   store,
+  i18n,
   render: h => h(App)
 })

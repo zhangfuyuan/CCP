@@ -1,7 +1,10 @@
 <template>
   <div class="login-container">
     <el-form class="login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
-      <h3 class="title">vue-element-admin</h3>
+      <div class="logo">
+        <img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" />
+      </div>
+      <h3 class="title">{{$t('login.title')}}</h3>
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
@@ -141,6 +144,13 @@ $light_gray:#eee;
     padding: 35px 35px 15px 35px;
     margin: 120px auto;
   }
+
+  .logo {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 20px;
+  }
+
   .tips {
     font-size: 14px;
     color: #fff;
@@ -151,6 +161,7 @@ $light_gray:#eee;
       }
     }
   }
+
   .svg-container {
     padding: 6px 5px 6px 15px;
     color: $dark_gray;
@@ -161,6 +172,7 @@ $light_gray:#eee;
       font-size: 20px;
     }
   }
+
   .title {
     font-size: 26px;
     font-weight: 400;
@@ -169,6 +181,7 @@ $light_gray:#eee;
     text-align: center;
     font-weight: bold;
   }
+
   .show-pwd {
     position: absolute;
     right: 10px;
