@@ -9,24 +9,24 @@
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
         </span>
-        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="username" />
+        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" :placeholder="$t('login.usernamePlaceholder')" />
       </el-form-item>
       <el-form-item prop="password">
         <span class="svg-container">
           <svg-icon icon-class="password"></svg-icon>
         </span>
         <el-input name="password" :type="pwdType" @keyup.enter.native="handleLogin" v-model="loginForm.password" autoComplete="on"
-          placeholder="password"></el-input>
-          <span class="show-pwd" @click="showPwd"><svg-icon icon-class="eye" /></span>
+          :placeholder="$t('login.passwordPlaceholder')"></el-input>
+          <!--<span class="show-pwd" @click="showPwd"><svg-icon icon-class="eye" /></span>-->
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" style="width:100%;" :loading="loading" @click.native.prevent="handleLogin">
-          Sign in
+        <el-button type="primary" style="width:100%;font-size: 18px;" :loading="loading" @click.native.prevent="handleLogin">
+          {{$t('login.logIn')}}
         </el-button>
       </el-form-item>
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: admin</span>
+      <div class="lang-select">
+        <el-button type="text" v-if="language==='zh'" @click.native.prevent="handleSetLanguage('en')">{{$t('login.enLang')}}</el-button>
+        <el-button type="text" v-if="language==='en'" @click.native.prevent="handleSetLanguage('zh')">{{$t('login.zhLang')}}</el-button>
       </div>
     </el-form>
   </div>
@@ -53,27 +53,32 @@ export default {
       }
     }
     return {
-      loginForm: {
-        username: 'admin',
-        password: 'admin'
+      loginForm: { // 表单元素与数据的双向绑定
+        username: '',
+        password: ''
       },
-      loginRules: {
+      loginRules: { // 表单检测规则
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [{ required: true, trigger: 'blur', validator: validatePass }]
       },
-      loading: false,
-      pwdType: 'password'
+      loading: false, // 登录按钮是否变为等待状态
+      pwdType: 'password' // 密码输入框的类型
+    }
+  },
+  computed: {
+    language() { // 当前语言状态
+      return this.$store.getters.language
     }
   },
   methods: {
-    showPwd() {
+    showPwd() { // 明文显示密码（暂无用）
       if (this.pwdType === 'password') {
         this.pwdType = ''
       } else {
         this.pwdType = 'password'
       }
     },
-    handleLogin() {
+    handleLogin() { // 点击登录按钮执行方法
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
@@ -87,6 +92,14 @@ export default {
           console.log('error submit!!')
           return false
         }
+      })
+    },
+    handleSetLanguage(lang) { // 切换语言状态执行方法
+      this.$i18n.locale = lang
+      this.$store.dispatch('setLanguage', lang)
+      this.$message({
+        message: 'switch language success',
+        type: 'success'
       })
     }
   }
@@ -151,14 +164,10 @@ $light_gray:#eee;
     margin: 0 auto 20px;
   }
 
-  .tips {
-    font-size: 14px;
-    color: #fff;
-    margin-bottom: 10px;
-    span {
-      &:first-of-type {
-        margin-right: 16px;
-      }
+  .lang-select {
+    text-align: center;
+    .el-button {
+      color: #fff;
     }
   }
 
@@ -174,7 +183,7 @@ $light_gray:#eee;
   }
 
   .title {
-    font-size: 26px;
+    font-size: 18px;
     font-weight: 400;
     color: $light_gray;
     margin: 0px auto 40px auto;
