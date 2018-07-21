@@ -1,7 +1,11 @@
 <template>
   <el-menu class="navbar" mode="horizontal">
     <hamburger class="hamburger-container" :toggleClick="toggleSideBar" :isActive="sidebar.opened"></hamburger>
-    <breadcrumb></breadcrumb>
+    <!--<breadcrumb></breadcrumb>-->
+    <div style="float: left">
+      <div style="float: left"><img src="" alt="logo"></div>
+      <span>CCP</span>
+    </div>
     <el-dropdown class="avatar-container" trigger="click">
       <div class="avatar-wrapper">
         <img class="user-avatar" :src="avatar+'?imageView2/1/w/80/h/80'">
@@ -27,6 +31,10 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 
 export default {
+  data() {
+    return {
+    }
+  },
   components: {
     Breadcrumb,
     Hamburger
@@ -42,7 +50,8 @@ export default {
       this.$store.dispatch('ToggleSideBar')
     },
     logout() {
-      this.$store.dispatch('LogOut').then(() => {
+//      this.$store.dispatch('LogOut').then(() => {
+      this.$store.dispatch('FedLogOut').then(() => {
         location.reload() // 为了重新实例化vue-router对象 避免bug
       })
     }
@@ -52,9 +61,14 @@ export default {
 
 <style rel="stylesheet/scss" lang="scss" scoped>
 .navbar {
+  width: 100%;
   height: 50px;
   line-height: 50px;
   border-radius: 0px !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1002;
   .hamburger-container {
     line-height: 58px;
     height: 50px;

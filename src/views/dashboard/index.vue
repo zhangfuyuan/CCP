@@ -10,6 +10,10 @@ import { mapGetters } from 'vuex'
 
 export default {
   name: 'dashboard',
+  data() {
+    return {
+    }
+  },
   computed: {
     ...mapGetters([
       'name',

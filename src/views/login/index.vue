@@ -148,14 +148,23 @@ export default {
           if (valid) {
             this.loading = true
             this.verifyNum++
-            this.$store.dispatch('Login', this.loginForm).then(() => {
-              this.loading = false
-              this.$router.push({ path: '/' })
-            }).catch(() => {
+
+            if (this.loginForm.username === 'admin') {
+              this.$store.dispatch('Login', this.loginForm).then(() => {
+                this.loading = false
+                this.$router.push({ path: '/' })
+              }).catch(() => {
+                this.loading = false
+                this.isVerifyFailed = true
+                this.verifyFailedTips = this.$t('login.verifyErr') || this.$t('login.verifyCodeErr')
+              })
+            } else {
               this.loading = false
               this.isVerifyFailed = true
               this.verifyFailedTips = this.$t('login.verifyErr') || this.$t('login.verifyCodeErr')
-            })
+            }
+
+
           } else {
             console.log('error submit!!')
             return false

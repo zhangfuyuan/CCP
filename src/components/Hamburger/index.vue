@@ -15,6 +15,10 @@
 <script>
 export default {
   name: 'hamburger',
+  data() {
+    return {
+    }
+  },
   props: {
     isActive: {
       type: Boolean,

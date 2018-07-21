@@ -15,5 +15,13 @@ export default {
     verifyErr: "Account or password error",
     verifyCodeErr: "Verification code error",
     notSeeClearly: "Next"
+  },
+  route: {
+    deviceManager: 'Device Manager',
+    planManager: 'Plan Manager',
+    systemManager: 'System Setting',
+    accountManager: 'Account Manager',
+    officeManager: 'Office Setting',
+    ipManager: 'IP Setting'
   }
 }

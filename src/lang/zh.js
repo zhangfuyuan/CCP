@@ -15,5 +15,13 @@ export default {
     verifyErr: "账号或密码错误",
     verifyCodeErr: "验证码错误",
     notSeeClearly: "看不清"
+  },
+  route: {
+    deviceManager: '设备管理',
+    planManager: '计划管理',
+    systemManager: '系统设置',
+    accountManager: '账号管理',
+    officeManager: '组织设置',
+    ipManager: 'IP设置'
   }
 }
