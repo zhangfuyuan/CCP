@@ -19,14 +19,10 @@ import Layout from '../views/layout/Layout'
   }
 **/
 export const constantRouterMap = [
-  { path: '/login', component: () => import('@/views/login/index'), hidden: true },
-  { path: '/404', component: () => import('@/views/404'), hidden: true },
-
-  {
-    path: '',
-    component: Layout,
-    redirect: '/device/deviceManager'
-  },
+  { path: '/login', name: 'login', component: () => import('@/views/login/index'), hidden: true },
+  { path: '/404', name: 'page404', component: () => import('@/views/errorPage/404'), hidden: true },
+  { path: '/401', name: 'page401', component: () => import('@/views/errorPage/401'), hidden: true },
+  { path: '/', redirect: '/device/deviceManager', hidden: true },
 
   // 设备管理
   {
@@ -37,7 +33,6 @@ export const constantRouterMap = [
     meta: {
       title: 'deviceManager',
       icon: 'component',
-      roles: ['admin', 'user'],
       noCache: true
     },
     children: [
@@ -55,7 +50,16 @@ export const constantRouterMap = [
       }
     ]
   },
-  // 系统管理
+]
+
+export default new Router({
+  // mode: 'history', //后端支持可开
+  scrollBehavior: () => ({ y: 0 }),
+  routes: constantRouterMap
+})
+
+export const asyncRouterMap = [
+  // 系统管理（root权限）
   {
     path: '/system',
     component: Layout,
@@ -64,7 +68,7 @@ export const constantRouterMap = [
     meta: {
       title: 'systemManager',
       icon: 'lock',
-      roles: ['admin'],
+      roles: ['root'],
       noCache: true
     },
     children: [
@@ -82,7 +86,7 @@ export const constantRouterMap = [
       },
       {
         path: 'ipManager',
-        name: 'IpManager',
+        name: 'ipManager',
         component: () => import('@/views/system/ipManager'),
         meta: { title: 'ipManager', noCache: true }
       }
@@ -91,10 +95,3 @@ export const constantRouterMap = [
 
   { path: '*', redirect: '/404', hidden: true }
 ]
-
-export default new Router({
-  // mode: 'history', //后端支持可开
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRouterMap
-})
-

@@ -1,7 +1,11 @@
 export default {
   common: {
     switchLanguageSuccess: "语言切换成功",
-    success: "成功"
+    success: "成功",
+    platformName: "康佳一体机集控管理系统",
+    preferredLanguage: "English",
+    modifyInfo: "修改信息",
+    logOut: "登出",
   },
   login: {
     title: "康佳一体机集控管理系统",
@@ -17,11 +21,37 @@ export default {
     notSeeClearly: "看不清"
   },
   route: {
-    deviceManager: '设备管理',
-    planManager: '计划管理',
-    systemManager: '系统设置',
-    accountManager: '账号管理',
-    officeManager: '组织设置',
-    ipManager: 'IP设置'
-  }
+    deviceManager: "设备管理",
+    planManager: "计划管理",
+    systemManager: "系统设置",
+    accountManager: "账号管理",
+    officeManager: "组织设置",
+    ipManager: "IP设置"
+  },
+  table: {
+    dynamicTips1: '固定表头, 按照表头顺序排序',
+    dynamicTips2: '不固定表头, 按照点击顺序排序',
+    dragTips1: '默认顺序',
+    dragTips2: '拖拽后顺序',
+    title: '标题',
+    importance: '重要性',
+    type: '类型',
+    remark: '点评',
+    search: '搜索',
+    add: '添加',
+    export: '导出',
+    reviewer: '审核人',
+    id: '序号',
+    date: '时间',
+    author: '作者',
+    readings: '阅读数',
+    status: '状态',
+    actions: '操作',
+    edit: '编辑',
+    publish: '发布',
+    draft: '草稿',
+    delete: '删除',
+    cancel: '取 消',
+    confirm: '确 定'
+  },
 }

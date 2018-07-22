@@ -1,7 +1,11 @@
 export default {
   common: {
-    switchLanguageSuccess: "switch language success",
-    success: "success"
+    switchLanguageSuccess: "Switch language success",
+    success: "Success",
+    platformName: "Kangjia integrated control management system",
+    preferredLanguage: "中文",
+    modifyInfo: "Modify Info.",
+    logOut: "LogOut",
   },
   login: {
     title: "Kangjia integrated control management system",
@@ -17,11 +21,37 @@ export default {
     notSeeClearly: "Next"
   },
   route: {
-    deviceManager: 'Device Manager',
-    planManager: 'Plan Manager',
-    systemManager: 'System Setting',
-    accountManager: 'Account Manager',
-    officeManager: 'Office Setting',
-    ipManager: 'IP Setting'
-  }
+    deviceManager: "Device Manager",
+    planManager: "Plan Manager",
+    systemManager: "System Setting",
+    accountManager: "Account Manager",
+    officeManager: "Office Setting",
+    ipManager: "IP Setting"
+  },
+  table: {
+    dynamicTips1: 'Fixed header, sorted by header order',
+    dynamicTips2: 'Not fixed header, sorted by click order',
+    dragTips1: 'The default order',
+    dragTips2: 'The after dragging order',
+    title: 'Title',
+    importance: 'Imp',
+    type: 'Type',
+    remark: 'Remark',
+    search: 'Search',
+    add: 'Add',
+    export: 'Export',
+    reviewer: 'reviewer',
+    id: 'ID',
+    date: 'Date',
+    author: 'Author',
+    readings: 'Readings',
+    status: 'Status',
+    actions: 'Actions',
+    edit: 'Edit',
+    publish: 'Publish',
+    draft: 'Draft',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    confirm: 'Confirm'
+  },
 }

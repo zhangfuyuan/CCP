@@ -9,7 +9,7 @@
       text-color="#bfcbd9"
       active-text-color="#409EFF"
     >
-      <sidebar-item :routes="routes"></sidebar-item>
+      <sidebar-item v-for="route in permission_routers" :key="route.name" :item="route" :base-path="route.path"></sidebar-item>
     </el-menu>
   </el-scrollbar>
 </template>
@@ -20,17 +20,11 @@ import SidebarItem from './SidebarItem'
 
 export default {
   components: { SidebarItem },
-  data() {
-    return {
-    }
-  },
   computed: {
     ...mapGetters([
+      'permission_routers',
       'sidebar'
     ]),
-    routes() {
-      return this.$router.options.routes
-    },
     isCollapse() {
       return !this.sidebar.opened
     }

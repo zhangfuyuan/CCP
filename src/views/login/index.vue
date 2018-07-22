@@ -145,11 +145,12 @@ export default {
       if ((this.verifyNum>3 && !this.isCodeNull && !this.isPasswordNull && !this.isUsernameNull) ||
         (this.verifyNum<=3 && !this.isPasswordNull && !this.isUsernameNull)) {
         this.$refs.loginForm.validate(valid => {
+          console.log(8126.1, valid)
           if (valid) {
             this.loading = true
             this.verifyNum++
 
-            if (this.loginForm.username === 'admin') {
+            if (this.loginForm.username==='root' || this.loginForm.username==='user') {
               this.$store.dispatch('Login', this.loginForm).then(() => {
                 this.loading = false
                 this.$router.push({ path: '/' })

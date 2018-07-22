@@ -29,16 +29,22 @@ const user = {
     Login({ commit }, userInfo) {
       const username = userInfo.username.trim()
       return new Promise((resolve, reject) => {
-        let data = {
+        let data = username==='root' ? {
           avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
           introduction: "我是超级管理员",
           name: "Super Admin",
-          roles: ["admin"],
-          token: "admin"
+          roles: ["root"],
+          token: "root"
+        } : {
+          avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+          introduction: "我是普通用户",
+          name: "Common User",
+          roles: ["user"],
+          token: "user"
         }
-          setToken(data.token)
-          commit('SET_TOKEN', data.token)
-          resolve()
+        setToken(data.token)
+        commit('SET_TOKEN', data.token)
+        resolve()
 
         // login(username, userInfo.password).then(response => {
         //   const data = response.data
@@ -54,21 +60,30 @@ const user = {
     // 获取用户信息
     GetInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
-        let data = {
-          avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
-          introduction: "我是超级管理员",
-          name: "Super Admin",
-          roles: ["admin"],
-          token: "admin"
-        }
-          if (data.roles && data.roles.length > 0) { // 验证返回的roles是否是一个非空数组
-            commit('SET_ROLES', data.roles)
-          } else {
-            reject('getInfo: roles must be a non-null array !')
+        let response = {
+          data : state.token==='root' ? {
+            avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+            introduction: "我是超级管理员",
+            name: "Super Admin",
+            roles: ["root"],
+            token: "root"
+          } : {
+            avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+            introduction: "我是普通用户",
+            name: "Common User",
+            roles: ["user"],
+            token: "user"
           }
-          commit('SET_NAME', data.name)
-          commit('SET_AVATAR', data.avatar)
-          resolve(response)
+        }
+        let data = response.data
+        if (data.roles && data.roles.length > 0) { // 验证返回的roles是否是一个非空数组
+          commit('SET_ROLES', data.roles)
+        } else {
+          reject('getInfo: roles must be a non-null array !')
+        }
+        commit('SET_NAME', data.name)
+        commit('SET_AVATAR', data.avatar)
+        resolve(response)
 
         // getInfo(state.token).then(response => {
         //   const data = response.data

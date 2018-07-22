@@ -21,3 +21,13 @@ export default {
   }
 }
 </script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+  .app-main {
+    min-height: calc(100vh - 50px);
+    padding: 66px 32px 32px;
+    background-color: #f0f2f5;
+    position: relative;
+    overflow: hidden;
+  }
+</style>
