@@ -73,3 +73,34 @@ export function getTreeData() {
     }]
   }]
 }
+
+export function getAccountManagerTableData() {
+  return [
+    {
+      name: '占位符1',
+      username: '王小虎',
+      role: '超级管理员',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '占位符2',
+      username: '王小虎',
+      role: '普通用户',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '占位符3',
+      username: '王小虎',
+      role: '普通用户',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '占位符4',
+      username: '王小虎',
+      role: '普通用户',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }
+  ]
+}
+

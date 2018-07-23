@@ -15,11 +15,11 @@
         <span class="username" style="margin-left: 10px">{{name}}</span>
       </div>
       <el-dropdown-menu class="user-dropdown" slot="dropdown">
-          <el-dropdown-item>
-            {{$t('common.modifyInfo')}}
-          </el-dropdown-item>
-        <el-dropdown-item divided>
-          <span @click="logout" style="display:block;">{{$t('common.logOut')}}</span>
+        <el-dropdown-item @click.native="$router.push({ path: '/accountSettings' })">
+          {{$t('common.accountSettings')}}
+        </el-dropdown-item>
+        <el-dropdown-item divided @click.native="logout">
+          {{$t('common.logOut')}}
         </el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
@@ -34,8 +34,8 @@
             {{item.txt}}
           </el-dropdown-item>
         </template>
-        <el-dropdown-item command="" divided>
-          <span @click="addLanguage" style="display:block;text-align: center">+</span>
+        <el-dropdown-item command="" divided @click.native="$router.push({ path: '/wordSettings' })">
+            <span style="display:block;text-align: center">+</span>
         </el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
@@ -82,9 +82,6 @@ export default {
       this.$store.dispatch('FedLogOut').then(() => {
         location.reload() // 为了重新实例化vue-router对象 避免bug
       })
-    },
-    addLanguage() {
-      alert('施工中...')
     },
     handleLangCommand(lang) {
       if (!lang) return false;

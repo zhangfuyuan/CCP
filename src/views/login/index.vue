@@ -15,7 +15,7 @@
           </el-alert>
         </div>
       </div>
-      <el-form-item prop="username">
+      <el-form-item prop="username" :class="{ 'error': isUsernameNull }">
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
         </span>
@@ -28,7 +28,7 @@
                   :class="{ 'error': isUsernameNull }"
                   @focus="clearUsername"></el-input>
       </el-form-item>
-      <el-form-item prop="password">
+      <el-form-item prop="password" :class="{ 'error': isPasswordNull }">
         <span class="svg-container">
           <svg-icon icon-class="password"></svg-icon>
         </span>
@@ -43,7 +43,7 @@
       </el-form-item>
       <el-collapse-transition>
         <div class="code-box" v-show="verifyNum > 3">
-          <el-form-item prop="code" style="width: 65%;">
+          <el-form-item prop="code" :class="{ 'error': isCodeNull }" style="width: 65%;">
                 <el-input class="code-input"
                           name="code"
                           type="text"
@@ -262,6 +262,10 @@ $light_gray:#eee;
     background: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     color: #454545;
+
+    &.error {
+      border: 1px solid #f56c6c;
+    }
   }
 }
 

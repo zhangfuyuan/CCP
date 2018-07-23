@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" style="padding-right: 0;">
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" :placeholder="$t('table.title')" v-model="listQuery.title">
       </el-input>
@@ -21,64 +21,90 @@
       <el-checkbox class="filter-item" style='margin-left:15px;' @change='tableKey=tableKey+1' v-model="showReviewer">{{$t('table.reviewer')}}</el-checkbox>
     </div>
 
-    <el-table :key='tableKey' :data="list" v-loading="listLoading" border fit highlight-current-row
-      style="width: 100%;min-height:1000px;">
+    <el-table :key='tableKey'
+              :data="list"
+              v-loading="listLoading"
+              border
+              fit
+              highlight-current-row
+              style="width: 100%;min-height:1000px;" tooltip-effect="dark" show-overflow-tooltip @selection-change="handleSelectionChange">
+      <el-table-column
+        type="selection"
+        width="55">
+      </el-table-column>
+
       <el-table-column align="center" :label="$t('table.id')" width="65">
         <template slot-scope="scope">
           <span>{{scope.row.id}}</span>
         </template>
       </el-table-column>
+
       <el-table-column width="150px" align="center" :label="$t('table.date')">
         <template slot-scope="scope">
           <span>{{scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
         </template>
       </el-table-column>
+
       <el-table-column min-width="150px" :label="$t('table.title')">
         <template slot-scope="scope">
           <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.title}}</span>
           <el-tag>{{scope.row.type | typeFilter}}</el-tag>
         </template>
       </el-table-column>
+
       <el-table-column width="110px" align="center" :label="$t('table.author')">
         <template slot-scope="scope">
           <span>{{scope.row.author}}</span>
         </template>
       </el-table-column>
+
       <el-table-column width="110px" v-if='showReviewer' align="center" :label="$t('table.reviewer')">
         <template slot-scope="scope">
           <span style='color:red;'>{{scope.row.reviewer}}</span>
         </template>
       </el-table-column>
+
       <el-table-column width="80px" :label="$t('table.importance')">
         <template slot-scope="scope">
           <svg-icon v-for="n in +scope.row.importance" icon-class="star" class="meta-item__icon" :key="n"></svg-icon>
         </template>
       </el-table-column>
+
       <el-table-column align="center" :label="$t('table.readings')" width="95">
         <template slot-scope="scope">
           <span v-if="scope.row.pageviews" class="link-type" @click='handleFetchPv(scope.row.pageviews)'>{{scope.row.pageviews}}</span>
           <span v-else>0</span>
         </template>
       </el-table-column>
+
       <el-table-column class-name="status-col" :label="$t('table.status')" width="100">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status | statusFilter">{{scope.row.status}}</el-tag>
         </template>
       </el-table-column>
+
       <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
-          <el-button v-if="scope.row.status!='published'" size="mini" type="success" @click="handleModifyStatus(scope.row,'published')">{{$t('table.publish')}}
-          </el-button>
-          <el-button v-if="scope.row.status!='draft'" size="mini" @click="handleModifyStatus(scope.row,'draft')">{{$t('table.draft')}}
-          </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="mini" type="danger" @click="handleModifyStatus(scope.row,'deleted')">{{$t('table.delete')}}
-          </el-button>
+
+          <el-dropdown>
+            <span class="el-dropdown-link" style="cursor: pointer;color: #409eff;">
+              下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>黄金糕</el-dropdown-item>
+              <el-dropdown-item>狮子头</el-dropdown-item>
+              <el-dropdown-item>螺蛳粉</el-dropdown-item>
+              <el-dropdown-item disabled>双皮奶</el-dropdown-item>
+              <el-dropdown-item divided>蚵仔煎</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
     </el-table>
 
-    <div class="pagination-container">
+    <div class="pagination-container" style="text-align: right;margin-top: 20px;">
       <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total">
       </el-pagination>
     </div>
@@ -196,7 +222,8 @@ export default {
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
-      downloadLoading: false
+      downloadLoading: false,
+      multipleSelection: []
     }
   },
   filters: {
@@ -366,6 +393,10 @@ export default {
           return v[j]
         }
       }))
+    },
+    handleSelectionChange(val) {
+      alert(val + '施工中...')
+      this.multipleSelection = val;
     }
   }
 }

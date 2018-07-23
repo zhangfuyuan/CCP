@@ -23,12 +23,50 @@ export const constantRouterMap = [
   { path: '/404', name: 'page404', component: () => import('@/views/errorPage/404'), hidden: true },
   { path: '/401', name: 'page401', component: () => import('@/views/errorPage/401'), hidden: true },
   { path: '/', redirect: '/device/deviceManager', hidden: true },
-
+  // 账号设置
+  {
+    path: '/accountSettings',
+    component: Layout,
+    redirect: '/accountSettings/index',
+    hidden: true,
+    children: [
+      {
+        path: '/accountSettings/index', // 若为三级路由，二级路由必须写全路径
+        name: 'accountSettings',
+        component: () => import('@/views/accountSettings/index'),
+        meta: { title: 'accountSettings', noCache: true },
+        children: [
+          {
+            path: 'modifyPswd',
+            name: 'accountSettings-modifyPswd',
+            component: () => import('@/views/accountSettings/modifyPswd'),
+            meta: { title: 'modifyPswd', noCache: true }
+          }
+        ]
+      }
+    ]
+  },
+  // 词条设置
+  {
+    path: '/wordSettings',
+    component: Layout,
+    redirect: '/wordSettings/index',
+    hidden: true,
+    children: [
+      {
+        path: 'index',
+        name: 'wordSettings',
+        component: () => import('@/views/wordSettings/index'),
+        meta: { title: 'wordSettings', noCache: true }
+      }
+    ]
+  },
   // 设备管理
   {
     path: '/device',
     component: Layout,
-    redirect: 'noredirect',
+    // redirect: 'noredirect',
+    redirect: '/device/deviceManager',
     name: 'device',
     meta: {
       title: 'deviceManager',
@@ -63,7 +101,7 @@ export const asyncRouterMap = [
   {
     path: '/system',
     component: Layout,
-    redirect: 'noredirect',
+    redirect: '/system/accountManager',
     name: 'system',
     meta: {
       title: 'systemManager',
@@ -89,7 +127,22 @@ export const asyncRouterMap = [
         name: 'ipManager',
         component: () => import('@/views/system/ipManager'),
         meta: { title: 'ipManager', noCache: true }
-      }
+      },
+      {
+        path: '/system/accountManager', // 若为三级路由，二级路由必须写全路径（重复定义路由，为了解决此框架中非叶子路由左侧菜单无法点击的问题）
+        name: 'accountManager',
+        component: () => import('@/views/system/accountManager'),
+        hidden: true,
+        meta: { title: 'accountManager', noCache: true },
+        children: [
+          {
+            path: 'createAccount',
+            name: 'accountManager-createAccount',
+            component: () => import('@/views/system/createAccount'),
+            meta: { title: 'createAccount', noCache: true }
+          }
+        ]
+      },
     ]
   },
 
