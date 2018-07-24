@@ -33,12 +33,17 @@ export function getTreeData() {
     children: [{
       id: 4,
       label: '二级 1-1',
+      pid: 1,
       children: [{
         id: 9,
-        label: '三级 1-1-1'
+        label: '三级 1-1-1',
+        pid: 4,
+        leaf: true,
       }, {
         id: 10,
-        label: '三级 1-1-2'
+        label: '三级 1-1-2',
+        pid: 4,
+        leaf: true,
       }]
     }]
   }, {
@@ -46,30 +51,42 @@ export function getTreeData() {
     label: '一级 2',
     children: [{
       id: 5,
-      label: '二级 2-1'
+      label: '二级 2-1',
+      pid: 2,
+      leaf: true,
     }, {
       id: 6,
-      label: '二级 2-2'
+      label: '二级 2-2',
+      pid: 2,
+      leaf: true,
     }]
   }, {
     id: 3,
     label: '一级 3',
     children: [{
       id: 7,
-      label: '二级 3-1'
+      label: '二级 3-1',
+      pid: 3,
     }, {
       id: 8,
       label: '二级 3-2',
       children: [{
         id: 11,
-        label: '三级 3-2-1'
+        label: '三级 3-2-1',
+        pid: 8,
+        leaf: true,
       }, {
         id: 12,
-        label: '三级 3-2-2'
+        label: '三级 3-2-2',
+        pid: 8,
+        leaf: true,
       }, {
         id: 13,
-        label: '三级 3-2-3'
-      }]
+        label: '三级 3-2-3',
+        pid: 8,
+        leaf: true,
+      }],
+      pid: 3,
     }]
   }]
 }

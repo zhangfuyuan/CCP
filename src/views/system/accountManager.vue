@@ -111,7 +111,7 @@
           type: undefined,
           sort: '+id'
         },
-        $route_isCreate: false
+        $route_isCreate: false //判断当前是二级还是三级路由（true为三级路由，即创建账号页面）
       }
     },
     computed: {
@@ -129,6 +129,7 @@
         this.tableData = getAccountManagerTableData()
         this.listLoading = false
       }, 1500)
+
     },
     mounted() {
     },

@@ -78,7 +78,7 @@ export const constantRouterMap = [
         path: 'deviceManager',
         name: 'deviceManager',
         component: () => import('@/views/device/deviceManager'),
-        meta: { title: 'deviceManager', noCache: true }
+        meta: { title: 'deviceSettings', noCache: true }
       },
       {
         path: 'planManager',
@@ -138,7 +138,7 @@ export const asyncRouterMap = [
           {
             path: 'createAccount',
             name: 'accountManager-createAccount',
-            component: () => import('@/views/system/createAccount'),
+            component: () => import('@/views/system/accountManager/createAccount'),
             meta: { title: 'createAccount', noCache: true }
           }
         ]

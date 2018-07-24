@@ -52,6 +52,7 @@
           check-on-click-node
           :expand-on-click-node="false"
           @node-click="checkedOfficeHandle"
+          check-strictly
           style="width: 500px;">
         </el-tree>
       </el-form-item>

@@ -2,12 +2,15 @@ export default {
   common: {
     switchLanguageSuccess: "语言切换成功",
     success: "成功",
+    error: "出错",
     platformName: "康佳一体机集控管理系统",
     preferredLanguage: "English",
     accountSettings: "账号设置",
     logOut: "注销登录",
     rootRole: "超级管理员",
     userRole: "普通用户",
+    delete: "删除",
+    checkAll: "全选",
   },
   login: {
     title: "康佳一体机集控管理系统",
@@ -24,6 +27,7 @@ export default {
   },
   route: {
     deviceManager: "设备管理",
+    deviceSettings: "设备设置",
     planManager: "计划管理",
     systemManager: "系统设置",
     accountManager: "账号管理",
@@ -72,6 +76,9 @@ export default {
     handle: "操作",
     edit: "编辑",
     del: "删除",
+    selected: "已选",
+    offices: "个机构",
+    allClear: "全部清空",
   },
   ipManager: {
     serverIP: "服务器 IP / 域名",

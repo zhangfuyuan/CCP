@@ -4,7 +4,6 @@ import 'normalize.css/normalize.css'// A modern alternative to CSS resets
 
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-import locale from 'element-ui/lib/locale/lang/zh-CN' // lang i18n
 
 import '@/styles/index.scss' // global css
 
@@ -18,7 +17,9 @@ import '@/permission' // permission control
 
 import * as filters from './filters' // global filters
 
-Vue.use(ElementUI, { locale })
+Vue.use(ElementUI, {
+  i18n: (key, value) => i18n.t(key, value) // ElementUI 自带国际化
+})
 
 // register global utility filters.
 Object.keys(filters).forEach(key => {

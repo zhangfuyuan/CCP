@@ -11,7 +11,8 @@
 
     <el-dropdown class="avatar-container" trigger="click">
       <div class="avatar-wrapper">
-        <img class="user-avatar" :src="avatar+'?imageView2/1/w/80/h/80'">
+        <svg-icon icon-class="avatar" style="font-size: 24px;" />
+        <!--<img class="user-avatar" :src="avatar+'?imageView2/1/w/80/h/80'">-->
         <span class="username" style="margin-left: 10px">{{name}}</span>
       </div>
       <el-dropdown-menu class="user-dropdown" slot="dropdown">
