@@ -1,7 +1,7 @@
 <template>
   <div class="deviceManager-wrapper">
     <div class="tree">
-      <div class="tree-wrapper">
+      <div class="tree-wrapper" :style="{ 'min-height': treeHeight + 'px' }">
         <div class="selected-box">
           <div :class="[ 'total', { 'total-disabled': checkedOfficeList.length===0 }]"
                @click="clickTotalBoxHandle">
@@ -115,14 +115,15 @@ export default {
       isShowSearchBox: false, // 是否显示搜索框
       firstLazyLoadChildren: [], // 第一次请求时，根节点的仅下一级节点
       isShowDeselectAllBtn: false, // 是否显示取消全选（默认显示全选）
+      treeHeight: document.documentElement.clientHeight - 130
     }
   },
   computed: {
     curClickOfficeAndChildrenId() {
-      console.time('递归遍历树用时：')
+      console.time('递归遍历树用时')
       let checkList = BFS(this.curClickOfficeInfo, 'id', 'childNodes');
       console.log(`当前点击机构及其所有下级id：${checkList}`);
-      console.timeEnd('递归遍历树用时：')
+      console.timeEnd('递归遍历树用时')
 
       return checkList;
     }
@@ -136,7 +137,6 @@ export default {
     this.fetchOfficeData(true)
   },
   mounted() {
-
   },
   methods: {
     fetchOfficeData(isFirst) {
@@ -190,7 +190,7 @@ export default {
       }
     },
     lazyLoadOfficeTree(node, resolve) { // 树懒加载执行方法
-      console.log(`当前请求机构id：${node.data.id} - ${node.label}`);
+      console.log(`当前请求展开的机构id：${node.data.id} - ${node.label}`);
       if (node.level === 1) {
         setTimeout(() => {
           resolve(this.firstLazyLoadChildren);
@@ -299,8 +299,7 @@ export default {
       this.toggleDeselectAllBtn();
     },
     toggleDeselectAllBtn() {
-      this.isShowDeselectAllBtn = this.checkedOfficeIdList.some(i => this.curClickOfficeAndChildrenId.indexOf(i) > -1)
-      console.log(this.isShowDeselectAllBtn)
+      this.isShowDeselectAllBtn = this.checkedOfficeIdList.some(i => this.curClickOfficeAndChildrenId.slice(1).indexOf(i) > -1)
     },
     updateCheckedOffice() {
       this.checkedOfficeIdList = this.$refs.officeTree.getCheckedKeys()
@@ -312,6 +311,15 @@ export default {
 }
 </script>
 
+<style rel="stylesheet/scss" lang="scss">
+  /* reset element-ui css */
+  .deviceManager-wrapper {
+    .el-tree-node>.el-tree-node__children {
+      overflow: inherit;
+    }
+  }
+</style>
+
 <style rel="stylesheet/scss" lang="scss" scoped>
 @import "src/styles/mixin.scss";
 
@@ -319,12 +327,12 @@ export default {
   width: 100%;
   display: flex;
   .tree {
-    width: 20%;
+    width: 22.5%;
   }
 
   .tree-wrapper {
     width: 100%;
-    min-height: calc(100vh - 54px);
+    /*min-height: calc(100vh - 140px);*/
     background-color: #fff;
     border: 1px solid #EBEEF5;
     padding: 10px;
@@ -414,7 +422,7 @@ export default {
   }
 
   .table {
-    width: 80%;
+    width: 77.5%;
   }
 }
 </style>

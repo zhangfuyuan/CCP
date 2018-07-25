@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container" style="padding-right: 0;padding-top: 0;">
+  <div class="complexTable-wrapper" style="padding-left: 20px;padding-top: 0;">
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" :placeholder="$t('table.title')" v-model="listQuery.title">
       </el-input>
@@ -27,63 +27,60 @@
               border
               fit
               highlight-current-row
-              style="width: 100%;min-height:1000px;" tooltip-effect="dark" show-overflow-tooltip @selection-change="handleSelectionChange">
+              style="width: 100%;"
+              tooltip-effect="dark"
+              show-overflow-tooltip
+              @selection-change="handleSelectionChange"
+              :height="tableHeight">
       <el-table-column
-        type="selection"
-        width="55">
+        type="selection">
       </el-table-column>
 
-      <el-table-column align="center" :label="$t('table.id')" width="65">
+      <el-table-column align="center" :label="$t('table.id')">
         <template slot-scope="scope">
           <span>{{scope.row.id}}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="150px" align="center" :label="$t('table.date')">
+      <el-table-column align="center" :label="$t('table.date')">
         <template slot-scope="scope">
           <span>{{scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
         </template>
       </el-table-column>
 
-      <el-table-column min-width="150px" :label="$t('table.title')">
+      <el-table-column :label="$t('table.title')">
         <template slot-scope="scope">
           <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.title}}</span>
           <el-tag>{{scope.row.type | typeFilter}}</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column width="110px" align="center" :label="$t('table.author')">
+      <el-table-column align="center" :label="$t('table.author')">
         <template slot-scope="scope">
           <span>{{scope.row.author}}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="110px" v-if='showReviewer' align="center" :label="$t('table.reviewer')">
+      <el-table-column v-if='showReviewer' align="center" :label="$t('table.reviewer')">
         <template slot-scope="scope">
           <span style='color:red;'>{{scope.row.reviewer}}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="80px" :label="$t('table.importance')">
-        <template slot-scope="scope">
-          <svg-icon v-for="n in +scope.row.importance" icon-class="star" class="meta-item__icon" :key="n"></svg-icon>
-        </template>
-      </el-table-column>
-
-      <el-table-column align="center" :label="$t('table.readings')" width="95">
+      <el-table-column align="center" :label="$t('table.readings')">
         <template slot-scope="scope">
           <span v-if="scope.row.pageviews" class="link-type" @click='handleFetchPv(scope.row.pageviews)'>{{scope.row.pageviews}}</span>
           <span v-else>0</span>
         </template>
       </el-table-column>
 
-      <el-table-column class-name="status-col" :label="$t('table.status')" width="100">
+      <el-table-column class-name="status-col" :label="$t('table.status')">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status | statusFilter">{{scope.row.status}}</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column align="center" :label="$t('table.actions')" width="230" class-name="small-padding fixed-width">
+      <el-table-column align="center" :label="$t('table.actions')" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{$t('table.edit')}}</el-button>
 
@@ -103,11 +100,6 @@
         </template>
       </el-table-column>
     </el-table>
-
-    <div class="pagination-container" style="text-align: right;margin-top: 20px;">
-      <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="listQuery.page" :page-sizes="[10,20,30, 50]" :page-size="listQuery.limit" layout="total, sizes, prev, pager, next, jumper" :total="total">
-      </el-pagination>
-    </div>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form :rules="rules" ref="dataForm" :model="temp" label-position="left" label-width="70px" style='width: 400px; margin-left:50px;'>
@@ -185,7 +177,7 @@ export default {
     checkedOfficeId: {
       type: Array,
       default: []
-    }
+    },
   },
   watch: {
     checkedOfficeId(val) {
@@ -234,7 +226,8 @@ export default {
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
       downloadLoading: false,
-      multipleSelection: []
+      multipleSelection: [],
+      tableHeight: document.documentElement.clientHeight - 170
     }
   },
   filters: {
@@ -252,6 +245,10 @@ export default {
   },
   created() {
     this.getList()
+
+  },
+  mounted() {
+
   },
   methods: {
     getList() {
@@ -412,3 +409,16 @@ export default {
   }
 }
 </script>
+
+<style rel="stylesheet/scss" lang="scss">
+  @import "src/styles/mixin.scss";
+
+  /* reset element-ui css */
+  .complexTable-wrapper {
+    .el-table--scrollable-y .el-table__body-wrapper, .el-table--scrollable-x .el-table__body-wrapper {
+      @include scrollBar;
+    }
+  }
+
+
+</style>
