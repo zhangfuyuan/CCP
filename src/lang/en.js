@@ -11,6 +11,7 @@ export default {
     userRole: "user",
     delete: "Delete",
     checkAll: "Check all",
+    deselectAll: "Deselect all",
   },
   login: {
     title: "Kangjia integrated control management system",

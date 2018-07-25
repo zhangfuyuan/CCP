@@ -269,3 +269,26 @@ export function deepClone(source) {
 export function uniqueArr(arr) {
   return Array.from(new Set(arr))
 }
+
+/**
+ * 递归遍历树，获取所有节点某属性的值，以数组形式展示
+ *
+ * */
+export function BFS(source, key, childKey) {
+  let res = [];
+
+  !(function traverseTree(tree){
+    if (!tree || !tree.data || !tree.data[key]) return;
+    res.push(tree.data[key])
+
+    if (tree[childKey] && tree[childKey].length > 0) {
+      let len = tree[childKey].length
+
+      for (let i=0; i < len; i++) {
+        traverseTree(tree[childKey][i]);
+      }
+    }
+  })(source)
+
+  return uniqueArr(res);
+}

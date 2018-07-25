@@ -11,6 +11,7 @@ export default {
     userRole: "普通用户",
     delete: "删除",
     checkAll: "全选",
+    deselectAll: "取消全选",
   },
   login: {
     title: "康佳一体机集控管理系统",

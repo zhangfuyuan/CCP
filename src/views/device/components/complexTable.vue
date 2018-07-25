@@ -181,6 +181,17 @@ export default {
   directives: {
     waves
   },
+  props: {
+    checkedOfficeId: {
+      type: Array,
+      default: []
+    }
+  },
+  watch: {
+    checkedOfficeId(val) {
+      console.log(`稍后请求设备,已勾选机构id为：${val}`)
+    }
+  },
   data() {
     return {
       tableKey: 0,
