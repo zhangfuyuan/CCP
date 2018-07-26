@@ -1,25 +1,25 @@
 <template>
   <div class="deviceManager-wrapper">
     <div class="tree">
-      <div class="tree-wrapper" :style="{ 'min-height': treeHeight + 'px' }">
+      <div class="tree-wrapper">
         <div class="selected-box">
           <div :class="[ 'total', { 'total-disabled': checkedOfficeList.length===0 }]"
                @click="clickTotalBoxHandle">
-            {{$t('accountManager.selected')}}
+            {{$t('deviceManager.selected')}}
             {{checkedOfficeList.length}}
-            {{$t('accountManager.offices')}}
+            {{$t('deviceManager.offices')}}
 
             <i :class="[ {'el-icon-caret-bottom': !isShowCheckedOfficeList},
                          {'el-icon-caret-top': isShowCheckedOfficeList} ]"></i>
           </div>
 
           <el-collapse-transition>
-            <div class="list" v-if="checkedOfficeList.length>0 && isShowCheckedOfficeList" style="padding: 0 10px;">
+            <div class="list" v-if="checkedOfficeList.length>0 && isShowCheckedOfficeList">
               <div class="all-clear" style="height: 30px;line-height: 30px;text-align: right;">
                 <el-button type="text"
                            style="color: #F56C6C;"
                            size="mini"
-                           @click="resetChecked">{{$t('accountManager.allClear')}}</el-button>
+                           @click="resetChecked">{{$t('deviceManager.allClear')}}</el-button>
               </div>
 
               <div class="list-item" v-for="(item,index) in checkedOfficeList" :key="index">
@@ -53,7 +53,7 @@
           <el-collapse-transition>
             <div v-show="isShowSearchBox" style="margin-top: 10px">
               <el-input
-                placeholder="输入关键字进行过滤"
+                :placeholder="$t('deviceManager.searchOfficeName')"
                 v-model="filterText"
                 suffix-icon="el-icon-search"
                 clearable>
@@ -63,22 +63,23 @@
         </div>
 
         <div class="tree-box">
-          <el-tree
-            :data="officeList"
-            show-checkbox
-            node-key="id"
-            ref="officeTree"
-            highlight-current
-            :props="treeProps"
-            :filter-node-method="filterNode"
-            :load="lazyLoadOfficeTree"
-            lazy
-            :expand-on-click-node="false"
-            check-strictly
-            @node-click="clickOfficeHandle"
-            @check="checkOfficeHandle"
-            :default-expanded-keys="[1]"
-            class="tree-container">
+          <el-tree :data="officeList"
+                   show-checkbox
+                   node-key="id"
+                   ref="officeTree"
+                   highlight-current
+                   :props="treeProps"
+                   :filter-node-method="filterNode"
+                   :load="lazyLoadOfficeTree"
+                   lazy
+                   :expand-on-click-node="false"
+                   check-strictly
+                   @node-click="clickOfficeHandle"
+                   @check="checkOfficeHandle"
+                   :default-expanded-keys="[1]"
+                   class="tree-container"
+                   :style="{ 'height': treeHeight + 'px' }"
+                   :empty-text="$t('common.noData')">
           </el-tree>
         </div>
       </div>
@@ -115,7 +116,7 @@ export default {
       isShowSearchBox: false, // 是否显示搜索框
       firstLazyLoadChildren: [], // 第一次请求时，根节点的仅下一级节点
       isShowDeselectAllBtn: false, // 是否显示取消全选（默认显示全选）
-      treeHeight: document.documentElement.clientHeight - 130
+      treeHeight: document.documentElement.clientHeight - 275
     }
   },
   computed: {
@@ -372,6 +373,7 @@ export default {
       overflow-y: auto;
       overflow-x: hidden;
       box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.4);
+      padding: 0 10px;
     }
 
     .list-item {
@@ -418,7 +420,7 @@ export default {
   .tree-container {
     @include scrollBar;
     width: 100%;
-    overflow-x: auto;
+    overflow: auto;
   }
 
   .table {

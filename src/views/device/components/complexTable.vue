@@ -31,15 +31,10 @@
               tooltip-effect="dark"
               show-overflow-tooltip
               @selection-change="handleSelectionChange"
-              :height="tableHeight">
+              :height="tableHeight"
+              v-tabelLoadmore="tableLoadMore">
       <el-table-column
         type="selection">
-      </el-table-column>
-
-      <el-table-column align="center" :label="$t('table.id')">
-        <template slot-scope="scope">
-          <span>{{scope.row.id}}</span>
-        </template>
       </el-table-column>
 
       <el-table-column align="center" :label="$t('table.date')">
@@ -52,12 +47,6 @@
         <template slot-scope="scope">
           <span class="link-type" @click="handleUpdate(scope.row)">{{scope.row.title}}</span>
           <el-tag>{{scope.row.type | typeFilter}}</el-tag>
-        </template>
-      </el-table-column>
-
-      <el-table-column align="center" :label="$t('table.author')">
-        <template slot-scope="scope">
-          <span>{{scope.row.author}}</span>
         </template>
       </el-table-column>
 
@@ -99,6 +88,14 @@
           </el-dropdown>
         </template>
       </el-table-column>
+
+      <template slot="append">
+        <div style="height: 50px;display: flex;justify-content: center;align-items: center;">
+          <i class="el-icon-loading" style="margin-right: 10px;"></i>
+          <span v-show="!isAtAll">{{$t('deviceManager.loading')}}...</span>
+          <span v-show="isAtAll">{{$t('deviceManager.atAll')}}...</span>
+        </div>
+      </template>
     </el-table>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
@@ -154,6 +151,7 @@
 import { getTableData } from '@/datas'
 import waves from '@/directive/waves' // 水波纹指令
 import { parseTime } from '@/utils'
+//import tabelLoadmore from '@/directive/tabelLoadmore'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -171,7 +169,8 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 export default {
   name: 'complexTable',
   directives: {
-    waves
+    waves,
+//    tabelLoadmore
   },
   props: {
     checkedOfficeId: {
@@ -187,7 +186,7 @@ export default {
   data() {
     return {
       tableKey: 0,
-      list: null,
+      list: [],
       total: null,
       listLoading: true,
       listQuery: {
@@ -227,7 +226,8 @@ export default {
       },
       downloadLoading: false,
       multipleSelection: [],
-      tableHeight: document.documentElement.clientHeight - 170
+      tableHeight: document.documentElement.clientHeight - 170,
+      isAtAll: false
     }
   },
   filters: {
@@ -405,6 +405,14 @@ export default {
     handleSelectionChange(val) {
       alert(val + '施工中...')
       this.multipleSelection = val;
+    },
+    tableLoadMore() {
+      console.log('懒加载中...')
+      setTimeout(() => {
+        this.list.push(...getTableData());
+
+        this.isAtAll = getTableData().length===0;
+      }, 1000);
     }
   }
 }

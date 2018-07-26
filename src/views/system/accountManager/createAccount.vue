@@ -28,7 +28,7 @@
           width="200"
           trigger="hover"
           content="普通管理员无法操作系统设置功能模块">
-          <i class="el-icon-warning" slot="reference" style="color: #909399;cursor: pointer;margin-left: 10px;"></i>
+          <i class="el-icon-info" slot="reference" style="color: #909399;cursor: pointer;margin-left: 10px;"></i>
         </el-popover>
       </el-form-item>
 

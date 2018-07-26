@@ -143,6 +143,21 @@ export const asyncRouterMap = [
           }
         ]
       },
+      {
+        path: '/system/officeManager', // 若为三级路由，二级路由必须写全路径（重复定义路由，为了解决此框架中非叶子路由左侧菜单无法点击的问题）
+        name: 'officeManager',
+        component: () => import('@/views/system/officeManager'),
+        hidden: true,
+        meta: { title: 'officeManager', noCache: true },
+        children: [
+          {
+            path: 'distributionPoints',
+            name: 'officeManager-distributionPoints',
+            component: () => import('@/views/system/officeManager/distributionPoints'),
+            meta: { title: 'distributionPoints', noCache: true }
+          }
+        ]
+      },
     ]
   },
 

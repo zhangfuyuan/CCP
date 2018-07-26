@@ -12,6 +12,10 @@ export default {
     delete: "删除",
     checkAll: "全选",
     deselectAll: "取消全选",
+    noData: "暂无数据",
+    move: "移动",
+    cancel: "取 消",
+    confirm: "确 定"
   },
   login: {
     title: "康佳一体机集控管理系统",
@@ -32,12 +36,21 @@ export default {
     planManager: "计划管理",
     systemManager: "系统设置",
     accountManager: "账号管理",
-    officeManager: "组织设置",
+    officeManager: "机构管理",
     ipManager: "IP设置",
     accountSettings: "账号设置",
     wordSettings: "词条设置",
     modifyPswd: "修改密码",
     createAccount: "新建账号",
+    distributionPoints: "分配点数",
+  },
+  deviceManager: {
+    selected: "已选",
+    offices: "个机构",
+    allClear: "全部清空",
+    searchOfficeName: "搜索机构名称",
+    loading: "加载中",
+    atAll: "到底了",
   },
   table: {
     dynamicTips1: "固定表头, 按照表头顺序排序",
@@ -77,9 +90,6 @@ export default {
     handle: "操作",
     edit: "编辑",
     del: "删除",
-    selected: "已选",
-    offices: "个机构",
-    allClear: "全部清空",
   },
   ipManager: {
     serverIP: "服务器 IP / 域名",
@@ -110,5 +120,8 @@ export default {
     uploadWord: "上传词条",
     modify: "修改",
     del: "删除",
+  },
+  officeManager: {
+    newSubOffice: "新建子机构",
   }
 }

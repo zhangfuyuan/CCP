@@ -145,7 +145,6 @@ export default {
       if ((this.verifyNum>3 && !this.isCodeNull && !this.isPasswordNull && !this.isUsernameNull) ||
         (this.verifyNum<=3 && !this.isPasswordNull && !this.isUsernameNull)) {
         this.$refs.loginForm.validate(valid => {
-          console.log(8126.1, valid)
           if (valid) {
             this.loading = true
             this.verifyNum++

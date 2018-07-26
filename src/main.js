@@ -14,6 +14,7 @@ import store from './store'
 import i18n from './lang' // Internationalization
 import '@/icons' // icon
 import '@/permission' // permission control
+import '@/directive/tableLoadmore' // 表格懒加载自定义指令
 
 import * as filters from './filters' // global filters
 

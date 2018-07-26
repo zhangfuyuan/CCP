@@ -12,6 +12,10 @@ export default {
     delete: "Delete",
     checkAll: "Check all",
     deselectAll: "Deselect all",
+    noData: "Nothing data",
+    move: "Move",
+    cancel: "Cancel",
+    confirm: "Confirm"
   },
   login: {
     title: "Kangjia integrated control management system",
@@ -32,12 +36,21 @@ export default {
     planManager: "Plan Manager",
     systemManager: "System Settings",
     accountManager: "Account Manager",
-    officeManager: "Office Settings",
+    officeManager: "Office Manager",
     ipManager: "IP Setting",
     accountSettings: "Account Settings",
     wordSettings: "Word Settings",
     modifyPswd: "Modify Password",
     createAccount: "Create Account",
+    distributionPoints: "Distribution Points",
+  },
+  deviceManager: {
+    selected: "Selected",
+    offices: "offices",
+    allClear: "All empty",
+    searchOfficeName: "Search office name",
+    loading: "Loading",
+    atAll: "At all",
   },
   table: {
     dynamicTips1: "Fixed header, sorted by header order",
@@ -77,9 +90,6 @@ export default {
     handle: "Handle",
     edit: "Edit",
     del: "Delete",
-    selected: "Selected",
-    offices: "offices",
-    allClear: "All empty",
   },
   ipManager: {
     serverIP: "Server IP/domain name",
@@ -110,5 +120,8 @@ export default {
     uploadWord: "Upload word",
     modify: "Modify",
     del: "Delete",
+  },
+  officeManager: {
+    newSubOffice: "New substructure",
   }
 }
