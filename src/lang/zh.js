@@ -123,5 +123,6 @@ export default {
   },
   officeManager: {
     newSubOffice: "新建子机构",
+    pleaseSelectMechanism: "请选择机构",
   }
 }

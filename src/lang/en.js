@@ -123,5 +123,6 @@ export default {
   },
   officeManager: {
     newSubOffice: "New substructure",
+    pleaseSelectMechanism: "Please select the mechanism",
   }
 }
