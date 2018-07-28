@@ -15,7 +15,10 @@ export default {
     noData: "暂无数据",
     move: "移动",
     cancel: "取 消",
-    confirm: "确 定"
+    confirm: "确 定",
+    notice: "注意",
+    processing: "正在处理中...",
+    deleteBtn: "删 除",
   },
   login: {
     title: "康佳一体机集控管理系统",
@@ -124,5 +127,15 @@ export default {
   officeManager: {
     newSubOffice: "新建子机构",
     pleaseSelectMechanism: "请选择机构",
+    intelligentAllocationPointsMode: "智能分配点数模式",
+    id: "ID",
+    distributionPoints: "分配点数",
+    modifyName: "修改名称",
+    changeOrganizationName: "修改机构名称",
+    will: "将",
+    moveTo: "移动到",
+    organizationNameNotExceed24: "机构名称(不超过24个字)",
+    afterRemovingMechanism: "删除后，机构的点数、设备以及子机构将归属到上一级机构",
+    totalPoints: "总可分配点数",
   }
 }

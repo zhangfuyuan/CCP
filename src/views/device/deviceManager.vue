@@ -122,7 +122,15 @@ export default {
   computed: {
     curClickOfficeAndChildrenId() {
       console.time('递归遍历树用时')
-      let checkList = BFS(this.curClickOfficeInfo, 'id', 'childNodes');
+      let checkList = []
+      try {
+        checkList = BFS(this.curClickOfficeInfo, 'id', 'childNodes');
+      } catch (err){
+        this.$message({
+          message: err,
+          type: 'warning'
+        })
+      }
       console.log(`当前点击机构及其所有下级id：${checkList}`);
       console.timeEnd('递归遍历树用时')
 

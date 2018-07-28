@@ -271,8 +271,15 @@ export function uniqueArr(arr) {
 }
 
 /**
- * 递归遍历树，获取所有节点某属性的值，以数组形式展示
+ *  递归遍历树，获取某节点及其所有子节点某属性的值，以数组形式展示
+ *  source      对象   遍历的树
+ *  source.data 对象   数据节点的数据对象
+ *  key         字符串 获取的属性名
+ *  childKey    字符串 子节点数组属性名
  *
+ *  return      数组   结果
+ *
+ *  注意：遍历的层级超过 8000 会导致栈溢出，建议 try catch 一下
  * */
 export function BFS(source, key, childKey) {
   let res = [];
@@ -292,3 +299,62 @@ export function BFS(source, key, childKey) {
 
   return uniqueArr(res);
 }
+
+/**
+ *  构造树
+ *  data      数组   扁平的数组
+ *  idKey     字符串 id属性名
+ *  parentKey 字符串 父id属性名
+ *  childKey  字符串 子节点数组属性名
+ *
+ *  return    对象   树
+ * */
+export function treeify(data, idKey, parentKey, childKey) {
+  var disposable = {}, top, item;
+
+  for (index in data) {
+    item = data[index];
+
+    if (!(item[idKey] in disposable)) {
+      disposable[item[idKey]] = [];
+    }
+
+    if (!(item[parentKey] in disposable)) {
+      disposable[item[parentKey]] = [];
+    }
+
+    item[childKey] = disposable[item[idKey]];
+
+    if (item[parentKey]) {
+      disposable[item[parentKey]].push(item);
+    } else {
+      top = item;
+    }
+  }
+
+  return top;
+}
+
+/**
+ *  递归遍历树，获取某节点的所有父节点某属性的值
+ *
+ *  仅能在结合 element-ui tree 控件下使用,仅供参考
+ * */
+
+/**
+ getParentOfficeKey(pid, key) {
+   if (pid && this.$refs.officeTree.getNode(pid)) {
+     let curNode = this.$refs.officeTree.getNode(pid).data;
+     if (pid === curNode.pid) {
+       console.log('机构树id重复，陷入死循环...');
+       return '/--';
+     }
+
+     return '/' + curNode[key||'label'] + this.getParentOfficeKey(curNode.pid, key||'label')
+   } else {
+     return '';
+   }
+ }
+* */
+
+

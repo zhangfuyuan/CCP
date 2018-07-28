@@ -15,7 +15,10 @@ export default {
     noData: "Nothing data",
     move: "Move",
     cancel: "Cancel",
-    confirm: "Confirm"
+    confirm: "Confirm",
+    notice: "Notice",
+    processing: "Processing ...",
+    deleteBtn: "Delete",
   },
   login: {
     title: "Kangjia integrated control management system",
@@ -124,5 +127,15 @@ export default {
   officeManager: {
     newSubOffice: "New substructure",
     pleaseSelectMechanism: "Please select the mechanism",
+    intelligentAllocationPointsMode: "Intelligent allocation points mode",
+    id: "ID",
+    distributionPoints: "Distribution points",
+    modifyName: "Modify the name",
+    changeOrganizationName: "Change the name of the organization",
+    will: "Will",
+    moveTo: "move to",
+    organizationNameNotExceed24: "The name of the organization shall not exceed 24 words",
+    afterRemovingMechanism: "After deletion, the number of points, devices, and subunits of the mechanism will be assigned to the higher level of the mechanism",
+    totalPoints: "Total distributable points",
   }
 }

@@ -26,7 +26,8 @@
                   autofocus
                   :placeholder="$t('login.usernamePlaceholder')"
                   :class="{ 'error': isUsernameNull }"
-                  @focus="clearUsername"></el-input>
+                  @focus="clearUsername"
+                  @keyup.enter.native="handleLogin"></el-input>
       </el-form-item>
       <el-form-item prop="password" :class="{ 'error': isPasswordNull }">
         <span class="svg-container">
@@ -50,7 +51,8 @@
                           v-model="loginForm.code"
                           :placeholder="$t('login.codePlaceholder')"
                           :class="{ 'error': isCodeNull }"
-                          @focus="clearCode"></el-input>
+                          @focus="clearCode"
+                          @keyup.enter.native="handleLogin"></el-input>
           </el-form-item>
           <div class="code-img-box" style="display: flex;height: 50px;">
             <img src="" alt="验证码" style="width: 100px;height: 50px;background-color: #fff;" />
