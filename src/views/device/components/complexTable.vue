@@ -3,10 +3,6 @@
     <div class="filter-container">
       <el-input @keyup.enter.native="handleFilter" style="width: 200px;" class="filter-item" :placeholder="$t('table.title')" v-model="listQuery.title">
       </el-input>
-      <el-select clearable style="width: 90px" class="filter-item" v-model="listQuery.importance" :placeholder="$t('table.importance')">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item">
-        </el-option>
-      </el-select>
       <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.type" :placeholder="$t('table.type')">
         <el-option v-for="item in  calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key">
         </el-option>
@@ -151,7 +147,6 @@
 import { getTableData } from '@/datas'
 import waves from '@/directive/waves' // 水波纹指令
 import { parseTime } from '@/utils'
-//import tabelLoadmore from '@/directive/tabelLoadmore'
 
 const calendarTypeOptions = [
   { key: 'CN', display_name: 'China' },
@@ -170,7 +165,6 @@ export default {
   name: 'complexTable',
   directives: {
     waves,
-//    tabelLoadmore
   },
   props: {
     checkedOfficeId: {
