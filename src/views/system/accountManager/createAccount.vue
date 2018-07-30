@@ -51,7 +51,8 @@
           node-key="id"
           check-on-click-node
           :expand-on-click-node="false"
-          @node-click="checkedOfficeHandle"
+          @node-click="clickOfficeHandle"
+          @check="checkOfficeHandle"
           check-strictly
           style="width: 500px;">
         </el-tree>
@@ -172,10 +173,32 @@
         if (!value) return true;
         return data.label.indexOf(value) !== -1;
       },
-      checkedOfficeHandle(obj, node, component) {
-        this.$refs.officeTree.setCheckedKeys([obj.id]);
-        console.log(obj, node, component)
-        this.accountForm.office = obj.id
+      clickOfficeHandle(data, node, component) {
+        let checkedList = this.$refs['officeTree'].getCheckedKeys();
+
+        if (checkedList.indexOf(data.id) > -1) { // 已选 -> 去选
+          this.$refs['officeTree'].setCheckedKeys([]);
+          this.accountForm.office = -1
+        } else { // 无选 -> 选中
+          this.$refs['officeTree'].setCheckedKeys([data.id]);
+          this.accountForm.office = data.id
+        }
+
+        console.log(this.accountForm.office)
+      },
+      checkOfficeHandle(data, checkedMap) {
+        let checkedList = this.$refs['officeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
+
+        if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
+          this.$refs['officeTree'].setCheckedKeys([data.id]);
+          this.$refs['officeTree'].setCurrentKey(data.id);
+          this.accountForm.office = data.id
+        } else { // 已选 -> 去选
+          this.$refs['officeTree'].setCheckedKeys([]);
+          this.accountForm.office = -1
+        }
+
+        console.log(this.accountForm.office)
       },
       cancelHandle() {
         this.$confirm('已录入的信息将不保留，是否离开该页面 ？', '注意', {

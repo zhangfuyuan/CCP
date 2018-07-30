@@ -19,6 +19,8 @@ export default {
     notice: "注意",
     processing: "正在处理中...",
     deleteBtn: "删 除",
+    operationSucceeds: "操作成功",
+    operationFailure: "操作失败",
   },
   login: {
     title: "康佳一体机集控管理系统",
@@ -137,5 +139,18 @@ export default {
     organizationNameNotExceed24: "机构名称(不超过24个字)",
     afterRemovingMechanism: "删除后，机构的点数、设备以及子机构将归属到上一级机构",
     totalPoints: "总可分配点数",
+    serverNotCertified: "服务器未认证",
+    certificationImmediately: "立即认证",
+    serverAuthentication: "服务器认证",
+    certification: "认证名",
+    verificationCode: "验证码",
+    pleaseEnterServerAuthenticationName: "请输入服务器认证名",
+    pleaseEnterServerVerificationCode: "请输入服务器验证码",
+    authentication: "认证",
+    superior: "上级",
+    distributablePoints: "可分配点数",
+    assignedPoints: "已分配点数",
+    deviceNumber: "设备数",
+    mechanismTotalPoints: "机构总点数",
   }
 }

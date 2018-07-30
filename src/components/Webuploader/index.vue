@@ -70,9 +70,11 @@
     computed: {
       ...mapGetters([
         'public_path',
+        'process_env',
       ])
     },
     mounted() {
+      console.log(8126, this.process_env)
       console.log(this.public_path + '/static/lib/webuploader/Uploader.swf')
 
       let self = this;

@@ -7,7 +7,9 @@ const user = {
     name: '',
     username: '',
     avatar: '',
-    roles: []
+    roles: [],
+    officeId: '',
+    officeName: ''
   },
 
   mutations: {
@@ -25,6 +27,12 @@ const user = {
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
+    },
+    SET_OFFICEID: (state, officeId) => {
+      state.officeId = +'1'
+    },
+    SET_OFFICENAME: (state, officeName) => {
+      state.officeName = 'HQ'
     }
   },
 

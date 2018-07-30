@@ -13,7 +13,7 @@
 
       <el-tree :data="officeTree"
                node-key="id"
-               default-expand-all
+               :default-expanded-keys="[officeTree[1].id || 1]"
                :expand-on-click-node="false"
                class="tree-container"
                :style="{ 'height': treeHeight + 'px' }"
@@ -23,15 +23,22 @@
                highlight-current
                @node-click="clickNodeHandle"
                :props="officeTreeProps">
-      <span class="custom-tree-node" slot-scope="{ node, data }" >
+      <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>
-          <i v-if="data.isWisdom" class="el-icon-info" style="color: #409EFF;cursor: pointer;"></i>
+          <span v-if="data.isWisdom" :title="$t('officeManager.intelligentAllocationPointsMode')">
+            <svg-icon icon-class="eglass-tag" style="font-size: 16px;cursor: pointer;" />
+          </span>
           {{ node.label }}
         </span>
         <span>
-          <i v-if="data.id===1" class="el-icon-circle-plus-outline" style="font-size: 16px;" @click="toggleDialogInfo('new')"></i>
+          <i v-if="node.level===1"
+             class="el-icon-circle-plus-outline"
+             style="font-size: 16px;"
+             @click="toggleDialogInfo('new')"></i>
 
-          <span v-else v-popover:popoverBox @click="showPopover(data.id, data, $event)">
+          <span v-else
+                v-popover:popoverBox
+                @click="showPopover(data.id, data, $event)">
             <svg-icon icon-class="more" style="font-size: 16px;" />
           </span>
         </span>
@@ -41,17 +48,31 @@
 
     <!--右侧动态视图-->
     <div class="view" :style="{ 'height': viewHeight + 'px' }">
-      <div style="margin-bottom: 10px;">
-        <i class="el-icon-info" style="color: #409EFF;cursor: pointer;"></i>
+      <div style="margin-bottom: 10px;" v-if="!subRoute_isPoints">
+        <svg-icon icon-class="eglass-tag" style="font-size: 18px;cursor: pointer;" />
         <span style="color: #909399;padding-left: 5px;">{{$t('officeManager.intelligentAllocationPointsMode')}}</span>
       </div>
 
-      <div class="view-tree" v-if="!$route_isPoints">
+      <div v-if="isNoAuth && !subRoute_isPoints"
+           style="width: 60%;margin: 0 0 10px 10%;border: 1px solid #F56C6C;display: flex;align-items: center;justify-content: space-between;cursor: pointer;border-radius: 4px;background-color: #fff;padding: 0 10px;"
+           @click="toggleDialogInfo('anti')">
+        <span>
+          <i class="el-icon-warning" style="color: #F56C6C;"></i>
+          {{$t('officeManager.serverNotCertified')}}
+        </span>
+
+        <el-button type="text">{{$t('officeManager.certificationImmediately')}}</el-button>
+      </div>
+
+      <div class="view-tree" v-if="!subRoute_isPoints">
         <template v-if="curClickOfficeId>-1 && curClickOfficeInfo">
           <template v-if="curClickOfficeParentInfo">
             <el-card class="box-card parent-card" shadow="never" style="width: 40%;">
               <div class="card-container" @click.stop.prevent="clickCardHandle(curClickOfficeParentInfo)">
                 <div class="name">
+                  <span v-if="curClickOfficeParentInfo.isWisdom" :title="$t('officeManager.intelligentAllocationPointsMode')">
+                    <svg-icon icon-class="eglass-tag" style="cursor: pointer;" />
+                  </span>
                   {{curClickOfficeParentInfo.label}}
                 </div>
 
@@ -64,8 +85,18 @@
                 </div>
 
                 <div class="btns">
-                  <el-button type="text" @click.stop.prevent="aaa">{{$t('officeManager.distributionPoints')}}</el-button>
-                  <el-button type="text" @click.stop.prevent="aaa">{{$t('officeManager.modifyName')}}</el-button>
+                  <el-button type="text"
+                             @click.stop.prevent="distributionPoints(curClickOfficeParentInfo.id)"
+                             :disabled="isNoAuth">{{$t('officeManager.distributionPoints')}}
+                  </el-button>
+                  <el-button type="text"
+                             @click.stop.prevent="toggleDialogInfo('edit', curClickOfficeParentInfo.id)"
+                             :disabled="isNoAuth">{{$t('officeManager.modifyName')}}
+                  </el-button>
+                  <el-button type="text"
+                             v-if="curClickOfficeParentInfo.isNoAuth"
+                             @click="toggleDialogInfo('anti')">{{$t('officeManager.authentication')}}
+                  </el-button>
                 </div>
               </div>
             </el-card>
@@ -75,7 +106,12 @@
                    shadow="always"
                    style="width: 60%;height: 230px;">
             <div class="card-container">
-              <div class="name">{{curClickOfficeInfo.label}}</div>
+              <div class="name">
+                <span v-if="curClickOfficeInfo.isWisdom" :title="$t('officeManager.intelligentAllocationPointsMode')">
+                  <svg-icon icon-class="eglass-tag" style="cursor: pointer;" />
+                </span>
+                {{curClickOfficeInfo.label}}
+              </div>
 
               <div class="info">
                 <div class="id">{{$t('officeManager.id')}} &nbsp; {{curClickOfficeInfo.id}}</div>
@@ -86,11 +122,30 @@
               </div>
 
               <div class="btns">
-                <el-button type="text" @click.stop.prevent="aaa">{{$t('officeManager.distributionPoints')}}</el-button>
-                <el-button type="text" @click.stop.prevent="aaa">{{$t('officeManager.modifyName')}}</el-button>
-                <el-button type="text" @click.stop.prevent="toggleDialogInfo('new')">{{$t('officeManager.newSubOffice')}}</el-button>
-                <el-button type="text" @click.stop.prevent="aaa">{{$t('common.move')}}</el-button>
-                <el-button type="text" style="color: #F56C6C;" @click.stop.prevent="aaa">{{$t('common.delete')}}</el-button>
+                <el-button type="text" @click.stop.prevent="distributionPoints(curClickOfficeInfo.id)"
+                           :disabled="isNoAuth">{{$t('officeManager.distributionPoints')}}
+                </el-button>
+                <el-button type="text"
+                           @click.stop.prevent="toggleDialogInfo('edit', curClickOfficeInfo.id)"
+                           :disabled="isNoAuth">{{$t('officeManager.modifyName')}}
+                </el-button>
+                <el-button type="text"
+                           @click.stop.prevent="toggleDialogInfo('new')"
+                           :disabled="isNoAuth">{{$t('officeManager.newSubOffice')}}
+                </el-button>
+                <el-button type="text"
+                           @click.stop.prevent="toggleDialogInfo('move')"
+                           :disabled="isNoAuth">{{$t('common.move')}}
+                </el-button>
+                <el-button type="text"
+                           :style="{ color: isNoAuth ? '#c0c4cc' : '#F56C6C' }"
+                           @click.stop.prevent="toggleDialogInfo('remove')"
+                           :disabled="isNoAuth">{{$t('common.delete')}}
+                </el-button>
+                <el-button type="text"
+                           v-if="curClickOfficeInfo.isNoAuth"
+                           @click="toggleDialogInfo('anti')">{{$t('officeManager.authentication')}}
+                </el-button>
               </div>
             </div>
           </el-card>
@@ -103,7 +158,12 @@
                        :key="index"
                        :style="{ 'width': '40%', 'margin-left': curClickOfficeParentInfo ? '50%' : '30%'}">
                 <div class="card-container" @click.stop.prevent="clickCardHandle(item)">
-                  <div class="name">{{item.label}}</div>
+                  <div class="name">
+                    <span v-if="item.isWisdom" :title="$t('officeManager.intelligentAllocationPointsMode')">
+                      <svg-icon icon-class="eglass-tag" style="cursor: pointer;" />
+                    </span>
+                    {{item.label}}
+                  </div>
 
                   <div class="info">
                     <div class="id">{{$t('officeManager.id')}} &nbsp; {{item.id}}</div>
@@ -114,8 +174,14 @@
                   </div>
 
                   <div class="btns">
-                    <el-button type="text" @click.stop.prevent="aaa">{{$t('officeManager.distributionPoints')}}</el-button>
-                    <el-button type="text" @click.stop.prevent="aaa">{{$t('officeManager.modifyName')}}</el-button>
+                    <el-button type="text"
+                               @click.stop.prevent="distributionPoints(item.id)"
+                               :disabled="isNoAuth">{{$t('officeManager.distributionPoints')}}
+                    </el-button>
+                    <el-button type="text"
+                               @click.stop.prevent="toggleDialogInfo('edit', item.id)"
+                               :disabled="isNoAuth">{{$t('officeManager.modifyName')}}
+                    </el-button>
                   </div>
                 </div>
               </el-card>
@@ -132,13 +198,18 @@
         </template>
       </div>
 
-      <router-view></router-view>
+      <router-view :curOfficeInfo="subRoute.curOfficeInfo"
+                   :curOfficeChildren="subRoute.curOfficeChildren"
+                   :curOfficeParents="subRoute.curOfficeParents"></router-view>
     </div>
 
     <!--对话弹框-->
     <el-dialog :title="dialogInfo.title"
                :visible.sync="isShowDialog"
-               :width="dialogInfo.width">
+               :width="dialogInfo.width"
+               @open="openDialogHandle"
+               @close="closeDialogHandle"
+               :close-on-click-modal="false">
       <template v-if="dialogInfo.key === 'new'">
         <div>
           <el-input v-model="newOfficeForm.name"
@@ -166,6 +237,7 @@
         </div>
       </template>
 
+      <!--删除机构节点-->
       <template v-if="dialogInfo.key === 'remove'">
         <span>{{$t('officeManager.afterRemovingMechanism')}}</span>
 
@@ -175,8 +247,9 @@
         </div>
       </template>
 
+      <!--修改机构名称-->
       <template v-if="dialogInfo.key === 'edit'">
-        <span>这是一段信息</span>
+        <el-input v-model="editOfficeName" :placeholder="$t('officeManager.organizationNameNotExceed24')"></el-input>
 
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="edit(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
@@ -184,17 +257,41 @@
         </div>
       </template>
 
+      <!--移动所属机构-->
       <template v-if="dialogInfo.key === 'move'">
-        <span>这是一段信息</span>
+        <el-tree
+          class="move-tree"
+          :data="moveOfficeTree"
+          :props="moveOfficeProps"
+          ref="moveOfficeTree"
+          show-checkbox
+          highlight-current
+          node-key="id"
+          check-on-click-node
+          :expand-on-click-node="false"
+          @node-click="clickMoveOfficeHandle"
+          @check="checkMoveOfficeHandle"
+          check-strictly
+          :default-expanded-keys="moveOfficeDefaultExpandedKeys"
+          :default-checked-keys="[curClickOfficeId]">
+        </el-tree>
 
         <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="move(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
+          <el-button :disabled="curCheckedMoveOfficeId===-1" type="primary" @click="move(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
           <el-button plain @click="isShowDialog = false">{{$t('common.cancel')}}</el-button>
         </div>
       </template>
 
+      <!--反认证-->
       <template v-if="dialogInfo.key === 'anti'">
-        <span>这是一段信息</span>
+        <el-form :model="authForm" label-suffix=" *" label-width="100px" label-position="left">
+          <el-form-item :label="$t('officeManager.certification')">
+            <el-input v-model="authForm.authName" :placeholder="$t('officeManager.pleaseEnterServerAuthenticationName')"></el-input>
+          </el-form-item>
+          <el-form-item :label="$t('officeManager.verificationCode')">
+            <el-input v-model="authForm.authCode" :placeholder="$t('officeManager.pleaseEnterServerVerificationCode')"></el-input>
+          </el-form-item>
+        </el-form>
 
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="anti(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
@@ -241,99 +338,129 @@
 </template>
 
 <script>
+  import { setBFS } from '@/utils'
+  import { mapGetters } from 'vuex'
+
   let id = 1000;
+  let tree = [
+    {
+      id: 1,
+      label: '一级 1',
+      children: [{
+        id: 2,
+        label: '二级 1-1',
+        isWisdom: true,
+        pid: 1,
+        children: [{
+          id: 3,
+          label: '三级 1-1-1',
+          pid: 2,
+          children: [],
+        }, {
+          id: 4,
+          label: '三级 1-1-2',
+          pid: 2,
+          children: [],
+        }]
+      }]
+    }, {
+      id: 5,
+      label: '一级 2',
+      assignedPoints: 300, // 已分配点数
+      totalPoints: 400, // 机构总点数
+      deviceNumber: 100, // 设备数
+      children: [{
+        id: 6,
+        label: '二级 2-1',
+        pid: 5,
+        children: [],
+        assignedPoints: 100, // 已分配点数
+        totalPoints: 100, // 机构总点数
+        deviceNumber: 100, // 设备数
+      }, {
+        id: 7,
+        label: '二级 2-2',
+        pid: 5,
+        assignedPoints: 200, // 已分配点数
+        totalPoints: 220, // 机构总点数
+        deviceNumber: 20, // 设备数
+        children: [{
+          id: 8,
+          label: '三级 2-2-1',
+          pid: 7,
+          isWisdom: true,
+          assignedPoints: 50, // 已分配点数
+          totalPoints: 100, // 机构总点数
+          deviceNumber: 20, // 设备数
+          children: [{
+            id: 9,
+            label: '四级 2-2-1-1',
+            pid: 8,
+            assignedPoints: 10, // 已分配点数
+            totalPoints: 10, // 机构总点数
+            deviceNumber: 10, // 设备数
+            children: [], // 叶子结点 [] 不能少
+          }, {
+            id: 10,
+            label: '四级 2-2-1-2',
+            pid: 8,
+            assignedPoints: 10, // 已分配点数
+            totalPoints: 10, // 机构总点数
+            deviceNumber: 10, // 设备数
+            children: [],
+          }, {
+            id: 11,
+            label: '四级 2-2-1-3',
+            pid: 8,
+            assignedPoints: 10, // 已分配点数
+            totalPoints: 10, // 机构总点数
+            deviceNumber: 10, // 设备数
+            children: [],
+          }]
+        }, {
+          id: 12,
+          label: '三级 2-2-2',
+          pid: 7,
+          assignedPoints: 100, // 已分配点数
+          totalPoints: 100, // 机构总点数
+          deviceNumber: 100, // 设备数
+          children: [],
+        }]
+      }]
+    }, {
+      id: 13,
+      label: '一级 3',
+      children: [{
+        id: 14,
+        label: '二级 3-1',
+        isWisdom: true,
+        pid: 13,
+        children: [],
+      }, {
+        id: 15,
+        label: '二级 3-2',
+        pid: 13,
+        children: [],
+      }]
+    }, {
+      id: 16,
+      label: '一级 4',
+      children: [],
+      isNoAuth: true,
+    }
+  ];
 
   export default {
     name: 'officeManager',
     components: {  },
     data() {
       return {
-        officeTree: [ // 机构树
-          {
-            id: 1,
-            label: '一级 1',
-            children: [{
-              id: 2,
-              label: '二级 1-1',
-              isWisdom: true,
-              pid: 1,
-              children: [{
-                id: 3,
-                label: '三级 1-1-1',
-                pid: 2,
-                children: [],
-              }, {
-                id: 4,
-                label: '三级 1-1-2',
-                pid: 2,
-                children: [],
-              }]
-            }]
-          }, {
-            id: 5,
-            label: '一级 2',
-            children: [{
-              id: 6,
-              label: '二级 2-1',
-              pid: 5,
-              children: [],
-            }, {
-              id: 7,
-              label: '二级 2-2',
-              pid: 5,
-              children: [{
-                id: 8,
-                label: '三级 2-2-1',
-                pid: 7,
-                children: [{
-                  id: 9,
-                  label: '四级 2-2-1-1',
-                  pid: 8,
-                  children: [], // 叶子结点 [] 不能少
-                }, {
-                  id: 10,
-                  label: '四级 2-2-1-2',
-                  pid: 8,
-                  children: [],
-                }, {
-                  id: 11,
-                  label: '四级 2-2-1-3',
-                  pid: 8,
-                  children: [],
-                }]
-              }, {
-                id: 12,
-                label: '三级 2-2-2',
-                pid: 7,
-                children: [],
-              }]
-            }]
-          }, {
-            id: 13,
-            label: '一级 3',
-            children: [{
-              id: 14,
-              label: '二级 3-1',
-              isWisdom: true,
-              pid: 13,
-              children: [],
-            }, {
-              id: 15,
-              label: '二级 3-2',
-              pid: 13,
-              children: [],
-            }]
-          }, {
-            id: 16,
-            label: '一级 4',
-            children: [],
-          }
-        ],
+        officeTree: JSON.parse(JSON.stringify(tree)),// 机构树
         officeTreeProps: {  // 机构树基本属性
           label: 'label',
           children: 'children'
         },
-        $route_isPoints: false, // 判断当前是二级还是三级路由
+        subRoute_isPoints: false, // 判断当前是二级还是三级路由
         treeHeight: document.documentElement.clientHeight - 210, // 初始化机构树高度
         filterText: '', // 搜索框的输入值
         isShowPopover: false, // Popover 是否可见
@@ -353,11 +480,31 @@
         g_loading: null, // loading 全局单例
         inputNumberVal: 0, // 计数器的值
         testTotalPoints: 12, // 测试：总可分配点数
+        curCheckedMoveOfficeId: -1, // 移动机构树当前选中机构ID
+        moveOfficeTree: null, // 移动机构树（同步officeTree）
+        moveOfficeProps: { // 移动机构树的设置
+          children: 'children',
+          label: 'label'
+        },
+        authForm: { // 认证表单数据
+          authName: '',
+          authCode: ''
+        },
+        editOfficeName: '', // 修改名称表单数据
+        editNameOfficeId: -1, // 修改名称的机构id
+        subRoute: { // 子路由（分配点数）模块属性
+          curOfficeInfo: null,
+          curOfficeChildren: [],
+          curOfficeParents: [],
+        }
       }
     },
     computed: {
+      ...mapGetters([
+        'officeId',
+        'officeName',
+      ]),
       curClickOfficeParentInfo() {
-
         return this.curClickOfficeInfo&&this.curClickOfficeInfo.pid ?
                 this.$refs.officeTree.getNode(this.curClickOfficeInfo.pid).data :
                 null
@@ -369,18 +516,29 @@
       },
       testInputNumber() {
         return this.testTotalPoints - this.inputNumberVal;
-      }
+      },
+      moveOfficeDefaultExpandedKeys() {
+        if (this.curClickOfficeInfo && this.curClickOfficeInfo.pid) {
+          return [this.$refs.officeTree.getNode(this.curClickOfficeInfo.pid).data.id];
+        } else {
+          return [];
+        }
+      },
+      isNoAuth() {
+        // todo 根据根节点是否未认证
+        return this.curClickOfficeInfo&&this.curClickOfficeInfo.isNoAuth ? this.curClickOfficeInfo.isNoAuth : false;
+      },
     },
     watch: {
       $route($r) {
-        this.$route_isPoints = $r.name==='officeManager-distributionPoints'
+        this.subRoute_isPoints = $r.name==='officeManager-distributionPoints'
       },
       filterText(val) {
         this.$refs.officeTree.filter(val);
       },
     },
     created() {
-      this.$route_isPoints = this.$route.name==='officeManager-distributionPoints'
+      this.subRoute_isPoints = this.$route.name==='officeManager-distributionPoints'
     },
     mounted() {
     },
@@ -392,6 +550,11 @@
         setTimeout(() => {
           this.$refs['officeTree'].append(newChild, this.curClickOfficeId);
           loading.close();
+          this.$message({
+            showClose: true,
+            message: this.$t('common.operationSucceeds'),
+            type: 'success'
+          });
         }, 2000);
       },
       remove() {
@@ -401,21 +564,55 @@
           this.$refs['officeTree'].remove(this.curClickOfficeId);
           this.updateCurClickOffice(-1, null);
           loading.close();
+          this.$message({
+            showClose: true,
+            message: this.$t('common.operationSucceeds'),
+            type: 'success'
+          });
         }, 2000);
       },
       move() {
         const loading = this.showLoading();
 
         setTimeout(() => {
-          this.updateCurClickOffice(-1, null);
+          this.curClickOfficeInfo.pid = this.curCheckedMoveOfficeId;
+          this.$refs['officeTree'].remove(this.curClickOfficeId);
+          this.$refs['officeTree'].append(this.curClickOfficeInfo, this.curCheckedMoveOfficeId);
+
           loading.close();
+          this.$message({
+            showClose: true,
+            message: this.$t('common.operationSucceeds'),
+            type: 'success'
+          });
         }, 2000);
       },
       edit() {
+        const loading = this.showLoading();
 
+        setTimeout(() => {
+          let editNode = this.$refs['officeTree'].getNode(this.editNameOfficeId).data
+          editNode.label = this.editOfficeName
+
+          loading.close();
+          this.$message({
+            showClose: true,
+            message: this.$t('common.operationSucceeds'),
+            type: 'success'
+          });
+        }, 2000);
       },
       anti() {
+        const loading = this.showLoading();
 
+        setTimeout(() => {
+          loading.close();
+          this.$message({
+            showClose: true,
+            message: this.$t('common.operationFailure'),
+            type: 'error'
+          });
+        }, 2000);
       },
       filterNode(value, data) {
         if (!value) return true;
@@ -442,9 +639,10 @@
         this.updateCurClickOffice(d.id, d);
         console.log(this.curClickOfficeId, this.curClickOfficeInfo)
         if (!this.isClickMoreIcon) this.$refs['popoverBox'].doClose();
-      },
-      aaa() {
-        console.log('点了按钮')
+
+        if (this.subRoute_isPoints) {
+          this.distributionPoints(d.id);
+        }
       },
       clickCardHandle(info) {
         console.log('点了白板')
@@ -453,7 +651,7 @@
         this.$refs.officeTree.setCurrentNode(info)
         this.updateCurClickOffice(info.id, info)
       },
-      toggleDialogInfo(key) {
+      toggleDialogInfo(key, id) {
         switch (key) {
           case 'new':
             this.dialogInfo = {
@@ -486,8 +684,8 @@
           case 'anti':
             this.dialogInfo = {
               key: key,
-              title: this.$t('common.notice'),
-              width: '30%',
+              title: this.$t('officeManager.serverAuthentication'),
+              width: '35%',
             }
             break;
           default:
@@ -499,6 +697,8 @@
             break;
         }
         this.isShowDialog = true
+        this.editNameOfficeId = id;
+        console.log(`当前选中机构id：${this.curClickOfficeId}`)
       },
       showLoading(txt, target, isLock) {
         return this.$loading({
@@ -506,6 +706,96 @@
           target: target || '#appMain',
           lock: isLock || true,
         });
+      },
+      clickMoveOfficeHandle(data, node, component) {
+        if (data.disabled) return false;
+
+        let checkedList = this.$refs['moveOfficeTree'].getCheckedKeys();
+
+        if (checkedList.indexOf(data.id) > -1) { // 已选 -> 去选
+          this.updateMoveOfficeCurCheckedOffice([], -1);
+        } else { // 无选 -> 选中
+          this.updateMoveOfficeCurCheckedOffice([data.id], data.id);
+        }
+      },
+      checkMoveOfficeHandle(data, checkedMap) {
+        let checkedList = this.$refs['moveOfficeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
+
+        if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
+          this.$refs['moveOfficeTree'].setCurrentKey(data.id);
+          this.updateMoveOfficeCurCheckedOffice([data.id], data.id);
+        } else { // 已选 -> 去选
+          this.updateMoveOfficeCurCheckedOffice([], -1);
+        }
+      },
+      openDialogHandle() {
+        if (this.dialogInfo.key === 'move') {
+          this.moveOfficeTree = JSON.parse(JSON.stringify(this.officeTree))
+
+          this.$nextTick(() => {
+            let resetTree = this.$refs['moveOfficeTree'].getNode(this.curClickOfficeId).data // 此处不能用 curClickOfficeInfo
+            this.updateMoveOfficeCurCheckedOffice([this.curClickOfficeId], this.curClickOfficeId)
+            this.$refs['moveOfficeTree'].setCurrentKey(this.curClickOfficeId)
+            try {
+              setBFS(resetTree, 'disabled', true, 'children', 'id', this.curClickOfficeId)
+            } catch (err) {
+              console.log('openDialogHandle', err)
+            }
+          })
+        } else if (this.dialogInfo.key === 'edit') {
+          let node = this.$refs['officeTree'].getNode(this.editNameOfficeId);
+
+          if (node && node.data) {
+            this.editOfficeName = node.data.label;
+          } else {
+            this.editOfficeName = '';
+          }
+        }
+      },
+      closeDialogHandle() {
+        if (this.dialogInfo.key === 'move') {
+        }
+        this.dialogInfo.key = ''; // 重置移动机构树
+      },
+      updateMoveOfficeCurCheckedOffice(arr, id) {
+        this.$refs['moveOfficeTree'].setCheckedKeys(arr);
+        this.curCheckedMoveOfficeId = id;
+
+        console.log(`当前移动机构树中选中的机构id是：${this.curCheckedMoveOfficeId}`)
+      },
+      distributionPoints(officeId) {
+        let node = this.$refs['officeTree'].getNode(officeId);
+
+        if (node && node.data) {
+          try {
+            console.log(8126, node.data['pid'], this.getParentsOfficeInfo(node.data['pid']))
+            this.subRoute = {
+              curOfficeInfo: node.data,
+              curOfficeChildren: node.data['children'] || [],
+              curOfficeParents: this.getParentsOfficeInfo(node.data['pid']),
+            };
+            this.$router.push({ path: '/system/officeManager/distributionPoints', query: {
+              officeId: officeId
+            } });
+          } catch (err) {
+            console.log(`递归遍历父机构出错：${err}`)
+          }
+        } else {
+          console.log(`无用机构id：${officeId}`)
+        }
+      },
+      getParentsOfficeInfo(pid) {
+        if (pid && this.$refs['officeTree'].getNode(pid)) {
+          let curNode = this.$refs['officeTree'].getNode(pid).data;
+          if (pid === curNode.pid) {
+            console.log('机构树id重复，陷入死循环...');
+            return [];
+          }
+
+          return [curNode].concat(this.getParentsOfficeInfo(curNode.pid))
+        } else {
+          return [];
+        }
       }
     }
   }
@@ -739,5 +1029,13 @@
     text-align: left;
   }
 
+  .move-tree {
+    @include scrollBar;
+    width: 300px;
+    min-height: 300px;
+    max-height: 400px;
+    overflow: auto;
+    border: 1px solid #DCDFE6;
+  }
 }
 </style>

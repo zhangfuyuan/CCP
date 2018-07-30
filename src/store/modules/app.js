@@ -8,7 +8,7 @@ const app = {
     },
     device: 'desktop',
     language: Cookies.get('language') ? (Cookies.get('language')==='zh' ? 'zh' : 'en') : 'zh',
-    public_path: process.env==='production' ? '/PRM' : ''
+    process_env: process.env.NODE_ENV,
   },
   mutations: {
     TOGGLE_SIDEBAR: state => {

@@ -279,6 +279,7 @@ export function uniqueArr(arr) {
  *
  *  return      数组   结果
  *
+ *  仅能在结合 element-ui tree 控件下使用,仅供参考
  *  注意：遍历的层级超过 8000 会导致栈溢出，建议 try catch 一下
  * */
 export function BFS(source, key, childKey) {
@@ -298,6 +299,35 @@ export function BFS(source, key, childKey) {
   })(source)
 
   return uniqueArr(res);
+}
+
+/**
+ *  递归遍历树，统一设置某节点的所有子节点某属性的值（不包括根节点，会改变原数组）
+ *  source      对象   遍历的树
+ *  source.data 对象   数据节点的数据对象
+ *  key         字符串 获取的属性名
+ *  val         无限制 设置的属性值
+ *  childKey    字符串 子节点数组属性名
+ *  idKey       字符串 类似id的区分属性名
+ *  rootId      数字   区分根节点id
+ *
+ *  return      null
+ *
+ *  仅能在结合 element-ui tree 控件下使用,仅供参考
+ *  注意：遍历的层级超过 8000 会导致栈溢出，建议 try catch 一下
+ * */
+export function setBFS(tree, key, val, childKey, idKey, rootId) {
+  if (!tree) return;
+
+  if (tree[idKey] !== rootId ) tree[key] = val;
+
+  if (tree[childKey] && tree[childKey].length > 0) {
+    let len = tree[childKey].length
+
+    for (let i=0; i < len; i++) {
+      setBFS(tree[childKey][i], key, val, childKey, idKey, rootId);
+    }
+  }
 }
 
 /**
