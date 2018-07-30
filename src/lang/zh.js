@@ -152,5 +152,7 @@ export default {
     assignedPoints: "已分配点数",
     deviceNumber: "设备数",
     mechanismTotalPoints: "机构总点数",
+    nextLevelMechanismPoints: "下一级机构点数",
+    totalDistributablePoints: "总可分配点数",
   }
 }

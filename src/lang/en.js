@@ -152,5 +152,7 @@ export default {
     assignedPoints: "Assigned points",
     deviceNumber: "Device number",
     mechanismTotalPoints: "Total number of mechanism points",
+    nextLevelMechanismPoints: "Next level mechanism points",
+    totalDistributablePoints: "Total distributable points",
   }
 }

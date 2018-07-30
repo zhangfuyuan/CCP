@@ -2,68 +2,94 @@
   <div class="officeManager-distributionPoints-wrapper">
     <div class="header">
       <div class="btns">
-        <el-button type="primary">{{$t(common.confirm)}}</el-button>
-        <el-button plain>{{$t(common.cancel)}}</el-button>
+        <el-button type="primary">{{$t('common.confirm')}}</el-button>
+        <el-button plain>{{$t('common.cancel')}}</el-button>
       </div>
 
       <div class="higher">
-        <div v-if="!isShowAllChildren && curOfficeParents.length > 0">
+        <template v-if="confirmForm.curOfficeParents.length > 0">
           <el-popover placement="bottom"
-                      width="300"
+                      width="200"
                       trigger="click">
             <div class="popover-content">
               <ul class="higher-list">
-                <li v-for="(item, index) in curOfficeParents" :key="index">
-                  * {{item.label}}
-                </li>
+                <template v-if="isSubOpenIntelligentPointAllocation">
+                  <li>{{curOfficeOpenIntelligentPointAllocationParent}}</li>
+                </template>
+
+                <template v-else>
+                  <li v-for="(item, index) in confirmForm.curOfficeParents" :key="index">
+                    {{item.label}}
+                  </li>
+                </template>
               </ul>
             </div>
 
             <el-button type="text" slot="reference">{{$t('officeManager.superior')}}</el-button>
           </el-popover>
 
-          <span>
-            {{$t('officeManager.distributablePoints')}} &nbsp; {{higherDistributablePoints}}
-          </span>
-        </div>
-
-        <div v-else>
-
-        </div>
+          <span v-if="!isShowAllChildren">{{$t('officeManager.distributablePoints')}}</span>
+          <span v-else>{{$t('officeManager.totalDistributablePoints')}}</span>
+          &nbsp; {{higherDistributablePoints}}
+        </template>
       </div>
     </div>
 
     <div class="container" :style="{ 'height': containerHeight + 'px' }">
       <template v-if="!isShowAllChildren">
-        <el-card class="box-card cur-card" shadow="always">
-          <div class="card-container">
-            <div class="name">
-                <span v-if="curClickOfficeInfo.isWisdom" :title="$t('officeManager.intelligentAllocationPointsMode')">
+        <template v-if="confirmForm.curOfficeInfo">
+          <el-card class="box-card cur-card" shadow="always">
+            <div class="card-container">
+              <div class="name">
+                <span v-if="confirmForm.curOfficeInfo&&confirmForm.curOfficeInfo.isWisdom"
+                      :title="$t('officeManager.intelligentAllocationPointsMode')">
                   <svg-icon icon-class="eglass-tag" style="cursor: pointer;" />
                 </span>
-              {{curClickOfficeInfo.label}}
-            </div>
+                {{confirmForm.curOfficeInfo.label}}
+              </div>
 
-            <div class="info">
-              <div class="id">{{$t('officeManager.id')}} &nbsp; {{curClickOfficeInfo.id}}</div>
+              <div class="info">
+                <div class="id">{{$t('officeManager.id')}} &nbsp; {{curOfficeId}}</div>
 
-              <div class="points">
-                {{$t('officeManager.distributablePoints')}} {{curOfficeInfo.totalPoints - curOfficeInfo.assignedPoints}} &nbsp;
-                {{$t('officeManager.assignedPoints')}} {{curOfficeInfo.assignedPoints}} &nbsp;
-                {{$t('officeManager.deviceNumber')}} {{curOfficeInfo.deviceNumber}} &nbsp;
+                <div class="points">
+                  {{$t('officeManager.distributablePoints')}} {{(confirmForm.curOfficeInfo.totalPoints||0) - (confirmForm.curOfficeInfo.assignedPoints||0)}} &nbsp;
+                  {{$t('officeManager.assignedPoints')}} {{confirmForm.curOfficeInfo.assignedPoints||0}} &nbsp;
+                  {{$t('officeManager.deviceNumber')}} {{confirmForm.curOfficeInfo.deviceNumber||0}} &nbsp;
+                </div>
+              </div>
+
+              <div class="handle">
+                <div>
+                  <span v-if="isSubOpenIntelligentPointAllocation" style="color: #409EFF;">
+                    已开启智能分配点数模式
+                  </span>
+                  <el-switch v-model="isOpenIntelligentPointAllocation" v-else></el-switch>
+                </div>
+
+
+                <div>
+                  {{$t('officeManager.mechanismTotalPoints')}}
+                  <el-input-number size="small" v-model="confirmForm.curOfficeInfo.totalPoints"></el-input-number>
+                </div>
               </div>
             </div>
+          </el-card>
 
-            <div class="handle">
-              <el-switch v-model="isOpenIntelligentPointAllocation"></el-switch>
-
-              <div>
-                {{$t('officeManager.mechanismTotalPoints')}}
-                <el-input-number size="medium" v-model="curOfficeInfo.totalPoints"></el-input-number>
-              </div>
-            </div>
+          <div class="next-level">
+            <el-button type="info"
+                       :disabled="confirmForm.curOfficeChildren.length===0"
+                       @click="isShowAllChildren = true">{{$t('officeManager.nextLevelMechanismPoints')}}
+            </el-button>
           </div>
-        </el-card>
+        </template>
+
+        <template v-else>
+          <el-card class="box-card" shadow="never" style="width: 60%;margin: 0 auto;">
+            <div style="width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;">
+              {{$t('officeManager.pleaseSelectMechanism')}}
+            </div>
+          </el-card>
+        </template>
       </template>
 
       <template v-else>
@@ -96,23 +122,68 @@
       return {
         curOfficeId: this.$route.query.officeId,
         isShowAllChildren: false,
-        containerHeight: document.documentElement.clientHeight - 125,
-        isOpenIntelligentPointAllocation: false
+        containerHeight: document.documentElement.clientHeight - 170,
+        isOpenIntelligentPointAllocation: false,
+        isSubOpenIntelligentPointAllocation: false,
+        isOpenIPA: false,
+        confirmForm: {
+          curOfficeInfo: null,
+          curOfficeChildren: [],
+          curOfficeParents: [],
+        }
       }
     },
     computed: {
       higherDistributablePoints() {
-        if (this.curOfficeParents.length===0 || !this.curOfficeParents[0].assignedPoints) return 0;
+        if (this.confirmForm.curOfficeParents.length===0 || !this.confirmForm.curOfficeParents[0].assignedPoints) return 0;
 
-        return this.curOfficeParents.reduce((total, item) => {
-          return (item.totalPoints - item.assignedPoints);
+        return this.confirmForm.curOfficeParents.reduce((total, item) => {
+          return total + (item.totalPoints - item.assignedPoints);
         }, 0)
+      },
+      curOfficeOpenIntelligentPointAllocationParent() {
+        let name = '';
+
+        if (this.isSubOpenIntelligentPointAllocation) {
+          this.confirmForm.curOfficeParents.map((item) => {
+            if (item.id === this.confirmForm.curOfficeInfo.openWisdomPid) {
+              name = item.label;
+            }
+          })
+        }
+
+        return name;
       }
     },
     watch: {
+      $route($r) {
+        this.curOfficeId = $r.query.officeId
+      },
+      curOfficeInfo(val) {
+        console.log('切换分配点数的当前机构', val)
+        this.confirmForm.curOfficeInfo = JSON.parse(JSON.stringify(val));
+        this.isOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&this.confirmForm.curOfficeInfo.isWisdom
+        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&this.confirmForm.curOfficeInfo.openWisdomPid
+        this.isOpenIPA = this.isOpenIntelligentPointAllocation || this.isSubOpenIntelligentPointAllocation
+      },
+      curOfficeChildren(val) {
+        this.confirmForm.curOfficeChildren = JSON.parse(JSON.stringify(val));
+      },
+      curOfficeParents(val) {
+        this.confirmForm.curOfficeParents = JSON.parse(JSON.stringify(val)).reverse();
+      }
     },
     created() {
+      this.confirmForm = {
+        curOfficeInfo: JSON.parse(JSON.stringify(this.curOfficeInfo)),
+        curOfficeChildren: JSON.parse(JSON.stringify(this.curOfficeChildren)),
+        curOfficeParents: JSON.parse(JSON.stringify(this.curOfficeParents)).reverse(),
+      }
+      this.isOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&this.confirmForm.curOfficeInfo.isWisdom
+      this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&this.confirmForm.curOfficeInfo.openWisdomPid
+      this.isOpenIPA = this.isOpenIntelligentPointAllocation || this.isSubOpenIntelligentPointAllocation
 
+      console.log('初始化..', this.confirmForm.curOfficeInfo)
     },
     mounted() {
     },

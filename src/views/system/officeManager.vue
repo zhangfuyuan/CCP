@@ -400,6 +400,7 @@
             totalPoints: 10, // 机构总点数
             deviceNumber: 10, // 设备数
             children: [], // 叶子结点 [] 不能少
+            openWisdomPid: 8,
           }, {
             id: 10,
             label: '四级 2-2-1-2',
@@ -408,6 +409,7 @@
             totalPoints: 10, // 机构总点数
             deviceNumber: 10, // 设备数
             children: [],
+            openWisdomPid: 8,
           }, {
             id: 11,
             label: '四级 2-2-1-3',
@@ -416,6 +418,7 @@
             totalPoints: 10, // 机构总点数
             deviceNumber: 10, // 设备数
             children: [],
+            openWisdomPid: 8,
           }]
         }, {
           id: 12,
@@ -641,7 +644,18 @@
         if (!this.isClickMoreIcon) this.$refs['popoverBox'].doClose();
 
         if (this.subRoute_isPoints) {
-          this.distributionPoints(d.id);
+          if (this.subRoute.curOfficeInfo) {
+            this.$confirm('此操作将退出并不保留数据, 是否继续?', '提示', {
+              confirmButtonText: this.$t('common.confirm'),
+              cancelButtonText: this.$t('common.cancel'),
+              type: 'warning'
+            }).then(() => {
+              this.distributionPoints(d.id);
+            }).catch(() => {
+            });
+          } else {
+            this.distributionPoints(d.id);
+          }
         }
       },
       clickCardHandle(info) {
@@ -768,12 +782,12 @@
 
         if (node && node.data) {
           try {
-            console.log(8126, node.data['pid'], this.getParentsOfficeInfo(node.data['pid']))
             this.subRoute = {
               curOfficeInfo: node.data,
               curOfficeChildren: node.data['children'] || [],
               curOfficeParents: this.getParentsOfficeInfo(node.data['pid']),
             };
+            this.$refs['officeTree'].setCurrentKey(officeId);
             this.$router.push({ path: '/system/officeManager/distributionPoints', query: {
               officeId: officeId
             } });
