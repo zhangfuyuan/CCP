@@ -302,6 +302,34 @@ export function BFS(source, key, childKey) {
 }
 
 /**
+ *  递归遍历树，获取某节点的所有子节点对象，以数组形式展示（不包括本节点）
+ *  source      对象   遍历的树
+ *  childKey    字符串 子节点数组属性名
+ *
+ *  return      数组   结果
+ *
+ *  注意：遍历的层级超过 8000 会导致栈溢出，建议 try catch 一下
+ * */
+export function getChildremByBFS(source, childKey) {
+  let res = [];
+
+  !(function traverseTree(tree){
+    if (!tree) return;
+
+    if (tree[childKey] && tree[childKey].length > 0) {
+      let len = tree[childKey].length
+
+      for (let i=0; i < len; i++) {
+        res.push(tree[childKey][i])
+        traverseTree(tree[childKey][i]);
+      }
+    }
+  })(source)
+
+  return res;
+}
+
+/**
  *  递归遍历树，统一设置某节点的所有子节点某属性的值（不包括根节点，会改变原数组）
  *  source      对象   遍历的树
  *  source.data 对象   数据节点的数据对象

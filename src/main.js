@@ -18,6 +18,10 @@ import '@/directive/tableLoadmore' // 表格懒加载自定义指令
 
 import * as filters from './filters' // global filters
 
+import VueBus from 'vue-bus'; // 一个 Vue.js 事件中心插件
+
+Vue.use(VueBus);
+
 Vue.use(ElementUI, {
   i18n: (key, value) => i18n.t(key, value) // ElementUI 自带国际化
 })

@@ -21,6 +21,7 @@ export default {
     deleteBtn: "删 除",
     operationSucceeds: "操作成功",
     operationFailure: "操作失败",
+    returnBtn: "返 回",
   },
   login: {
     title: "康佳一体机集控管理系统",
@@ -137,7 +138,7 @@ export default {
     will: "将",
     moveTo: "移动到",
     organizationNameNotExceed24: "机构名称(不超过24个字)",
-    afterRemovingMechanism: "删除后，机构的点数、设备以及子机构将归属到上一级机构",
+    afterRemovingMechanism: "将删除机构以及子机构的点数、设备、账号，该操作不可撤回",
     totalPoints: "总可分配点数",
     serverNotCertified: "服务器未认证",
     certificationImmediately: "立即认证",
@@ -153,6 +154,7 @@ export default {
     deviceNumber: "设备数",
     mechanismTotalPoints: "机构总点数",
     nextLevelMechanismPoints: "下一级机构点数",
-    totalDistributablePoints: "总可分配点数",
+    intelligentPointAllocation: "智能点数分配",
+    modifiedPointsSavedTips: "是否保存修改的点数？",
   }
 }

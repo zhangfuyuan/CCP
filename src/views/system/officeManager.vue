@@ -80,7 +80,9 @@
                   <div class="id">{{$t('officeManager.id')}} &nbsp; {{curClickOfficeParentInfo.id}}</div>
 
                   <div class="points">
-                    机构总点数 22 | 设备数 20
+                    {{$t('officeManager.mechanismTotalPoints')}} {{curClickOfficeParentInfo.totalPoints||0}}
+                    &nbsp; | &nbsp;
+                    {{$t('officeManager.deviceNumber')}} {{curClickOfficeParentInfo.deviceNumber||0}}
                   </div>
                 </div>
 
@@ -117,8 +119,12 @@
                 <div class="id">{{$t('officeManager.id')}} &nbsp; {{curClickOfficeInfo.id}}</div>
 
                 <div class="points">
-                    机构总点数 22 = 可分配点数 2 + 已分配点数 20 | 设备数 20
-                    </div>
+                  {{$t('officeManager.mechanismTotalPoints')}} {{curClickOfficeInfo.totalPoints||0}} =
+                  {{$t('officeManager.distributablePoints')}} {{(curClickOfficeInfo.totalPoints||0) - (curClickOfficeInfo.assignedPoints||0)}} +
+                  {{$t('officeManager.assignedPoints')}} {{curClickOfficeInfo.assignedPoints||0}}
+                  &nbsp; | &nbsp;
+                  {{$t('officeManager.deviceNumber')}} {{curClickOfficeInfo.deviceNumber||0}}
+                </div>
               </div>
 
               <div class="btns">
@@ -169,7 +175,9 @@
                     <div class="id">{{$t('officeManager.id')}} &nbsp; {{item.id}}</div>
 
                     <div class="points">
-                    机构总点数 22 | 设备数 20
+                      {{$t('officeManager.mechanismTotalPoints')}} {{item.totalPoints||0}}
+                      &nbsp; | &nbsp;
+                      {{$t('officeManager.deviceNumber')}} {{item.deviceNumber||0}}
                     </div>
                   </div>
 
@@ -190,7 +198,7 @@
         </template>
 
         <template v-else>
-          <el-card class="box-card" shadow="never" style="width: 40%;">
+          <el-card class="box-card" shadow="never" style="width: 60%;margin: 0 auto;">
             <div style="width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;">
               {{$t('officeManager.pleaseSelectMechanism')}}
             </div>
@@ -249,7 +257,7 @@
 
       <!--修改机构名称-->
       <template v-if="dialogInfo.key === 'edit'">
-        <el-input v-model="editOfficeName" :placeholder="$t('officeManager.organizationNameNotExceed24')"></el-input>
+        <el-input v-model="editOfficeName" :maxlength="24" :placeholder="$t('officeManager.organizationNameNotExceed24')"></el-input>
 
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="edit(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
@@ -366,57 +374,57 @@
     }, {
       id: 5,
       label: '一级 2',
-      assignedPoints: 300, // 已分配点数
-      totalPoints: 400, // 机构总点数
-      deviceNumber: 100, // 设备数
+      assignedPoints: 274+100, // 已分配点数 = 给所有下级的总点数 + 当前机构的<上线>设备数
+      totalPoints: 385, // 机构总点数
+      deviceNumber: 100, // 设备数（全上线）
       children: [{
         id: 6,
         label: '二级 2-1',
         pid: 5,
         children: [],
         assignedPoints: 100, // 已分配点数
-        totalPoints: 100, // 机构总点数
-        deviceNumber: 100, // 设备数
+        totalPoints: 101, // 机构总点数
+        deviceNumber: 100, // 设备数（全上线）
       }, {
         id: 7,
         label: '二级 2-2',
         pid: 5,
-        assignedPoints: 200, // 已分配点数
-        totalPoints: 220, // 机构总点数
-        deviceNumber: 20, // 设备数
+        assignedPoints: 152+20, // 已分配点数
+        totalPoints: 173, // 机构总点数
+        deviceNumber: 20, // 设备数（全上线）
         children: [{
           id: 8,
           label: '三级 2-2-1',
           pid: 7,
           isWisdom: true,
-          assignedPoints: 50, // 已分配点数
-          totalPoints: 100, // 机构总点数
-          deviceNumber: 20, // 设备数
+          assignedPoints: 30+20, // 已分配点数
+          totalPoints: 51, // 机构总点数
+          deviceNumber: 20, // 设备数（全上线）
           children: [{
             id: 9,
             label: '四级 2-2-1-1',
             pid: 8,
-            assignedPoints: 10, // 已分配点数
-            totalPoints: 10, // 机构总点数
-            deviceNumber: 10, // 设备数
+            assignedPoints: 0, // 已分配点数
+            totalPoints: 0, // 机构总点数
+            deviceNumber: 10, // 设备数（全上线）
             children: [], // 叶子结点 [] 不能少
             openWisdomPid: 8,
           }, {
             id: 10,
             label: '四级 2-2-1-2',
             pid: 8,
-            assignedPoints: 10, // 已分配点数
-            totalPoints: 10, // 机构总点数
-            deviceNumber: 10, // 设备数
+            assignedPoints: 0, // 已分配点数
+            totalPoints: 0, // 机构总点数
+            deviceNumber: 10, // 设备数（全上线）
             children: [],
             openWisdomPid: 8,
           }, {
             id: 11,
             label: '四级 2-2-1-3',
             pid: 8,
-            assignedPoints: 10, // 已分配点数
-            totalPoints: 10, // 机构总点数
-            deviceNumber: 10, // 设备数
+            assignedPoints: 0, // 已分配点数
+            totalPoints: 0, // 机构总点数
+            deviceNumber: 10, // 设备数（全上线）
             children: [],
             openWisdomPid: 8,
           }]
@@ -425,8 +433,8 @@
           label: '三级 2-2-2',
           pid: 7,
           assignedPoints: 100, // 已分配点数
-          totalPoints: 100, // 机构总点数
-          deviceNumber: 100, // 设备数
+          totalPoints: 101, // 机构总点数
+          deviceNumber: 100, // 设备数（全上线）
           children: [],
         }]
       }]
@@ -542,13 +550,29 @@
     },
     created() {
       this.subRoute_isPoints = this.$route.name==='officeManager-distributionPoints'
+
+      this.$bus.on('distribution-points', this.updateDistributionPoints);
     },
     mounted() {
     },
+    beforeDestroy() {
+      this.$bus.off('distribution-points', this.updateDistributionPoints);
+    },
     methods: {
       append() {
-        const newChild = { id: id++, label: this.newOfficeForm.name, children: [] };
-        const loading = this.showLoading();
+        let newChild = {
+          id: id++,
+          label: this.newOfficeForm.name,
+          children: [],
+          pid: this.curClickOfficeId,
+          assignedPoints: 0, // 已分配点数
+          totalPoints: 0, // 机构总点数
+          deviceNumber: 0, // 设备数（全上线）
+        };
+        if (this.curClickOfficeInfo.isWisdom) newChild.openWisdomPid = this.curClickOfficeId;
+        if (this.curClickOfficeInfo.openWisdomPid) newChild.openWisdomPid = this.curClickOfficeInfo.openWisdomPid;
+
+        let loading = this.showLoading();
 
         setTimeout(() => {
           this.$refs['officeTree'].append(newChild, this.curClickOfficeId);
@@ -644,8 +668,8 @@
         if (!this.isClickMoreIcon) this.$refs['popoverBox'].doClose();
 
         if (this.subRoute_isPoints) {
-          if (this.subRoute.curOfficeInfo) {
-            this.$confirm('此操作将退出并不保留数据, 是否继续?', '提示', {
+          if (this.subRoute.curOfficeInfo && this.subRoute.curOfficeInfo.id!==this.curClickOfficeId) {
+            this.$confirm(this.$t('officeManager.modifiedPointsSavedTips'), this.$t('common.notice'), {
               confirmButtonText: this.$t('common.confirm'),
               cancelButtonText: this.$t('common.cancel'),
               type: 'warning'
@@ -788,6 +812,7 @@
               curOfficeParents: this.getParentsOfficeInfo(node.data['pid']),
             };
             this.$refs['officeTree'].setCurrentKey(officeId);
+            this.updateCurClickOffice(officeId, node.data);
             this.$router.push({ path: '/system/officeManager/distributionPoints', query: {
               officeId: officeId
             } });
@@ -809,6 +834,20 @@
           return [curNode].concat(this.getParentsOfficeInfo(curNode.pid))
         } else {
           return [];
+        }
+      },
+      updateDistributionPoints(data) {
+        console.log('进行分配点数操作后的结果数组：', data)
+
+        if (data && data.length>0) {
+          let noode = null;
+
+          data.map(item => {
+            noode = this.$refs['officeTree'].getNode(item.id);
+            noode.data = item;
+          })
+          this.updateCurClickOffice(data[0].id, data[0]);
+          this.$refs['officeTree'].setCurrentKey(data[0].id);
         }
       }
     }

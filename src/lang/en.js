@@ -21,6 +21,7 @@ export default {
     deleteBtn: "Delete",
     operationSucceeds: "The operation succeeds",
     operationFailure: "Operation failure",
+    returnBtn: "Return",
   },
   login: {
     title: "Kangjia integrated control management system",
@@ -137,7 +138,7 @@ export default {
     will: "Will",
     moveTo: "move to",
     organizationNameNotExceed24: "The name of the organization shall not exceed 24 words",
-    afterRemovingMechanism: "After deletion, the number of points, devices, and subunits of the mechanism will be assigned to the higher level of the mechanism",
+    afterRemovingMechanism: "The number of points, devices and accounts of the mechanism and its sub-mechanism will be deleted, which cannot be withdrawn",
     totalPoints: "Total distributable points",
     serverNotCertified: "Server not certified",
     certificationImmediately: "Certification immediately",
@@ -153,6 +154,7 @@ export default {
     deviceNumber: "Device number",
     mechanismTotalPoints: "Total number of mechanism points",
     nextLevelMechanismPoints: "Next level mechanism points",
-    totalDistributablePoints: "Total distributable points",
+    intelligentPointAllocation: "Intelligent point allocation",
+    modifiedPointsSavedTips: "Are the modified points saved?",
   }
 }
