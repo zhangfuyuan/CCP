@@ -79,7 +79,8 @@
 
                     <span v-else>
                     {{$t('officeManager.intelligentPointAllocation')}} &nbsp;
-                    <el-switch v-model="confirmForm.curOfficeInfo.isWisdom" ></el-switch>
+                    <el-switch v-model="confirmForm.curOfficeInfo.isWisdom"
+                               @change="changeWisdomHandle"></el-switch>
                   </span>
                   </div>
 
@@ -203,6 +204,7 @@
           curOfficeInfo: null, // 当前机构的数据
           curOfficeChildren: [], // 当前机构下一级的数据
           curOfficeParents: [], // 当前机构所有父级的数据
+          curOfficeAllChildren: [], // 当前机构所有（孙）子节点的数据
         },
         higherDistributablePoints: 0, // 获取所有父级可分配点数（根据计数器可变）
 //        curOfficeTotalPointsMax: 0, // 缓存一份当前机构总点数（定值）
@@ -238,7 +240,7 @@
 
         this.confirmForm.curOfficeInfo = JSON.parse(JSON.stringify(val));
 //        this.isOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&this.confirmForm.curOfficeInfo.isWisdom
-        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&this.confirmForm.curOfficeInfo.openWisdomPid
+        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&(this.confirmForm.curOfficeInfo.openWisdomPid>-1)
 //        this.isOpenIPA = this.isOpenIntelligentPointAllocation || this.isSubOpenIntelligentPointAllocation
       },
       curOfficeChildren(val) {
@@ -266,7 +268,7 @@
           curOfficeParents: JSON.parse(JSON.stringify(this.curOfficeParents)).reverse(),
         }
 //        this.isOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo.isWisdom
-        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo.openWisdomPid
+        this.isSubOpenIntelligentPointAllocation = (this.confirmForm.curOfficeInfo.openWisdomPid>-1)
 //        this.isOpenIPA = this.isOpenIntelligentPointAllocation || this.isSubOpenIntelligentPointAllocation
         this.higherDistributablePoints = this.getHigherDistributablePoints()
 //        this.curOfficeTotalPointsMax = (this.confirmForm.curOfficeInfo.totalPoints||0) + this.higherDistributablePoints
@@ -363,7 +365,7 @@
         });
       },
       confirmHandle() {
-        if (!this.isSubOpenIntelligentPointAllocation) { // 被动开启智能分配点数是没有进行任何操作，故无需更新
+        if (!this.isSubOpenIntelligentPointAllocation && this.confirmForm.curOfficeInfo) { // 被动开启智能分配点数是没有进行任何操作，故无需更新
           const loading = this.showLoading();
 
           setTimeout(() => {
@@ -374,11 +376,17 @@
               type: 'success'
             });
 
-            this.$bus.emit('distribution-points', [
-              this.confirmForm.curOfficeInfo,
-              ...this.confirmForm.curOfficeChildren,
-              ...this.confirmForm.curOfficeParents
-            ]);
+            this.$bus.emit('distribution-points', {
+              curOfficeId: this.curOfficeId,
+              curOfficeInfo: this.confirmForm.curOfficeInfo,
+              bloodList: [
+                ...this.confirmForm.curOfficeChildren,
+                ...this.confirmForm.curOfficeParents
+              ],
+              sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
+                [] :
+                [...this.confirmForm.curOfficeAllChildren]
+            });
             this.$router.push({ path: '/system/officeManager' });
           }, 2000);
         } else {
@@ -396,6 +404,42 @@
           this.isShowAllChildren = false;
           this.higherDistributablePoints = this.getHigherDistributablePoints();
         }
+      },
+      changeWisdomHandle(val) {
+        console.log(val)
+
+        this.$confirm('...................', this.$t('common.notice'), {
+          confirmButtonText: this.$t('common.confirm'),
+          cancelButtonText: this.$t('common.cancel'),
+          type: 'warning'
+        }).then(() => {
+          try {
+            let allChildren =  getChildremByBFS(this.confirmForm.curOfficeInfo, 'children');
+            let allChildrenTotalPoints = 0;
+
+            this.confirmForm.curOfficeAllChildren = allChildren.map(item => {
+              allChildrenTotalPoints += item.totalPoints;
+              item.openWisdomPid = val ? this.curOfficeId : -1;
+              item.assignedPoints = 0;
+              item.totalPoints = 0;
+              return item;
+            });
+            this.confirmForm.curOfficeChildren = this.confirmForm.curOfficeChildren.map(item => {
+              item.openWisdomPid = val ? this.curOfficeId : -1;
+              item.assignedPoints = 0;
+              item.totalPoints = 0;
+              return item;
+            });
+            this.confirmForm.curOfficeInfo.totalPoints += allChildrenTotalPoints;
+            this.confirmForm.curOfficeInfo.assignedPoints -= allChildrenTotalPoints;
+            console.log('开启智能分配后所有子节点重置', this.confirmForm.curOfficeAllChildren)
+          } catch (err) {
+            console.log(err)
+          }
+        }).catch(() => {
+          this.confirmForm.curOfficeInfo.isWisdom = !this.confirmForm.curOfficeInfo.isWisdom;
+        });
+
       }
     }
   }
