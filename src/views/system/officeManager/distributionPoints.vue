@@ -280,6 +280,7 @@
       },
       changePointsHandle(args, min, max) {
         console.log('最后变更点数后', args, min, max);
+        this.$bus.emit('distribution-points-operated', true);
 
         /**
          *  分配点数原则：
@@ -418,30 +419,55 @@
           lock: isLock || true,
         });
       },
-      confirmHandle() {
+      confirmHandle(isClickNode) {
         if (!this.isSubOpenIntelligentPointAllocation && this.confirmForm.curOfficeInfo) { // 被动开启智能分配点数是没有进行任何操作，故无需更新
           const loading = this.showLoading();
 
-          setTimeout(() => {
-            loading.close();
-            this.$message({
-              showClose: true,
-              message: this.$t('common.operationSucceeds'),
-              type: 'success'
-            });
+          if (isClickNode) {
+            return new Promise((resolve, reject) => {
+              setTimeout(() => {
+                loading.close();
+                this.$message({
+                  showClose: true,
+                  message: this.$t('common.operationSucceeds'),
+                  type: 'success'
+                });
 
-            this.$bus.emit('distribution-points', {
-              curOfficeId: this.curOfficeId,
-              curOfficeInfo: this.confirmForm.curOfficeInfo,
-              bloodList: [
-                ...this.confirmForm.curOfficeChildren,
-                ...this.confirmForm.curOfficeParents
-              ],
-              sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
-                [] : [...this.confirmForm.curOfficeAllSun]
+                this.$bus.emit('distribution-points', {
+                  curOfficeId: this.curOfficeId,
+                  curOfficeInfo: this.confirmForm.curOfficeInfo,
+                  bloodList: [
+                    ...this.confirmForm.curOfficeChildren,
+                    ...this.confirmForm.curOfficeParents
+                  ],
+                  sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
+                    [] : [...this.confirmForm.curOfficeAllSun]
+                });
+                resolve();
+              }, 2000);
             });
-            this.$router.push({ path: '/system/officeManager' });
-          }, 2000);
+          } else {
+            setTimeout(() => {
+              loading.close();
+              this.$message({
+                showClose: true,
+                message: this.$t('common.operationSucceeds'),
+                type: 'success'
+              });
+
+              this.$bus.emit('distribution-points', {
+                curOfficeId: this.curOfficeId,
+                curOfficeInfo: this.confirmForm.curOfficeInfo,
+                bloodList: [
+                  ...this.confirmForm.curOfficeChildren,
+                  ...this.confirmForm.curOfficeParents
+                ],
+                sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
+                  [] : [...this.confirmForm.curOfficeAllSun]
+              });
+              this.$router.push({ path: '/system/officeManager' });
+            }, 2000);
+          }
         } else {
           this.$router.push({ path: '/system/officeManager' });
         }
@@ -471,6 +497,8 @@
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
         }).then(() => {
+          this.$bus.emit('distribution-points-operated', true);
+
           try {
             let allChildren =  getChildremByBFS(this.confirmForm.curOfficeInfo, 'children');
 
@@ -498,12 +526,6 @@
           this.confirmForm.curOfficeInfo.isWisdom = !this.confirmForm.curOfficeInfo.isWisdom;
         });
       },
-      blurHandle(a, b) {
-        console.log(a, b)
-      },
-      focusHandle(a, b) {
-        console.log(a, b)
-      }
     }
   }
 </script>

@@ -214,10 +214,6 @@
 <style rel="stylesheet/scss" lang="scss">
   /* reset element-ui css */
   .wordSettings-wrapper {
-    /* 解决 element-ui el-progress 控件 exception 状态下图标类名错误导致无法显示的问题*/
-    .el-icon-circle-cross::after {
-      content: "\E607";
-    }
   }
   </style>
 

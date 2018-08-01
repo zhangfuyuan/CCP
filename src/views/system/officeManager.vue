@@ -208,7 +208,8 @@
 
       <router-view :curOfficeInfo="subRoute.curOfficeInfo"
                    :curOfficeChildren="subRoute.curOfficeChildren"
-                   :curOfficeParents="subRoute.curOfficeParents"></router-view>
+                   :curOfficeParents="subRoute.curOfficeParents"
+                   ref="subRoute"></router-view>
     </div>
 
     <!--对话弹框-->
@@ -445,14 +446,15 @@
       this.subRoute_isPoints = this.$route.name==='officeManager-distributionPoints'
 
       this.$bus.on('distribution-points', this.updateDistributionPoints);
-      this.$bus.on('distribution-points-operated', () => {
-
+      this.$bus.on('distribution-points-operated', (isOperated) => {
+        this.subRoute_isOperated = isOperated;
       });
     },
     mounted() {
     },
     beforeDestroy() {
       this.$bus.off('distribution-points', this.updateDistributionPoints);
+      this.$bus.off('distribution-points-operated');
     },
     methods: {
       append() {
@@ -564,14 +566,20 @@
         if (!this.isClickMoreIcon) this.$refs['popoverBox'].doClose();
 
         if (this.subRoute_isPoints) {
-          if (this.subRoute.curOfficeInfo && this.subRoute.curOfficeInfo.id!==this.curClickOfficeId) {
+          if (this.subRoute.curOfficeInfo && this.subRoute.curOfficeInfo.id===this.curClickOfficeId) return;
+
+          if (this.subRoute.curOfficeInfo && this.subRoute.curOfficeInfo.id!==this.curClickOfficeId && this.subRoute_isOperated) {
             this.$confirm(this.$t('officeManager.modifiedPointsSavedTips'), this.$t('common.notice'), {
               confirmButtonText: this.$t('common.confirm'),
               cancelButtonText: this.$t('common.cancel'),
               type: 'warning'
             }).then(() => {
-              this.distributionPoints(d.id);
+              this.$refs['subRoute'].confirmHandle(true).then(() => {
+                this.distributionPoints(d.id);
+              })
             }).catch(() => {
+              this.$refs['officeTree'].setCurrentKey(this.subRoute.curOfficeInfo.id);
+              this.updateCurClickOffice(this.subRoute.curOfficeInfo.id, this.subRoute.curOfficeInfo);
             });
           } else {
             this.distributionPoints(d.id);
@@ -701,6 +709,8 @@
         let node = this.$refs['officeTree'].getNode(officeId);
 
         if (node && node.data) {
+          this.subRoute_isOperated = false;
+
           try {
             this.subRoute = {
               curOfficeInfo: node.data,
