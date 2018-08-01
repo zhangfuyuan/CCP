@@ -92,7 +92,7 @@
                                        :min="confirmForm.curOfficeInfo.assignedPoints"
                                        v-model="confirmForm.curOfficeInfo.totalPoints"
                                        :max="confirmForm.curOfficeInfo.totalPoints+higherDistributablePoints"
-                                       @change="changePointsHandle"
+                                       @change="changePointsHandle(arguments, confirmForm.curOfficeInfo.assignedPoints, confirmForm.curOfficeInfo.totalPoints+higherDistributablePoints)"
                                        :key="confirmForm.curOfficeInfo.id"
                                        :name="confirmForm.curOfficeInfo.id + 'inputNumber'">
                       </el-input-number>
@@ -153,11 +153,12 @@
                   </div>
 
                   <div class="btns">
+                    {{$t('officeManager.mechanismTotalPoints')}} &nbsp;
                     <el-input-number size="small"
                                      :min="item.assignedPoints"
                                      v-model="item.totalPoints"
                                      :max="childrenHigherDistributablePoints+item.totalPoints"
-                                     @change="changePointsHandle"
+                                     @change="changePointsHandle(arguments, item.assignedPoints, childrenHigherDistributablePoints+item.totalPoints)"
                                      :key="item.id"
                                      :name="item.id + 'inputNumber'">
                     </el-input-number>
@@ -197,19 +198,15 @@
         curOfficeId: this.$route.query.officeId, // 根据路由参数获取当前机构id
         isShowAllChildren: false, // 是否显示当前机构的所有下一级机构
         containerHeight: document.documentElement.clientHeight - 210, // 滚动最小高度
-//        isOpenIntelligentPointAllocation: false, // 是否当前节点主动开启智能分配点数
         isSubOpenIntelligentPointAllocation: false, // 是否子节点被动开启智能分配点数
-//        isOpenIPA: false, // 是否开启智能分配点数（无论主动或被动）
         confirmForm: { // 另备份当前机构的相关信息
           curOfficeInfo: null, // 当前机构的数据
           curOfficeChildren: [], // 当前机构下一级的数据
           curOfficeParents: [], // 当前机构所有父级的数据
-          curOfficeAllChildren: [], // 当前机构所有（孙）子节点的数据
+          curOfficeAllSun: [], // 当前机构所有孙子及以下节点的数据
         },
         higherDistributablePoints: 0, // 获取所有父级可分配点数（根据计数器可变）
-//        curOfficeTotalPointsMax: 0, // 缓存一份当前机构总点数（定值）
         childrenHigherDistributablePoints: 0, // 获取子机构的所有父级可分配点数（当前机构+当前机构的所有父级总可分配点数）（根据计数器可变）
-//        curOfficeChildrenTotalPointsMax: 0, // 缓存一份子机构总点数（当前机构+当前机构的所有父级总可分配点数）（定值）
       }
     },
     computed: {
@@ -239,9 +236,7 @@
         if (!val) return;
 
         this.confirmForm.curOfficeInfo = JSON.parse(JSON.stringify(val));
-//        this.isOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&this.confirmForm.curOfficeInfo.isWisdom
-        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&(this.confirmForm.curOfficeInfo.openWisdomPid>-1)
-//        this.isOpenIPA = this.isOpenIntelligentPointAllocation || this.isSubOpenIntelligentPointAllocation
+        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&(this.confirmForm.curOfficeInfo.openWisdomPid>-1);
       },
       curOfficeChildren(val) {
         // todo 用到 curOfficeChildren 子机构信息放这
@@ -254,9 +249,8 @@
         if (!val) return;
 
         this.confirmForm.curOfficeParents = JSON.parse(JSON.stringify(val)).reverse();
-        this.higherDistributablePoints = this.getHigherDistributablePoints()
-//        this.curOfficeTotalPointsMax = (this.confirmForm.curOfficeInfo.totalPoints || 0) + this.higherDistributablePoints
-        this.childrenHigherDistributablePoints = this.higherDistributablePoints + (this.confirmForm.curOfficeInfo.totalPoints-this.confirmForm.curOfficeInfo.assignedPoints)
+        this.higherDistributablePoints = this.getHigherDistributablePoints();
+        this.childrenHigherDistributablePoints = this.higherDistributablePoints + (this.confirmForm.curOfficeInfo.totalPoints-this.confirmForm.curOfficeInfo.assignedPoints);
       }
     },
     created() {
@@ -266,13 +260,10 @@
           curOfficeInfo: JSON.parse(JSON.stringify(this.curOfficeInfo)),
           curOfficeChildren: JSON.parse(JSON.stringify(this.curOfficeChildren)),
           curOfficeParents: JSON.parse(JSON.stringify(this.curOfficeParents)).reverse(),
-        }
-//        this.isOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo.isWisdom
-        this.isSubOpenIntelligentPointAllocation = (this.confirmForm.curOfficeInfo.openWisdomPid>-1)
-//        this.isOpenIPA = this.isOpenIntelligentPointAllocation || this.isSubOpenIntelligentPointAllocation
-        this.higherDistributablePoints = this.getHigherDistributablePoints()
-//        this.curOfficeTotalPointsMax = (this.confirmForm.curOfficeInfo.totalPoints||0) + this.higherDistributablePoints
-        this.childrenHigherDistributablePoints = this.higherDistributablePoints + (this.confirmForm.curOfficeInfo.totalPoints-this.confirmForm.curOfficeInfo.assignedPoints)
+        };
+        this.isSubOpenIntelligentPointAllocation = (this.confirmForm.curOfficeInfo.openWisdomPid>-1);
+        this.higherDistributablePoints = this.getHigherDistributablePoints();
+        this.childrenHigherDistributablePoints = this.higherDistributablePoints + (this.confirmForm.curOfficeInfo.totalPoints-this.confirmForm.curOfficeInfo.assignedPoints);
       }
 
       console.log('初始化...', this.confirmForm.curOfficeInfo)
@@ -287,67 +278,118 @@
           return total + (item.totalPoints - item.assignedPoints);
         }, 0)
       },
-      changePointsHandle(val, old) {
-        console.log('最后变更的点数值', val, old);
+      changePointsHandle(args, min, max) {
+        console.log('最后变更点数后', args, min, max);
 
-        let diffVal = old - val;
+        /**
+         *  分配点数原则：
+         *  1.谁动了机构总点数，谁的直属父机构的分配点数跟着同增同减，但其父总点数不变
+         *
+         *  args 是 element ui 自定义事件回调的参数数组，一共两个元素，第一个元素是新值，第二个元素是旧值
+         * */
 
-        if (this.isShowAllChildren) {
+        let newVal = args[0];
+        let oldVal = args[1];
+        let diffVal = oldVal - newVal;
+        let minVal = min;
+        let maxVal = max + diffVal;
+
+        if (this.isShowAllChildren) { // 子机构操作
           this.childrenHigherDistributablePoints += diffVal;
 
           if (!this.confirmForm.curOfficeInfo.totalPoints) return;
 
-          if (diffVal > 0) {
-            console.log(`本机构喜获点数${diffVal}`); //todo
-            this.confirmForm.curOfficeInfo.totalPoints += diffVal;
-          } else if (diffVal < 0) {
+          if (diffVal > 0) { // 减操作
+            console.log(`本机构回收分配点数${diffVal}`);
+            // todo 子机构【减】总点数 -> 本机构【减】已分配数，总点数不变
+            this.confirmForm.curOfficeInfo.assignedPoints -= diffVal;
+          } else if (diffVal < 0) { // 加操作
             let absDiffVal = Math.abs(diffVal); //取绝对差值
             let curOfficeAvailPoints = this.confirmForm.curOfficeInfo.totalPoints - this.confirmForm.curOfficeInfo.assignedPoints;
 
             if (curOfficeAvailPoints >= absDiffVal) {
-              console.log(`本机构怒减点数${diffVal}`); //todo
-              this.confirmForm.curOfficeInfo.totalPoints += diffVal;
+              console.log(`本机构分配出去点数${diffVal}`);
+              // todo 子机构【加】总点数 -> 本机构有足够点数，则【加】已分配数，总点数不变
+              this.confirmForm.curOfficeInfo.assignedPoints -= diffVal; //负负得正
             } else {
-              let curOfficeDiffPoints = absDiffVal - curOfficeAvailPoints;
+              // todo 子机构【加】总点数 -> 本机构没有足够点数，则【加】已分配数至等于总点数
+              this.confirmForm.curOfficeInfo.assignedPoints = this.confirmForm.curOfficeInfo.totalPoints;
 
-              this.confirmForm.curOfficeInfo.totalPoints = this.confirmForm.curOfficeInfo.assignedPoints;
-              this.confirmForm.curOfficeParents = this.confirmForm.curOfficeParents.reverse().map(item => {
+              let curOfficeDiffPoints = absDiffVal - curOfficeAvailPoints;
+              this.confirmForm.curOfficeParents = this.confirmForm.curOfficeParents.reverse().map((item, index, arr) => {
                 if (curOfficeDiffPoints > 0) {
                   if ((item.totalPoints-item.assignedPoints) >= curOfficeDiffPoints) {
-                    console.log(`${item.label}机构怒减点数${curOfficeDiffPoints}`); //todo
-                    item.totalPoints -= curOfficeDiffPoints;
+                    console.log(`${item.label}机构分配出去点数${curOfficeDiffPoints}`);
+                    // todo 子机构【加】总点数 -> 某父机构有足够点数，则【加】已分配数，总点数不变
+                    item.assignedPoints += curOfficeDiffPoints;
+                    // todo 子机构【加】总点数 -> 有足够点数的某父机构以下子机构以上的机构，则一级一级【加】已分配数和总点数
+                    if (index > 0) {
+                      for (let i=0; i<index; i++) {
+                        arr[i].totalPoints += curOfficeDiffPoints;
+                        arr[i].assignedPoints += curOfficeDiffPoints;
+                      }
+                    }
+                    this.confirmForm.curOfficeInfo.totalPoints += curOfficeDiffPoints;
+                    this.confirmForm.curOfficeInfo.assignedPoints += curOfficeDiffPoints;
                     curOfficeDiffPoints = 0;
                   } else {
-                    console.log(`${item.label}机构怒减点数${item.totalPoints - item.assignedPoints}`); //todo
+                    console.log(`${item.label}机构分配出去点数${item.totalPoints - item.assignedPoints}`);
+                    // todo 子机构【加】总点数 -> 某父机构没有足够点数，则【加】已分配数至等于总点数
                     curOfficeDiffPoints -= item.totalPoints - item.assignedPoints;
-                    item.totalPoints = item.assignedPoints;
+                    // todo 子机构【加】总点数 -> 没有足够点数的某父机构以下子机构以上的机构，则一级一级【加】已分配数和总点数
+                    if (index > 0) {
+                      for (let i=0; i<index; i++) {
+                        arr[i].totalPoints += item.totalPoints - item.assignedPoints;
+                        arr[i].assignedPoints += item.totalPoints - item.assignedPoints;
+                      }
+                    }
+                    this.confirmForm.curOfficeInfo.totalPoints += item.totalPoints - item.assignedPoints;
+                    this.confirmForm.curOfficeInfo.assignedPoints += item.totalPoints - item.assignedPoints;
+                    item.assignedPoints = item.totalPoints;
                   }
                 }
                 return item;
               }).reverse();
             }
           }
-        } else {
+        } else { // 本机构操作
           this.higherDistributablePoints += diffVal;
 
           if (!this.confirmForm.curOfficeParents[this.confirmForm.curOfficeParents.length-1].totalPoints) return;
 
-          if (diffVal > 0) {
-            console.log(`${this.confirmForm.curOfficeParents[this.confirmForm.curOfficeParents.length-1].label}机构喜获点数${diffVal}`); //todo
-            this.confirmForm.curOfficeParents[this.confirmForm.curOfficeParents.length-1].totalPoints += diffVal;
-          } else if (diffVal < 0) {
+          if (diffVal > 0) { // 减操作
+            console.log(`${this.confirmForm.curOfficeParents[this.confirmForm.curOfficeParents.length-1].label}机构回收分配点数${diffVal}`);
+            // todo 本机构【减】总点数 -> 直属父机构【减】已分配数，总点数不变
+            this.confirmForm.curOfficeParents[this.confirmForm.curOfficeParents.length-1].assignedPoints -= diffVal;
+          } else if (diffVal < 0) { // 加操作
             let absDiffVal = Math.abs(diffVal); //取绝对差值
 
-            this.confirmForm.curOfficeParents = this.confirmForm.curOfficeParents.reverse().map(item => {
+            this.confirmForm.curOfficeParents = this.confirmForm.curOfficeParents.reverse().map((item, index, arr) => {
               if (absDiffVal > 0) {
                 if ((item.totalPoints-item.assignedPoints) >= absDiffVal) {
-                  console.log(`${item.label}机构怒减点数${absDiffVal}`); //todo
-                  item.totalPoints -= absDiffVal;
+                  console.log(`${item.label}机构分配出去点数${absDiffVal}`);
+                  // todo 本机构【加】总点数 -> 某父机构有足够点数，则【加】已分配数，总点数不变
+                  item.assignedPoints += absDiffVal;
+                  // todo 本机构【加】总点数 -> 有足够点数的某父机构以下本机构以上的机构，则一级一级【加】已分配数和总点数
+                  if (index > 0) {
+                    for (let i=0; i<index; i++) {
+                      arr[i].totalPoints += absDiffVal;
+                      arr[i].assignedPoints += absDiffVal;
+                    }
+                  }
                   absDiffVal = 0;
                 } else {
-                  console.log(`${item.label}机构怒减点数${item.totalPoints - item.assignedPoints}`); //todo
+                  console.log(`${item.label}机构怒减点数${item.totalPoints - item.assignedPoints}`);
+                  // todo 本机构【加】总点数 -> 某父机构没有足够点数，则【加】已分配数至等于总点数
                   absDiffVal -= item.totalPoints - item.assignedPoints;
-                  item.totalPoints = item.assignedPoints;
+                  // todo 本机构【加】总点数 -> 没有足够点数的某父机构以下本机构以上的机构，则一级一级【加】已分配数和总点数
+                  if (index > 0) {
+                    for (let i=0; i<index; i++) {
+                      arr[i].totalPoints += item.totalPoints - item.assignedPoints;
+                      arr[i].assignedPoints += item.totalPoints - item.assignedPoints;
+                    }
+                  }
+                  item.assignedPoints = item.totalPoints;
                 }
               }
               return item;
@@ -356,6 +398,18 @@
         }
 
         console.log('分配点数后：', this.confirmForm.curOfficeInfo, this.confirmForm.curOfficeParents)
+
+        if (newVal >= maxVal) {
+          this.$message({
+            message: '警告哦，因上级机构点数不足，无法继续增加点数！',
+            type: 'warning'
+          });
+        } else if (newVal <= minVal) {
+          this.$message({
+            message: '警告哦，因机构点数不能小于分配的点数，无法继续减少点数！',
+            type: 'warning'
+          });
+        }
       },
       showLoading(txt, target, isLock) {
         return this.$loading({
@@ -384,8 +438,7 @@
                 ...this.confirmForm.curOfficeParents
               ],
               sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
-                [] :
-                [...this.confirmForm.curOfficeAllChildren]
+                [] : [...this.confirmForm.curOfficeAllSun]
             });
             this.$router.push({ path: '/system/officeManager' });
           }, 2000);
@@ -408,38 +461,48 @@
       changeWisdomHandle(val) {
         console.log(val)
 
-        this.$confirm('...................', this.$t('common.notice'), {
+        this.$msgbox({
+          title: this.$t('common.notice'),
+          message: this.$createElement('p', null, [
+            this.$createElement('span', null, this.$t('officeManager.turnOnIntelligentPointAllocation')),
+            this.$createElement('i', { style: 'color: #F56C6C' }, this.$t('officeManager.returnZero'))
+          ]),
+          showCancelButton: true,
           confirmButtonText: this.$t('common.confirm'),
           cancelButtonText: this.$t('common.cancel'),
-          type: 'warning'
         }).then(() => {
           try {
             let allChildren =  getChildremByBFS(this.confirmForm.curOfficeInfo, 'children');
-            let allChildrenTotalPoints = 0;
 
-            this.confirmForm.curOfficeAllChildren = allChildren.map(item => {
-              allChildrenTotalPoints += item.totalPoints;
-              item.openWisdomPid = val ? this.curOfficeId : -1;
+            // 将孙子及以下节点重置
+            this.confirmForm.curOfficeAllSun = allChildren.slice(this.confirmForm.curOfficeChildren.length).map(item => {
+              item.openWisdomPid = val ? +this.curOfficeId : -1;
               item.assignedPoints = 0;
               item.totalPoints = 0;
               return item;
             });
+            // 仅将直属下级节点重置
             this.confirmForm.curOfficeChildren = this.confirmForm.curOfficeChildren.map(item => {
-              item.openWisdomPid = val ? this.curOfficeId : -1;
+              item.openWisdomPid = val ? +this.curOfficeId : -1;
               item.assignedPoints = 0;
               item.totalPoints = 0;
               return item;
             });
-            this.confirmForm.curOfficeInfo.totalPoints += allChildrenTotalPoints;
-            this.confirmForm.curOfficeInfo.assignedPoints -= allChildrenTotalPoints;
-            console.log('开启智能分配后所有子节点重置', this.confirmForm.curOfficeAllChildren)
+            // 将本机构已分配点数归零
+            this.confirmForm.curOfficeInfo.assignedPoints = 0;
+            console.log('开启智能分配后所有孙+子节点重置', this.confirmForm.curOfficeAllSun, this.confirmForm.curOfficeChildren)
           } catch (err) {
             console.log(err)
           }
         }).catch(() => {
           this.confirmForm.curOfficeInfo.isWisdom = !this.confirmForm.curOfficeInfo.isWisdom;
         });
-
+      },
+      blurHandle(a, b) {
+        console.log(a, b)
+      },
+      focusHandle(a, b) {
+        console.log(a, b)
       }
     }
   }

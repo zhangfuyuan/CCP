@@ -169,7 +169,7 @@ export function getOfficeTreeData() {
           label: '三级 2-2-1',
           pid: 7,
           isWisdom: true,
-          assignedPoints: 30+20, // 已分配点数
+          assignedPoints: 0, // 已分配点数
           totalPoints: 51, // 机构总点数
           deviceNumber: 20, // 设备数（全上线）
           children: [{

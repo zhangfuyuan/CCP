@@ -156,5 +156,7 @@ export default {
     nextLevelMechanismPoints: "下一级机构点数",
     intelligentPointAllocation: "智能点数分配",
     modifiedPointsSavedTips: "是否保存修改的点数？",
+    turnOnIntelligentPointAllocation: "开启智能点数分配后所有下级机构点数将",
+    returnZero: " 归零"
   }
 }

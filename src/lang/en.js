@@ -155,6 +155,8 @@ export default {
     mechanismTotalPoints: "Total number of mechanism points",
     nextLevelMechanismPoints: "Next level mechanism points",
     intelligentPointAllocation: "Intelligent point allocation",
-    modifiedPointsSavedTips: "Are the modified points saved?",
+    modifiedPointsSavedTips: "Are the modified points saved ?",
+    turnOnIntelligentPointAllocation: "Start the smart points allocation after all the lower mechanism points will be",
+    returnZero: " return to zero"
   }
 }

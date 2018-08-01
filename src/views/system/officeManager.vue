@@ -399,7 +399,8 @@
           curOfficeInfo: null,
           curOfficeChildren: [],
           curOfficeParents: [],
-        }
+        },
+        subRoute_isOperated: false, // 子路由（分配点数）是否有进行任何操作
       }
     },
     computed: {
@@ -444,6 +445,9 @@
       this.subRoute_isPoints = this.$route.name==='officeManager-distributionPoints'
 
       this.$bus.on('distribution-points', this.updateDistributionPoints);
+      this.$bus.on('distribution-points-operated', () => {
+
+      });
     },
     mounted() {
     },
@@ -744,6 +748,7 @@
             node = this.$refs['officeTree'].getNode(item.id).data;
             node.assignedPoints = item.assignedPoints;
             node.totalPoints = item.totalPoints;
+            node.openWisdomPid = item.openWisdomPid || -1;
           });
           node = this.$refs['officeTree'].getNode(params.curOfficeId).data;
           node.assignedPoints = params.curOfficeInfo.assignedPoints;
