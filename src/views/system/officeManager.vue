@@ -48,12 +48,12 @@
 
     <!--右侧动态视图-->
     <div class="view" :style="{ 'height': viewHeight + 'px' }">
-      <div style="margin-bottom: 10px;" v-if="!subRoute_isPoints">
+      <div style="margin-bottom: 10px;" v-if="!isSubRoute">
         <svg-icon icon-class="eglass-tag" style="font-size: 18px;cursor: pointer;" />
         <span style="color: #909399;padding-left: 5px;">{{$t('officeManager.intelligentAllocationPointsMode')}}</span>
       </div>
 
-      <div v-if="isNoAuth && !subRoute_isPoints"
+      <div v-if="isNoAuth && !isSubRoute"
            style="width: 60%;margin: 0 0 10px 10%;border: 1px solid #F56C6C;display: flex;align-items: center;justify-content: space-between;cursor: pointer;border-radius: 4px;background-color: #fff;padding: 0 10px;"
            @click="toggleDialogInfo('anti')">
         <span>
@@ -64,7 +64,7 @@
         <el-button type="text">{{$t('officeManager.certificationImmediately')}}</el-button>
       </div>
 
-      <div class="view-tree" v-if="!subRoute_isPoints">
+      <div class="view-tree" v-if="!isSubRoute">
         <template v-if="curClickOfficeId>-1 && curClickOfficeInfo">
           <template v-if="curClickOfficeParentInfo">
             <el-card class="box-card parent-card" shadow="never" style="width: 40%;">
@@ -285,8 +285,7 @@
           @node-click="clickMoveOfficeHandle"
           @check="checkMoveOfficeHandle"
           check-strictly
-          :default-expanded-keys="moveOfficeDefaultExpandedKeys"
-          :default-checked-keys="[curClickOfficeId]">
+          :default-expanded-keys="moveOfficeDefaultExpandedKeys">
         </el-tree>
 
         <div slot="footer" class="dialog-footer">
@@ -368,7 +367,7 @@
           label: 'label',
           children: 'children'
         },
-        subRoute_isPoints: false, // 判断当前是二级还是三级路由
+        isSubRoute: false, // 判断当前是二级还是三级路由（true为三级路由，即分配点数页面）
         treeHeight: document.documentElement.clientHeight - 210, // 初始化机构树高度
         filterText: '', // 搜索框的输入值
         isShowPopover: false, // Popover 是否可见
@@ -440,14 +439,14 @@
     },
     watch: {
       $route($r) {
-        this.subRoute_isPoints = $r.name==='officeManager-distributionPoints'
+        this.isSubRoute = $r.name==='officeManager-distributionPoints'
       },
       filterText(val) {
         this.$refs.officeTree.filter(val);
       },
     },
     created() {
-      this.subRoute_isPoints = this.$route.name==='officeManager-distributionPoints'
+      this.isSubRoute = this.$route.name==='officeManager-distributionPoints'
 
       this.$bus.on('distribution-points', this.updateDistributionPoints);
       this.$bus.on('distribution-points-operated', (isOperated) => {
@@ -569,7 +568,7 @@
         console.log(this.curClickOfficeId, this.curClickOfficeInfo)
         if (!this.isClickMoreIcon) this.$refs['popoverBox'].doClose();
 
-        if (this.subRoute_isPoints) {
+        if (this.isSubRoute) {
           if (this.subRoute.curOfficeInfo && this.subRoute.curOfficeInfo.id===this.curClickOfficeId) return;
 
           if (this.subRoute.curOfficeInfo && this.subRoute.curOfficeInfo.id!==this.curClickOfficeId && this.subRoute_isOperated) {
@@ -654,23 +653,18 @@
       },
       clickMoveOfficeHandle(data, node, component) {
         if (data.disabled) return false;
-
-        let checkedList = this.$refs['moveOfficeTree'].getCheckedKeys();
-
-        if (checkedList.indexOf(data.id) > -1) { // 已选 -> 去选
-          this.updateMoveOfficeCurCheckedOffice([], -1);
-        } else { // 无选 -> 选中
-          this.updateMoveOfficeCurCheckedOffice([data.id], data.id);
-        }
       },
       checkMoveOfficeHandle(data, checkedMap) {
         let checkedList = this.$refs['moveOfficeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
 
+        console.log(data.id, checkedList)
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
+          this.$refs['moveOfficeTree'].setCheckedKeys([data.id]);
           this.$refs['moveOfficeTree'].setCurrentKey(data.id);
-          this.updateMoveOfficeCurCheckedOffice([data.id], data.id);
+          this.updateMoveOfficeCurCheckedOffice(data.id);
         } else { // 已选 -> 去选
-          this.updateMoveOfficeCurCheckedOffice([], -1);
+          this.$refs['moveOfficeTree'].setCheckedKeys([]);
+          this.updateMoveOfficeCurCheckedOffice(-1);
         }
       },
       openDialogHandle() {
@@ -678,9 +672,11 @@
           this.moveOfficeTree = JSON.parse(JSON.stringify(this.officeTree))
 
           this.$nextTick(() => {
-            let resetTree = this.$refs['moveOfficeTree'].getNode(this.curClickOfficeId).data // 此处不能用 curClickOfficeInfo
-            this.updateMoveOfficeCurCheckedOffice([this.curClickOfficeId], this.curClickOfficeId)
-            this.$refs['moveOfficeTree'].setCurrentKey(this.curClickOfficeId)
+            let resetTree = this.$refs['moveOfficeTree'].getNode(this.curClickOfficeId).data; // 此处不能用 curClickOfficeInfo
+
+            this.$refs['moveOfficeTree'].setCheckedKeys([this.curClickOfficeId]);
+            this.$refs['moveOfficeTree'].setCurrentKey(this.curClickOfficeId);
+            this.updateMoveOfficeCurCheckedOffice(this.curClickOfficeId);
             try {
               setBFS(resetTree, 'disabled', true, 'children', 'id', this.curClickOfficeId)
             } catch (err) {
@@ -702,8 +698,7 @@
         }
         this.dialogInfo.key = ''; // 重置移动机构树
       },
-      updateMoveOfficeCurCheckedOffice(arr, id) {
-        this.$refs['moveOfficeTree'].setCheckedKeys(arr);
+      updateMoveOfficeCurCheckedOffice(id) {
         this.curCheckedMoveOfficeId = id;
 
         console.log(`当前移动机构树中选中的机构id是：${this.curCheckedMoveOfficeId}`)

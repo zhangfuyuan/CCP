@@ -36,6 +36,7 @@ export const constantRouterMap = [
         component: () => import('@/views/accountSettings/index'),
         meta: { title: 'accountSettings', noCache: true },
         children: [
+          // 修改密码
           {
             path: 'modifyPswd',
             name: 'accountSettings-modifyPswd',
@@ -65,7 +66,6 @@ export const constantRouterMap = [
   {
     path: '/device',
     component: Layout,
-    // redirect: 'noredirect',
     redirect: '/device/deviceManager',
     name: 'device',
     meta: {
@@ -74,12 +74,14 @@ export const constantRouterMap = [
       noCache: true
     },
     children: [
+      // 设备设置
       {
         path: 'deviceManager',
         name: 'deviceManager',
         component: () => import('@/views/device/deviceManager'),
         meta: { title: 'deviceSettings', noCache: true }
       },
+      // 计划管理
       {
         path: 'planManager',
         name: 'planManager',
@@ -110,18 +112,21 @@ export const asyncRouterMap = [
       noCache: true
     },
     children: [
+      // 账号管理
       {
         path: 'accountManager',
         name: 'accountManager',
         component: () => import('@/views/system/accountManager'),
         meta: { title: 'accountManager', noCache: true }
       },
+      // 机构管理
       {
         path: 'officeManager',
         name: 'officeManager',
         component: () => import('@/views/system/officeManager'),
         meta: { title: 'officeManager', noCache: true }
       },
+      // IP设置
       {
         path: 'ipManager',
         name: 'ipManager',
@@ -135,11 +140,19 @@ export const asyncRouterMap = [
         hidden: true,
         meta: { title: 'accountManager', noCache: true },
         children: [
+          // 账号管理/创建账号
           {
             path: 'createAccount',
             name: 'accountManager-createAccount',
             component: () => import('@/views/system/accountManager/createAccount'),
             meta: { title: 'createAccount', noCache: true }
+          },
+          // 账号管理/编辑账号
+          {
+            path: 'editAccount',
+            name: 'accountManager-editAccount',
+            component: () => import('@/views/system/accountManager/editAccount'),
+            meta: { title: 'editAccount', noCache: true }
           }
         ]
       },
@@ -150,6 +163,7 @@ export const asyncRouterMap = [
         hidden: true,
         meta: { title: 'officeManager', noCache: true },
         children: [
+          // 机构管理/分配点数
           {
             path: 'distributionPoints',
             name: 'officeManager-distributionPoints',

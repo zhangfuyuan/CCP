@@ -1,5 +1,5 @@
 <template>
-  <div class="accountManager-createAccount-wrapper">
+  <div class="accountManager-editAccount-wrapper">
     <el-form :model="accountForm"
              :rules="rules"
              ref="accountForm"
@@ -105,7 +105,7 @@
                    :disabled="!accountForm.username || !accountForm.name || !accountForm.password ||
                               !accountForm.role || (accountForm.officeId!==0&&!accountForm.officeId)">{{$t('common.confirmBtn')}}
         </el-button>
-        <el-button @click="cancelHandle">{{$t('common.cancelBtn')}}</el-button>
+        <el-button @click="showLoading">{{$t('common.cancelBtn')}}</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -113,9 +113,11 @@
 
 <script>
   import { getTreeData } from '@/datas'
+  import { myMixin } from '@/assets/js/mixins';
 
   export default {
-    name: 'accountManager-createAccount',
+    name: 'accountManager-editAccount',
+    mixins: [ myMixin ],
     components: {  },
     props: {
       curAccountInfo: {
@@ -214,6 +216,7 @@
           mark: '',
         },
         isTriggerBeforeRouteLeave: true,
+        subRoute_curAccountInfo: null,
       }
     },
     computed: {
@@ -221,6 +224,14 @@
     watch: {
       filterText(val) {
         this.$refs.officeTree.filter(val);
+      }
+    },
+    created() {
+      if (this.curAccountInfo) { // 不为null，则是从上一级路由进入此页面
+        this.subRoute_curAccountInfo = JSON.parse(JSON.stringify(this.curAccountInfo)); // 拷贝备份，互不影响
+      } else {  // 若为null，则是刷新此路由页面，因为没数据，所以需回到上一级路由页面
+        this.isTriggerBeforeRouteLeave = false;
+        this.$router.push({ path: '/system/accountManager' });
       }
     },
     mounted() {
@@ -270,7 +281,7 @@
           showClose: false
         }).then(() => {
         }).catch(() => { // 确认离开
-          this.isTriggerBeforeRouteLeave = false
+          this.isTriggerBeforeRouteLeave = false;
           this.$router.push({ path: '/system/accountManager' })
         });
       },
@@ -285,9 +296,9 @@
             }
           }, 1000)
         })
-      }
+      },
     },
-    // 组件内的守卫
+    // 组件内的路由守卫钩子
     beforeRouteLeave (to, from, next) {
       if (this.isTriggerBeforeRouteLeave) {
         this.$confirm(this.$t('accountManager.leavePagePrompt'), this.$t('common.notice'), {

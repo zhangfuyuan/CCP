@@ -1,6 +1,6 @@
 <template>
   <div class="accountManager-wrapper">
-    <template v-if="!$route_isCreate">
+    <template v-if="!isSubRoute">
       <div class="filter">
         <div class="total">
           {{$t('accountManager.total')}} <span>{{totalNum}}</span> {{$t('accountManager.account')}}
@@ -11,7 +11,7 @@
         </div>
 
         <div class="search">
-          <el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('table.title')" v-model="searchVal">
+          <el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('accountManager.searchNameOrUsername')" v-model="searchVal">
             <i slot="suffix" class="el-input__icon el-icon-search" @click="handleSearch"></i>
           </el-input>
         </div>
@@ -31,20 +31,24 @@
             prop="name"
             :label="$t('accountManager.name')">
           </el-table-column>
+
           <el-table-column
             sortable
             prop="username"
             :label="$t('accountManager.username')">
           </el-table-column>
+
           <el-table-column
             :filters="[{ text: $t('common.rootRole'), value: $t('common.rootRole') }, { text: $t('common.userRole'), value: $t('common.userRole') }]"
             :filter-method="filterHandler"
             prop="role"
             :label="$t('accountManager.role')">
           </el-table-column>
+
           <el-table-column
             sortable
-            :label="$t('accountManager.office')">
+            :label="$t('accountManager.office')"
+            show-overflow-tooltip>
             <template slot-scope="scope">
               <el-popover trigger="hover" placement="top">
                 <p>{{ scope.row.office }}</p>
@@ -56,23 +60,25 @@
               </el-popover>
             </template>
           </el-table-column>
+
           <el-table-column
             sortable
             prop="createdTime"
             :label="$t('accountManager.createdTime')"
             align="center">
           </el-table-column>
+
           <el-table-column
             :label="$t('accountManager.handle')">
             <template slot-scope="scope">
-              <el-button @click="handleClick(scope.row)" type="text">{{$t('accountManager.edit')}}</el-button>
-              <el-button type="text" style="color: #F56C6C;">{{$t('accountManager.del')}}</el-button>
+              <el-button @click="switchPageToEditAccount(scope.row)" type="text">{{$t('common.edit')}}</el-button>
+              <el-button type="text" style="color: #F56C6C;">{{$t('common.delete')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
       </div>
 
-      <div class="pagination">
+      <div class="pagination" style="display: flex;align-items: center;justify-content: flex-end;">
         <el-pagination background
                        @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"
@@ -83,10 +89,12 @@
                        :total="totalNum"
                        style="text-align: right;">
         </el-pagination>
+
+        <el-button size="mini" style="margin-left: 8px;">{{$t('common.skip')}}</el-button>
       </div>
     </template>
 
-    <router-view></router-view>
+    <router-view :curAccountInfo="curAccountInfo" ref="subRoute"></router-view>
   </div>
 </template>
 
@@ -111,18 +119,19 @@
           type: undefined,
           sort: '+id'
         },
-        $route_isCreate: false //判断当前是二级还是三级路由（true为三级路由，即创建账号页面）
+        isSubRoute: false, // 判断当前是二级还是三级路由（true为三级路由，即创建/编辑账号页面）
+        curAccountInfo: null
       }
     },
     computed: {
     },
     watch: {
       $route($r) {
-        this.$route_isCreate = $r.name==='accountManager-createAccount'
+        this.isSubRoute = ($r.name==='accountManager-createAccount' || $r.name==='accountManager-editAccount');
       }
     },
     created() {
-      this.$route_isCreate = this.$route.name==='accountManager-createAccount'
+      this.isSubRoute = (this.$route.name==='accountManager-createAccount' || this.$route.name==='accountManager-editAccount')
 
       this.listLoading = true
       setTimeout(() => {
@@ -137,9 +146,6 @@
       handleSearch() {
         alert('施工中...')
       },
-      handleClick(row) {
-        alert(row + ' 施工中...')
-      },
       handleSizeChange(val) {
         this.listQuery.limit = val
         alert(val + ' 施工中...')
@@ -151,6 +157,10 @@
       filterHandler(value, row, column) {
         const property = column['property'];
         return row[property] === value;
+      },
+      switchPageToEditAccount(info) {
+        this.curAccountInfo = info;
+        this.$router.push({ path: '/system/accountManager/editAccount' });
       }
     },
     directives: {

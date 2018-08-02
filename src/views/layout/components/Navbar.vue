@@ -5,8 +5,8 @@
     <!--<breadcrumb></breadcrumb>-->
 
     <div class="logo-container">
-      <a href="" class="logo-box"><img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" /></a>
-      <span class="logo-txt">{{$t('common.platformName')}}</span>
+      <!--<a href="" class="logo-box"><img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" /></a>-->
+      <a href=""><span class="logo-txt">{{$t('common.platformName')}}</span></a>
     </div>
 
     <el-dropdown class="avatar-container" trigger="click">
@@ -131,7 +131,7 @@ export default {
 
     .logo-txt {
       color: #fff;
-      margin-left: 10px;
+      /*margin-left: 10px;*/
     }
   }
 

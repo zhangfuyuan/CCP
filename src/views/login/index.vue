@@ -2,9 +2,9 @@
   <div class="login-container">
     <el-form class="login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
       <div style="position: relative;top: 0;transition: top .5s ease-out;" :class="{ 'show-verify-tips': isVerifyFailed }">
-        <div class="logo">
-          <img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" />
-        </div>
+        <!--<div class="logo">-->
+          <!--<img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" />-->
+        <!--</div>-->
         <h3 class="title">{{$t('login.title')}}</h3>
         <div v-show="isVerifyFailed">
           <el-alert
@@ -56,7 +56,7 @@
           </el-form-item>
           <div class="code-img-box" style="display: flex;height: 50px;">
             <img src="" alt="验证码" style="width: 100px;height: 50px;background-color: #fff;" />
-            <el-button type="text" style="height: 50px;">{{$t('login.notSeeClearly')}}</el-button>
+            <!--<el-button type="text" style="height: 50px;">{{$t('login.notSeeClearly')}}</el-button>-->
           </div>
         </div>
       </el-collapse-transition>

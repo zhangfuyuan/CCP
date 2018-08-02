@@ -45,48 +45,48 @@ export function getTreeData() {
         pid: 4,
         leaf: true,
       }]
-    }]
-  }, {
-    id: 2,
-    label: '一级 2',
-    children: [{
-      id: 5,
-      label: '二级 2-1',
-      pid: 2,
-      leaf: true,
     }, {
-      id: 6,
-      label: '二级 2-2',
-      pid: 2,
-      leaf: true,
-    }]
-  }, {
-    id: 3,
-    label: '一级 3',
-    children: [{
-      id: 7,
-      label: '二级 3-1',
-      pid: 3,
-    }, {
-      id: 8,
-      label: '二级 3-2',
+      id: 2,
+      label: '一级 2',
       children: [{
-        id: 11,
-        label: '三级 3-2-1',
-        pid: 8,
+        id: 5,
+        label: '二级 2-1',
+        pid: 2,
         leaf: true,
       }, {
-        id: 12,
-        label: '三级 3-2-2',
-        pid: 8,
+        id: 6,
+        label: '二级 2-2',
+        pid: 2,
         leaf: true,
+      }]
+    }, {
+      id: 3,
+      label: '一级 3',
+      children: [{
+        id: 7,
+        label: '二级 3-1',
+        pid: 3,
       }, {
-        id: 13,
-        label: '三级 3-2-3',
-        pid: 8,
-        leaf: true,
-      }],
-      pid: 3,
+        id: 8,
+        label: '二级 3-2',
+        children: [{
+          id: 11,
+          label: '三级 3-2-1',
+          pid: 8,
+          leaf: true,
+        }, {
+          id: 12,
+          label: '三级 3-2-2',
+          pid: 8,
+          leaf: true,
+        }, {
+          id: 13,
+          label: '三级 3-2-3',
+          pid: 8,
+          leaf: true,
+        }],
+        pid: 3,
+      }]
     }]
   }]
 }
