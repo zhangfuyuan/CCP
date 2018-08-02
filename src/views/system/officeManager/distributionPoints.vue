@@ -419,58 +419,40 @@
           lock: isLock || true,
         });
       },
-      confirmHandle(isClickNode) {
+      confirmHandle() {
         if (!this.isSubOpenIntelligentPointAllocation && this.confirmForm.curOfficeInfo) { // 被动开启智能分配点数是没有进行任何操作，故无需更新
-          const loading = this.showLoading();
-
-          if (isClickNode) {
-            return new Promise((resolve, reject) => {
-              setTimeout(() => {
-                loading.close();
-                this.$message({
-                  showClose: true,
-                  message: this.$t('common.operationSucceeds'),
-                  type: 'success'
-                });
-
-                this.$bus.emit('distribution-points', {
-                  curOfficeId: this.curOfficeId,
-                  curOfficeInfo: this.confirmForm.curOfficeInfo,
-                  bloodList: [
-                    ...this.confirmForm.curOfficeChildren,
-                    ...this.confirmForm.curOfficeParents
-                  ],
-                  sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
-                    [] : [...this.confirmForm.curOfficeAllSun]
-                });
-                resolve();
-              }, 2000);
-            });
-          } else {
-            setTimeout(() => {
-              loading.close();
-              this.$message({
-                showClose: true,
-                message: this.$t('common.operationSucceeds'),
-                type: 'success'
-              });
-
-              this.$bus.emit('distribution-points', {
-                curOfficeId: this.curOfficeId,
-                curOfficeInfo: this.confirmForm.curOfficeInfo,
-                bloodList: [
-                  ...this.confirmForm.curOfficeChildren,
-                  ...this.confirmForm.curOfficeParents
-                ],
-                sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
-                  [] : [...this.confirmForm.curOfficeAllSun]
-              });
-              this.$router.push({ path: '/system/officeManager' });
-            }, 2000);
-          }
+          this.confirmSubmit().then(() => {
+            this.$router.push({ path: '/system/officeManager' });
+          }).catch(() => {});
         } else {
           this.$router.push({ path: '/system/officeManager' });
         }
+      },
+      confirmSubmit() {
+        const loading = this.showLoading();
+
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            loading.close();
+            this.$message({
+              showClose: true,
+              message: this.$t('common.operationSucceeds'),
+              type: 'success'
+            });
+
+            this.$bus.emit('distribution-points', {
+              curOfficeId: this.curOfficeId,
+              curOfficeInfo: this.confirmForm.curOfficeInfo,
+              bloodList: [
+                ...this.confirmForm.curOfficeChildren,
+                ...this.confirmForm.curOfficeParents
+              ],
+              sunList: this.curOfficeInfo.isWisdom===this.confirmForm.curOfficeInfo.isWisdom ?
+                [] : [...this.confirmForm.curOfficeAllSun]
+            });
+            resolve();
+          }, 2000);
+        });
       },
       cancelHandle() {
         this.$router.push({ path: '/system/officeManager' });
@@ -487,45 +469,52 @@
       changeWisdomHandle(val) {
         console.log(val)
 
-        this.$msgbox({
-          title: this.$t('common.notice'),
-          message: this.$createElement('p', null, [
-            this.$createElement('span', null, this.$t('officeManager.turnOnIntelligentPointAllocation')),
-            this.$createElement('i', { style: 'color: #F56C6C' }, this.$t('officeManager.returnZero'))
-          ]),
-          showCancelButton: true,
-          confirmButtonText: this.$t('common.confirm'),
-          cancelButtonText: this.$t('common.cancel'),
-        }).then(() => {
-          this.$bus.emit('distribution-points-operated', true);
-
-          try {
-            let allChildren =  getChildremByBFS(this.confirmForm.curOfficeInfo, 'children');
-
-            // 将孙子及以下节点重置
-            this.confirmForm.curOfficeAllSun = allChildren.slice(this.confirmForm.curOfficeChildren.length).map(item => {
-              item.openWisdomPid = val ? +this.curOfficeId : -1;
-              item.assignedPoints = 0;
-              item.totalPoints = 0;
-              return item;
-            });
-            // 仅将直属下级节点重置
-            this.confirmForm.curOfficeChildren = this.confirmForm.curOfficeChildren.map(item => {
-              item.openWisdomPid = val ? +this.curOfficeId : -1;
-              item.assignedPoints = 0;
-              item.totalPoints = 0;
-              return item;
-            });
-            // 将本机构已分配点数归零
-            this.confirmForm.curOfficeInfo.assignedPoints = 0;
-            console.log('开启智能分配后所有孙+子节点重置', this.confirmForm.curOfficeAllSun, this.confirmForm.curOfficeChildren)
-          } catch (err) {
-            console.log(err)
-          }
-        }).catch(() => {
-          this.confirmForm.curOfficeInfo.isWisdom = !this.confirmForm.curOfficeInfo.isWisdom;
-        });
+        if (val) { // 关闭 -> 开启智能分配点数
+          this.$msgbox({
+            title: this.$t('common.notice'),
+            message: this.$createElement('p', null, [
+              this.$createElement('span', null, this.$t('officeManager.turnOnIntelligentPointAllocation')),
+              this.$createElement('i', { style: 'color: #F56C6C' }, this.$t('officeManager.returnZero'))
+            ]),
+            showCancelButton: true,
+            confirmButtonText: this.$t('common.confirm'),
+            cancelButtonText: this.$t('common.cancel'),
+          }).then(() => {
+            this.changeWisdomSubmit();
+          }).catch(() => {
+            this.confirmForm.curOfficeInfo.isWisdom = !this.confirmForm.curOfficeInfo.isWisdom;
+          });
+        } else { // 开启智能分配点数 -> 关闭
+          this.changeWisdomSubmit();
+        }
       },
+      changeWisdomSubmit() {
+        this.$bus.emit('distribution-points-operated', true);
+
+        try {
+          let allChildren =  getChildremByBFS(this.confirmForm.curOfficeInfo, 'children');
+
+          // 将孙子及以下节点重置
+          this.confirmForm.curOfficeAllSun = allChildren.slice(this.confirmForm.curOfficeChildren.length).map(item => {
+            item.openWisdomPid = this.confirmForm.curOfficeInfo.isWisdom ? +this.curOfficeId : -1;
+            item.assignedPoints = 0;
+            item.totalPoints = 0;
+            return item;
+          });
+          // 仅将直属下级节点重置
+          this.confirmForm.curOfficeChildren = this.confirmForm.curOfficeChildren.map(item => {
+            item.openWisdomPid = this.confirmForm.curOfficeInfo.isWisdom ? +this.curOfficeId : -1;
+            item.assignedPoints = 0;
+            item.totalPoints = 0;
+            return item;
+          });
+          // 将本机构已分配点数归零
+          this.confirmForm.curOfficeInfo.assignedPoints = 0;
+          console.log('开启智能分配后所有孙+子节点重置', this.confirmForm.curOfficeAllSun, this.confirmForm.curOfficeChildren)
+        } catch (err) {
+          console.log(err)
+        }
+      }
     }
   }
 </script>

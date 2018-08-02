@@ -219,6 +219,7 @@
                @open="openDialogHandle"
                @close="closeDialogHandle"
                :close-on-click-modal="false">
+      <!--新建子机构-->
       <template v-if="dialogInfo.key === 'new'">
         <div>
           <el-input v-model="newOfficeForm.name"
@@ -233,7 +234,10 @@
           </span>
 
           <span>
-            <el-input-number size="small" v-model="inputNumberVal" :min="0" :max="testTotalPoints"></el-input-number>
+            <el-input-number size="small"
+                             v-model="inputNumberVal"
+                             :min="0"
+                             :max="testTotalPoints"></el-input-number>
           </span>
         </div>
         <div v-else style="color: #909399;padding-top: 20px;">
@@ -464,7 +468,7 @@
           children: [],
           pid: this.curClickOfficeId,
           assignedPoints: 0, // 已分配点数
-          totalPoints: 0, // 机构总点数
+          totalPoints: this.inputNumberVal, // 机构总点数
           deviceNumber: 0, // 设备数（全上线）
         };
         if (this.curClickOfficeInfo.isWisdom) newChild.openWisdomPid = this.curClickOfficeId;
@@ -574,12 +578,11 @@
               cancelButtonText: this.$t('common.cancel'),
               type: 'warning'
             }).then(() => {
-              this.$refs['subRoute'].confirmHandle(true).then(() => {
+              this.$refs['subRoute'].confirmSubmit().then(() => {
                 this.distributionPoints(d.id);
-              })
+              }).catch(()=>{});
             }).catch(() => {
-              this.$refs['officeTree'].setCurrentKey(this.subRoute.curOfficeInfo.id);
-              this.updateCurClickOffice(this.subRoute.curOfficeInfo.id, this.subRoute.curOfficeInfo);
+              this.distributionPoints(d.id);
             });
           } else {
             this.distributionPoints(d.id);
