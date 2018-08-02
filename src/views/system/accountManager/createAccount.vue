@@ -3,7 +3,7 @@
     <el-form :model="accountForm"
              :rules="rules"
              ref="accountForm"
-             label-width="100px"
+             label-width="110px"
              inline-message
              label-position="left">
       <el-form-item :label="$t('common.username') + ' *'" prop="username">
@@ -56,8 +56,8 @@
 
       <el-form-item :label="$t('accountManager.accountRole') + ' *'" prop="role">
         <el-radio-group v-model="accountForm.role">
-          <el-radio label="root"></el-radio>
-          <el-radio label="user"></el-radio>
+          <el-radio label="root">{{$t('common.rootRole')}}</el-radio>
+          <el-radio label="user">{{$t('common.userRole')}}</el-radio>
         </el-radio-group>
         <el-popover
           placement="bottom-start"
@@ -73,7 +73,7 @@
         <el-input
           :placeholder="$t('common.searchOrganizationName')"
           v-model="filterText"
-          style="width: 400px;"
+          style="width: 400px;margin-bottom: 5px;"
           suffix-icon="el-icon-search"
           clearable
           :closable="false">
@@ -102,8 +102,8 @@
       <el-form-item>
         <el-button type="primary"
                    @click="submitForm('accountForm')"
-                   :disabled="!accountForm.username || !accountForm.name || !accountForm.password ||
-                              !accountForm.role || (accountForm.officeId!==0&&!accountForm.officeId)">{{$t('common.confirmBtn')}}
+                   :disabled="!accountForm.username || !accountForm.name || !accountForm.password || !accountForm.role ||
+                   (accountForm.officeId!==0&&!accountForm.officeId) || accountForm.officeId===-1">{{$t('common.confirmBtn')}}
         </el-button>
         <el-button @click="cancelHandle">{{$t('common.cancelBtn')}}</el-button>
       </el-form-item>
@@ -141,7 +141,6 @@
             this.showErrMsg.username = this.$t('accountManager.usernameExistsTips');
             callback(new Error(' '));
           });
-          console.log(8126, this.showErrMsg.username);
         } else {
           this.showErrMsg.username = this.$t('accountManager.accountLengthTips');
           callback(new Error(' '));
@@ -160,13 +159,16 @@
         if (!value.trim()) {
           this.showErrMsg.password = this.$t('accountManager.passwordLengthTips');
           callback(new Error(' '));
+        } else if (value.trim().length < 6) {
+          this.showErrMsg.password = this.$t('accountManager.passwordLengthTips');
+          callback(new Error(' '));
         } else {
           this.showErrMsg.password = '';
           callback()
         }
       }
       const validateMark = (rule, value, callback) => {
-        if (value.trim().length > 48) {
+        if (value && value.trim().length>48) {
           this.showErrMsg.mark = this.$t('accountManager.markLengthTips');
           callback(new Error(' '));
         } else {

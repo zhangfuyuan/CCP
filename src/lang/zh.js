@@ -7,8 +7,8 @@ export default {
     preferredLanguage: "English",
     accountSettings: "账号设置",
     logOut: "注销登录",
-    rootRole: "超级管理员",
-    userRole: "普通用户",
+    rootRole: "系统管理员",
+    userRole: "普通管理员",
     delete: "删除",
     checkAll: "全选",
     deselectAll: "取消全选",
@@ -30,6 +30,9 @@ export default {
     searchOrganizationName: "搜索机构名称",
     cancelBtn: "取 消",
     confirmBtn: "确 定",
+    modifyPassword: "修改密码",
+    createdTime: "创建时间",
+    handle: "操作",
   },
   login: {
     title: "一体机集控管理系统",
@@ -65,6 +68,11 @@ export default {
     searchOfficeName: "搜索机构名称",
     loading: "加载中",
     atAll: "到底了",
+  },
+  planManager: {
+    associatedApparatus: "关联设备",
+    planName: "计划名称",
+    functionTypes: "功能类型",
   },
   table: {
     dynamicTips1: "固定表头, 按照表头顺序排序",

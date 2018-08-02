@@ -95,25 +95,25 @@ export function getAccountManagerTableData() {
   return [
     {
       name: '占位符1',
-      username: '王小虎',
+      username: 'admin321',
       role: '超级管理员',
       office: '普陀区',
       createdTime: '2018-07-09 08:00'
     }, {
       name: '占位符2',
-      username: '王小虎',
+      username: 'admin123',
       role: '普通用户',
       office: '普陀区',
       createdTime: '2018-07-09 08:00'
     }, {
       name: '占位符3',
-      username: '王小虎',
+      username: 'admin132',
       role: '普通用户',
       office: '普陀区',
       createdTime: '2018-07-09 08:00'
     }, {
       name: '占位符4',
-      username: '王小虎',
+      username: 'admin231',
       role: '普通用户',
       office: '普陀区',
       createdTime: '2018-07-09 08:00'
@@ -232,4 +232,82 @@ export function getOfficeTreeData() {
       isNoAuth: true,
     }
   ];
+}
+
+export function getPlanManagerTableData() {
+  return [
+    {
+      name: '计划名称1',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称2',
+      type: '音量',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称3',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称4',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称1',
+      type: '音量',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称2',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称3',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称4',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称1',
+      type: '电源',
+      device: '8员',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称2',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称3',
+      type: '音量',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }, {
+      name: '计划名称4',
+      type: '电源',
+      device: '8',
+      office: '普陀区',
+      createdTime: '2018-07-09 08:00'
+    }
+  ]
 }

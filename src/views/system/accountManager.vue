@@ -133,12 +133,21 @@
     created() {
       this.isSubRoute = (this.$route.name==='accountManager-createAccount' || this.$route.name==='accountManager-editAccount')
 
+      this.$bus.on('edit-account', (data) => {
+        console.log('编辑账号合并信息', data)
+        const index = this.tableData.findIndex(item => item.username === data.username);
+        this.tableData[index] = data;
+      });
+
       this.listLoading = true
       setTimeout(() => {
         this.tableData = getAccountManagerTableData()
         this.listLoading = false
       }, 1500)
 
+    },
+    beforeDestroy() {
+      this.$bus.off('edit-account');
     },
     mounted() {
     },

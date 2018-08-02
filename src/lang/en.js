@@ -7,8 +7,8 @@ export default {
     preferredLanguage: "中文",
     accountSettings: "Account Settings",
     logOut: "LogOut",
-    rootRole: "root",
-    userRole: "user",
+    rootRole: "System administrator",
+    userRole: "General manager",
     delete: "Delete",
     checkAll: "Check all",
     deselectAll: "Deselect all",
@@ -30,6 +30,9 @@ export default {
     searchOrganizationName: "Search organization name",
     cancelBtn: "Cancel",
     confirmBtn: "Confirm",
+    modifyPassword: "Modify password",
+    createdTime: "Created time",
+    handle: "Handle",
   },
   login: {
     title: "Integrated machine control management system",
@@ -65,6 +68,11 @@ export default {
     searchOfficeName: "Search office name",
     loading: "Loading",
     atAll: "At all",
+  },
+  planManager: {
+    associatedApparatus: "Associated apparatus",
+    planName: "Plan name",
+    functionTypes: "Function types",
   },
   table: {
     dynamicTips1: "Fixed header, sorted by header order",
