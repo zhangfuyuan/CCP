@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/login'
+import { login, logout, getInfo, test } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 
 const user = {
@@ -41,22 +41,22 @@ const user = {
     Login({ commit }, userInfo) {
       const username = userInfo.username.trim()
       return new Promise((resolve, reject) => {
-        let data = username==='root' ? {
-          avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
-          introduction: "我是超级管理员",
-          name: "Super Admin",
-          roles: ["root"],
-          token: "root"
-        } : {
-          avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
-          introduction: "我是普通用户",
-          name: "Common User",
-          roles: ["user"],
-          token: "user"
-        }
-        setToken(data.token)
-        commit('SET_TOKEN', data.token)
-        resolve()
+        // let data = username==='root' ? {
+        //   avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+        //   introduction: "我是超级管理员",
+        //   name: "Super Admin",
+        //   roles: ["root"],
+        //   token: "root"
+        // } : {
+        //   avatar: "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif",
+        //   introduction: "我是普通用户",
+        //   name: "Common User",
+        //   roles: ["user"],
+        //   token: "user"
+        // }
+        // setToken(data.token)
+        // commit('SET_TOKEN', data.token)
+        // resolve()
 
         // login(username, userInfo.password).then(response => {
         //   const data = response.data
@@ -66,6 +66,13 @@ const user = {
         // }).catch(error => {
         //   reject(error)
         // })
+
+        test(username).then(res => {
+          resolve(res)
+        }).catch(err => {
+          console.log(8126.2, err)
+          reject(err)
+        })
       })
     },
 

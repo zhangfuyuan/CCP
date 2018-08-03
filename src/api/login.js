@@ -1,8 +1,18 @@
 import request from '@/utils/request'
 
+export function test(params) {
+  return request({
+    url: '/test',
+    method: 'get',
+    data: {
+      params
+    }
+  })
+}
+
 export function login(username, password) {
   return request({
-    url: '/user/login',
+    url: '/a/login',
     method: 'post',
     data: {
       username,

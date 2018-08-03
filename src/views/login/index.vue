@@ -152,10 +152,12 @@ export default {
             this.verifyNum++
 
             if (this.loginForm.username==='root' || this.loginForm.username==='user') {
-              this.$store.dispatch('Login', this.loginForm).then(() => {
+              this.$store.dispatch('Login', this.loginForm).then((res) => {
                 this.loading = false
-                this.$router.push({ path: '/' })
-              }).catch(() => {
+                console.log(8126, res.msg)
+//                this.$router.push({ path: '/' })
+              }).catch((err) => {
+                console.log(8126, err)
                 this.loading = false
                 this.isVerifyFailed = true
                 this.verifyFailedTips = this.$t('login.verifyErr') || this.$t('login.verifyCodeErr')
@@ -165,7 +167,6 @@ export default {
               this.isVerifyFailed = true
               this.verifyFailedTips = this.$t('login.verifyErr') || this.$t('login.verifyCodeErr')
             }
-
 
           } else {
             console.log('error submit!!')
