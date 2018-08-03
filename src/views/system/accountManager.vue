@@ -64,8 +64,7 @@
           <el-table-column
             sortable
             prop="createdTime"
-            :label="$t('accountManager.createdTime')"
-            align="center">
+            :label="$t('accountManager.createdTime')">
           </el-table-column>
 
           <el-table-column

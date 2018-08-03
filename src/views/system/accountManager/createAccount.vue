@@ -102,8 +102,10 @@
       <el-form-item>
         <el-button type="primary"
                    @click="submitForm('accountForm')"
-                   :disabled="!accountForm.username || !accountForm.name || !accountForm.password || !accountForm.role ||
-                   (accountForm.officeId!==0&&!accountForm.officeId) || accountForm.officeId===-1">{{$t('common.confirmBtn')}}
+                   :disabled="!accountForm.username || showErrMsg.username.length>6 ||
+                              !accountForm.name || !accountForm.password || accountForm.password.length<6 ||
+                              !accountForm.role || (accountForm.officeId!==0&&!accountForm.officeId) ||
+                              accountForm.officeId===-1">{{$t('common.confirmBtn')}}
         </el-button>
         <el-button @click="cancelHandle">{{$t('common.cancelBtn')}}</el-button>
       </el-form-item>
