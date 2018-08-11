@@ -1,90 +1,350 @@
-<template>
+﻿<template>
   <div class="login-container">
     <el-form class="login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
-      <h3 class="title">vue-element-admin</h3>
-      <el-form-item prop="username">
+      <div style="position: relative;top: 0;transition: top .5s ease-out;" :class="{ 'show-verify-tips': isVerifyFailed }">
+        <!--<div class="logo">-->
+          <!--<img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" />-->
+        <!--</div>-->
+        <h3 class="title">{{$t('login.title')}}</h3>
+        <div v-show="isVerifyFailed">
+          <el-alert
+            :title="verifyFailedTips"
+            type="error"
+            show-icon
+            :closable="false" style="width: 100%;height: 47px;position: absolute;bottom: -68px;" >
+          </el-alert>
+        </div>
+      </div>
+      <el-form-item prop="username" :class="{ 'error': isUsernameNull }">
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user" />
         </span>
-        <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="username" />
+        <el-input name="username"
+                  type="text"
+                  v-model="loginForm.username"
+                  autoComplete="on"
+                  autofocus
+                  :placeholder="$t('login.usernamePlaceholder')"
+                  :class="{ 'error': isUsernameNull }"
+                  @focus="clearUsername"
+                  @keyup.enter.native="handleLogin"></el-input>
       </el-form-item>
-      <el-form-item prop="password">
+      <el-form-item prop="password" :class="{ 'error': isPasswordNull }">
         <span class="svg-container">
           <svg-icon icon-class="password"></svg-icon>
         </span>
-        <el-input name="password" :type="pwdType" @keyup.enter.native="handleLogin" v-model="loginForm.password" autoComplete="on"
-          placeholder="password"></el-input>
-          <span class="show-pwd" @click="showPwd"><svg-icon icon-class="eye" /></span>
+        <el-input name="password"
+                  :type="pwdType"
+                  @keyup.enter.native="handleLogin"
+                  v-model="loginForm.password"
+                  autoComplete="on"
+                  :placeholder="$t('login.passwordPlaceholder')"
+                  :class="{ 'error': isPasswordNull }" @focus="clearPassword"></el-input>
+          <!--<span class="show-pwd" @click="showPwd"><svg-icon icon-class="eye" /></span>-->
       </el-form-item>
+      <el-collapse-transition>
+        <div class="code-box" v-show="isVerifyNumThan3">
+          <el-form-item prop="code" :class="{ 'error': isCodeNull }" style="width: 65%;">
+                <el-input class="code-input"
+                          name="code"
+                          type="text"
+                          v-model="loginForm.code"
+                          :placeholder="$t('login.codePlaceholder')"
+                          :class="{ 'error': isCodeNull }"
+                          @focus="clearCode"
+                          @keyup.enter.native="handleLogin"></el-input>
+          </el-form-item>
+          <div class="code-img-box"
+               style="display: flex;height: 50px;cursor: pointer;"
+               @click="updateCodeImgSrc"
+               :title="$t('login.next')">
+            <img :src="codeImgSrc" alt="验证码" style="width: 100px;height: 50px;background-color: #fff;border-radius: 5px;" />
+            <!--<el-button type="text" style="height: 50px;">{{$t('login.notSeeClearly')}}</el-button>-->
+          </div>
+        </div>
+      </el-collapse-transition>
       <el-form-item>
-        <el-button type="primary" style="width:100%;" :loading="loading" @click.native.prevent="handleLogin">
-          Sign in
+        <el-button type="primary" style="width:100%;font-size: 18px;" :loading="loading" @click.native.prevent="handleLogin">
+          {{$t('login.logIn')}}
         </el-button>
       </el-form-item>
-      <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: admin</span>
+      <div class="lang-select">
+        <el-button type="text" @click.native.prevent="handleSetLanguage(language==='en'?'zh':'en')">{{$t('login.language')}}</el-button>
       </div>
     </el-form>
   </div>
 </template>
 
 <script>
-import { isvalidUsername } from '@/utils/validate'
+  import { mapGetters } from 'vuex'
+  import { findContentByLemmaId } from '@/api/language'
 
 export default {
   name: 'login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!isvalidUsername(value)) {
-        callback(new Error('请输入正确的用户名'))
+      if (!value.trim()) {
+        callback(new Error(' '));
+        this.isUsernameNull = true
+        this.loginForm.username = this.$t('login.usernamePlaceholder')
       } else {
+        this.isUsernameNull = false
         callback()
       }
     }
     const validatePass = (rule, value, callback) => {
-      if (value.length < 5) {
-        callback(new Error('密码不能小于5位'))
+      if (!value.trim()) {
+        callback(new Error(' '));
+        this.isPasswordNull = true
+        this.pwdType = 'text'
+        this.loginForm.password = this.$t('login.passwordPlaceholder')
       } else {
+        this.isPasswordNull = false
+        callback()
+      }
+    }
+    const validateCode = (rule, value, callback) => {
+      if (this.isVerifyNumThan3 && !value.trim()) {
+        callback(new Error(' '));
+        this.isCodeNull = true
+        this.loginForm.code = this.$t('login.codePlaceholder')
+      }else {
+        this.isCodeNull = false
         callback()
       }
     }
     return {
-      loginForm: {
-        username: 'admin',
-        password: 'admin'
+      loginForm: { // 表单元素与数据的双向绑定
+        username: '',
+        password: '',
+        code: ''
       },
-      loginRules: {
+      loginRules: { // 表单检测规则
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePass }]
+        password: [{ required: true, trigger: 'blur', validator: validatePass }],
+        code: [{ required: true, trigger: 'blur', validator: validateCode }]
       },
-      loading: false,
-      pwdType: 'password'
+      loading: false, // 登录按钮是否变为等待状态
+      pwdType: 'password', // 密码输入框的类型
+      isUsernameNull: false,
+      isPasswordNull: false,
+      isCodeNull: false,
+      isVerifyFailed: false,
+      verifyFailedTips: '',
+      codeImgSrc: '', // 前端跟后台获取验证码  /prm-web/servlet/validateCodeServlet  method=get|post
+      publicKeyJson: {
+        isLandingEncryption: false,
+        exponent: '',
+        modulus: '',
+      },
+      isVerifyNumThan3: false
     }
   },
+  created() {
+    this.$i18n.locale = this.language;
+
+    this.$store.dispatch('Login').then((res) => {
+      console.log('已登录！');
+    }).catch(err => {
+      // 在 reject 中获取加密key
+      if (err) {
+        try {
+          console.log('获取加密key', err);
+          this.publicKeyJson.landingEncryption = err.landingEncryption;
+          this.publicKeyJson.exponent = err.publicKeyJson.exponent;
+          this.publicKeyJson.modulus = err.publicKeyJson.modulus;
+          this.isVerifyNumThan3 = err.isValidateCodeLogin;
+        } catch (e) {
+          console.log(e, err);
+        }
+      }
+    })
+  },
+  computed: {
+    ...mapGetters([
+      'roles',
+      'loginName',
+      'name',
+      'localeLanguage',
+      'language'
+    ])
+  },
   methods: {
-    showPwd() {
-      if (this.pwdType === 'password') {
-        this.pwdType = ''
-      } else {
-        this.pwdType = 'password'
+    handleLogin() { // 点击登录按钮执行方法
+      if ((this.isVerifyNumThan3 && !this.isCodeNull && !this.isPasswordNull && !this.isUsernameNull) ||
+        (!this.isVerifyNumThan3 && !this.isPasswordNull && !this.isUsernameNull)) {
+        this.$refs.loginForm.validate(valid => {
+          if (valid) {
+            this.loading = true;
+
+            if (this.publicKeyJson.isLandingEncryption) { // 密码加密
+              let submitForm = {
+                username: this.loginForm.username,
+                password: this.loginForm.password
+              };
+
+              if (this.loginForm.password.length !== 256){
+                let publicKey = RSAUtils.getKeyPair(this.publicKeyJson.exponent, '', this.publicKeyJson.modulus);
+                submitForm.password = RSAUtils.encryptedString(publicKey, this.loginForm.password)
+              }
+
+              if(this.loginForm.code) submitForm.code = this.loginForm.code;
+
+              this.$store.dispatch('Login', submitForm).then((res) => {
+                console.log(res);
+
+                this.loading = false;
+                if (this.localeLanguage && this.localeLanguage!=='zh' && this.localeLanguage!=='en') {
+                  this.getLocaleLanguage().then(() => {
+                    this.$router.push({ path: '/' });
+                  }).catch(() => {
+                    this.$router.push({ path: '/' });
+                  });
+                } else {
+                  this.$router.push({ path: '/' });
+                }
+              }).catch((err) => {
+                console.log(err);
+
+                try {
+                  this.isVerifyNumThan3 = err.isValidateCodeLogin;
+                  this.loading = false;
+                  this.verifyFailedTips = ((e) => {
+                    let msg = '';
+                    switch (e) {
+                      case 'prm.modules.sys.security.CaptchaException':
+                        msg = this.$t('login.verifyCodeErr');
+                        break;
+                      case 'org.apache.shiro.authc.AuthenticationException':
+                        msg = this.$t('login.verifyErr');
+                        break;
+                      case 'org.apache.shiro.authc.IncorrectCredentialsException':
+                        msg = this.$t('login.verifyErr');
+                        break;
+                      case 'org.apache.shiro.authc.UnknownAccountException':
+                        msg = this.$t('login.verifyErr');
+                        break;
+                      default:
+                        msg = this.$t('common.unknownError');
+                        break;
+                    }
+
+                    return msg;
+                  })(err.errorType);
+                  this.isVerifyFailed = true;
+                } catch (e) {
+                  console.log(e);
+                }
+              })
+            } else { // 密码明文
+              this.$store.dispatch('Login', this.loginForm).then((res) => {
+                console.log(res)
+
+                this.loading = false;
+                if (this.localeLanguage && this.localeLanguage!=='zh' && this.localeLanguage!=='en') {
+                  this.getLocaleLanguage().then(() => {
+                    this.$router.push({ path: '/' });
+                  }).catch(() => {
+                    this.$router.push({ path: '/' });
+                  });
+                } else {
+                  this.$router.push({ path: '/' });
+                }
+              }).catch((err) => {
+                console.log(err)
+
+                try {
+                  this.isVerifyNumThan3 = err.isValidateCodeLogin;
+                  this.loading = false;
+                  this.verifyFailedTips = ((e) => {
+                    let msg = '';
+                    switch (e) {
+                      case 'prm.modules.sys.security.CaptchaException':
+                        msg = this.$t('login.verifyCodeErr');
+                        break;
+                      case 'org.apache.shiro.authc.AuthenticationException':
+                        msg = this.$t('login.verifyErr');
+                        break;
+                      case 'org.apache.shiro.authc.IncorrectCredentialsException':
+                        msg = this.$t('login.verifyErr');
+                        break;
+                      case 'org.apache.shiro.authc.UnknownAccountException':
+                        msg = this.$t('login.verifyErr');
+                        break;
+                      default:
+                        msg = this.$t('common.unknownError');
+                        break;
+                    }
+
+                    return msg;
+                  })(err.errorType);
+                  this.isVerifyFailed = true;
+                } catch (e) {
+                  console.log(e)
+                }
+              })
+            }
+          } else {
+            console.log('error submit!!')
+            return false
+          }
+        })
       }
     },
-    handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('Login', this.loginForm).then(() => {
-            this.loading = false
-            this.$router.push({ path: '/' })
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
+    handleSetLanguage(lang) { // 切换语言状态执行方法
+      this.$i18n.locale = lang;
+      this.$store.dispatch('setLanguage', lang);
+      location.reload();
+    },
+    getLocaleLanguage() {
+      return new Promise((resolve, reject) => {
+        findContentByLemmaId({
+          id: this.localeLanguage
+        }).then(res => {
+          console.log(res)
+
+          this.$i18n.setLocaleMessage(this.localeLanguage, res.content);
+          this.$i18n.locale = this.localeLanguage;
+          this.$store.dispatch('setLocaleLanguage', this.localeLanguage);
+          this.$message({
+            message: this.$t('common.switchLanguageSuccess'),
+            type: 'success'
+          });
+          resolve();
+        }).catch(err => {
+          console.log(err);
+          reject();
+        })
       })
+    },
+    clearUsername() {
+      if(this.isUsernameNull) {
+        this.loginForm.username = ''
+        this.isUsernameNull = false
+      }
+    },
+    clearPassword() {
+      if(this.isPasswordNull) {
+        this.loginForm.password = ''
+        this.pwdType = 'password'
+        this.isPasswordNull = false
+      }
+    },
+    clearCode() {
+      if(this.isCodeNull) {
+        this.loginForm.code = ''
+        this.isCodeNull = false
+      }
+    },
+    updateCodeImgSrc() {
+      this.codeImgSrc = '/prm-web/servlet/validateCodeServlet?' + (new Date().getTime());
+    },
+  },
+  watch: {
+    isVerifyNumThan3(val) {
+      if (val === true) {
+        this.codeImgSrc = '/prm-web/servlet/validateCodeServlet';
+      }
     }
   }
 }
@@ -113,12 +373,20 @@ $light_gray:#eee;
         -webkit-text-fill-color: #fff !important;
       }
     }
+
+    &.error>input {
+      color: #f56c6c;
+    }
   }
   .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(0, 0, 0, 0.1);
     border-radius: 5px;
     color: #454545;
+
+    &.error {
+      border: 1px solid #f56c6c;
+    }
   }
 }
 
@@ -141,16 +409,23 @@ $light_gray:#eee;
     padding: 35px 35px 15px 35px;
     margin: 120px auto;
   }
-  .tips {
-    font-size: 14px;
-    color: #fff;
-    margin-bottom: 10px;
-    span {
-      &:first-of-type {
-        margin-right: 16px;
+
+  .logo {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 20px;
+  }
+
+  .lang-select {
+    text-align: center;
+    .el-button {
+      color: #f0f0f0;
+      &:hover {
+        color: #fff;
       }
     }
   }
+
   .svg-container {
     padding: 6px 5px 6px 15px;
     color: $dark_gray;
@@ -161,14 +436,16 @@ $light_gray:#eee;
       font-size: 20px;
     }
   }
+
   .title {
-    font-size: 26px;
+    font-size: 18px;
     font-weight: 400;
     color: $light_gray;
     margin: 0px auto 40px auto;
     text-align: center;
     font-weight: bold;
   }
+
   .show-pwd {
     position: absolute;
     right: 10px;
@@ -177,6 +454,16 @@ $light_gray:#eee;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
+  }
+
+  .code-box {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .show-verify-tips {
+    top: -50px !important;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <section class="app-main">
+  <section class="app-main" id="appMain">
     <transition name="fade" mode="out-in">
       <!-- <router-view :key="key"></router-view> -->
       <router-view></router-view>
@@ -10,6 +10,10 @@
 <script>
 export default {
   name: 'AppMain',
+  data() {
+    return {
+    }
+  },
   computed: {
     // key() {
     //   return this.$route.name !== undefined ? this.$route.name + +new Date() : this.$route + +new Date()
@@ -17,3 +21,14 @@ export default {
   }
 }
 </script>
+
+<style rel="stylesheet/scss" lang="scss" scoped>
+  .app-main {
+    min-height: calc(100vh - 50px);
+    /*padding: 66px 32px 32px;*/
+    padding: 54px 20px 20px;
+    background-color: #f0f2f5;
+    position: relative;
+    overflow: hidden;
+  }
+</style>

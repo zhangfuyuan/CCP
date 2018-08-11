@@ -1,2 +1,17 @@
 # CCP
-A Centre-control Platform
+
+  A Centre-control Platform
+
+## 使用说明
+
+1. 切换到 `个人模式` 下，并将分支切至 `develop`
+
+2. 进入项目根目录，打开 `git-bash` 依次执行如下指令：
+
+```
+  npm i #这一步可能需要几十分钟的等待（不推荐用cnpm镜像下载）
+  
+  npm run dev
+```
+
+3. 接下来只能在 `个人模式` 下开发，建议备份后再开发，以免不慎切回 `工作模式` 导致项目运行失败！！！

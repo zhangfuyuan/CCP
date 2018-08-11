@@ -1,9 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-// in development-env not use lazy-loading, because lazy-loading too many pages will cause webpack hot update too slow. so only in production use lazy-loading;
-// detail: https://panjiachen.github.io/vue-element-admin-site/#/lazy-loading
-
 Vue.use(Router)
 
 /* Layout */
@@ -22,57 +19,93 @@ import Layout from '../views/layout/Layout'
   }
 **/
 export const constantRouterMap = [
-  { path: '/login', component: () => import('@/views/login/index'), hidden: true },
-  { path: '/404', component: () => import('@/views/404'), hidden: true },
-
+  { path: '/login', name: 'login', component: () => import('@/views/login/index'), hidden: true },
+  { path: '/404', name: 'page404', component: () => import('@/views/errorPage/404'), hidden: true },
+  { path: '/401', name: 'page401', component: () => import('@/views/errorPage/401'), hidden: true },
+  { path: '/', redirect: '/device/deviceManager', hidden: true },
+  // 账号设置
   {
-    path: '/',
+    path: '/accountSettings',
     component: Layout,
-    redirect: '/dashboard',
-    name: 'Dashboard',
+    redirect: '/accountSettings/index',
     hidden: true,
-    children: [{
-      path: 'dashboard',
-      component: () => import('@/views/dashboard/index')
-    }]
-  },
-
-  {
-    path: '/example',
-    component: Layout,
-    redirect: '/example/table',
-    name: 'Example',
-    meta: { title: 'Example', icon: 'example' },
     children: [
       {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
-      },
-      {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
+        path: '/accountSettings/index', // 若为三级路由，二级路由必须写全路径
+        name: 'accountSettings',
+        component: () => import('@/views/accountSettings/index'),
+        meta: { title: 'accountSettings', noCache: true },
+        children: [
+          // 修改密码
+          {
+            path: 'modifyPswd',
+            name: 'accountSettings-modifyPswd',
+            component: () => import('@/views/accountSettings/modifyPswd'),
+            meta: { title: 'modifyPswd', noCache: true }
+          }
+        ]
       }
     ]
   },
-
+  // 词条设置
   {
-    path: '/form',
+    path: '/wordSettings',
     component: Layout,
+    redirect: '/wordSettings/index',
+    hidden: true,
     children: [
       {
         path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
+        name: 'wordSettings',
+        component: () => import('@/views/wordSettings/index'),
+        meta: { title: 'wordSettings', noCache: true }
       }
     ]
   },
-
-  { path: '*', redirect: '/404', hidden: true }
+  // 设备管理
+  {
+    path: '/device',
+    component: Layout,
+    redirect: '/device/deviceManager',
+    name: 'device',
+    meta: {
+      title: 'deviceManager',
+      icon: 'setting',
+      noCache: true
+    },
+    children: [
+      // 设备设置
+      {
+        path: 'deviceManager',
+        name: 'deviceManager',
+        component: () => import('@/views/device/deviceManager'),
+        meta: { title: 'deviceSettings', noCache: true }
+      },
+      // 计划管理
+      {
+        path: 'planManager',
+        name: 'planManager',
+        component: () => import('@/views/device/planManager'),
+        meta: { title: 'planManager', noCache: true }
+      },
+      {
+        path: '/device/deviceManager', // 若为三级路由，二级路由必须写全路径（重复定义路由，为了解决此框架中非叶子路由左侧菜单无法点击的问题）
+        name: 'deviceManager',
+        component: () => import('@/views/device/deviceManager'),
+        hidden: true,
+        meta: { title: 'deviceSettings', noCache: true },
+        children: [
+          // 设备设置/屏幕画面
+          {
+            path: 'screen',
+            name: 'deviceManager-screen',
+            component: () => import('@/views/device/deviceManager/screen'),
+            meta: { title: 'screen', noCache: true }
+          }
+        ]
+      },
+    ]
+  },
 ]
 
 export default new Router({
@@ -81,3 +114,82 @@ export default new Router({
   routes: constantRouterMap
 })
 
+export const asyncRouterMap = [
+  // 系统管理（root权限）
+  {
+    path: '/system',
+    component: Layout,
+    redirect: '/system/accountManager',
+    name: 'system',
+    meta: {
+      title: 'systemManager',
+      icon: 'display',
+      roles: ['root'],
+      noCache: true
+    },
+    children: [
+      // 账号管理
+      {
+        path: 'accountManager',
+        name: 'accountManager',
+        component: () => import('@/views/system/accountManager'),
+        meta: { title: 'accountManager', noCache: true }
+      },
+      // 机构管理
+      {
+        path: 'officeManager',
+        name: 'officeManager',
+        component: () => import('@/views/system/officeManager'),
+        meta: { title: 'officeManager', noCache: true }
+      },
+      // IP设置
+      {
+        path: 'ipManager',
+        name: 'ipManager',
+        component: () => import('@/views/system/ipManager'),
+        meta: { title: 'ipManager', noCache: true }
+      },
+      {
+        path: '/system/accountManager', // 若为三级路由，二级路由必须写全路径（重复定义路由，为了解决此框架中非叶子路由左侧菜单无法点击的问题）
+        name: 'accountManager',
+        component: () => import('@/views/system/accountManager'),
+        hidden: true,
+        meta: { title: 'accountManager', noCache: true },
+        children: [
+          // 账号管理/创建账号
+          {
+            path: 'createAccount',
+            name: 'accountManager-createAccount',
+            component: () => import('@/views/system/accountManager/createAccount'),
+            meta: { title: 'createAccount', noCache: true }
+          },
+          // 账号管理/编辑账号
+          {
+            path: 'editAccount',
+            name: 'accountManager-editAccount',
+            component: () => import('@/views/system/accountManager/editAccount'),
+            meta: { title: 'editAccount', noCache: true }
+          }
+        ]
+      },
+      {
+        path: '/system/officeManager', // 若为三级路由，二级路由必须写全路径（重复定义路由，为了解决此框架中非叶子路由左侧菜单无法点击的问题）
+        name: 'officeManager',
+        component: () => import('@/views/system/officeManager'),
+        hidden: true,
+        meta: { title: 'officeManager', noCache: true },
+        children: [
+          // 机构管理/分配点数
+          {
+            path: 'distributionPoints',
+            name: 'officeManager-distributionPoints',
+            component: () => import('@/views/system/officeManager/distributionPoints'),
+            meta: { title: 'distributionPoints', noCache: true }
+          }
+        ]
+      },
+    ]
+  },
+
+  { path: '*', redirect: '/404', hidden: true }
+]

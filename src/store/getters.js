@@ -1,9 +1,20 @@
 const getters = {
   sidebar: state => state.app.sidebar,
   device: state => state.app.device,
+  language: state => state.app.language,
+  localeLanguage: state => state.app.localeLanguage,
+  process_env: state => state.app.process_env,
+  public_path: state => state.app.process_env==='production' ? '/PRM' : '',
+  id: state => state.user.id,
+  loginName: state => state.user.loginName,
   token: state => state.user.token,
-  avatar: state => state.user.avatar,
   name: state => state.user.name,
-  roles: state => state.user.roles
+  roles: state => state.user.roles,
+  officeId: state => state.user.officeId,
+  officeName: state => state.user.officeName,
+  serverIp: state => state.user.serverIp,
+  identity: state => state.user.identity,
+  permission_routers: state => state.permission.routers,
+  addRouters: state => state.permission.addRouters,
 }
 export default getters

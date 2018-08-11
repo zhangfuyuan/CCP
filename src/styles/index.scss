@@ -1,8 +1,22 @@
+@charset "utf-8";
+
 @import './variables.scss';
 @import './mixin.scss';
 @import './transition.scss';
 @import './element-ui.scss';
 @import './sidebar.scss';
+
+/* 清除内外边距 */
+body, h1, h2, h3, h4, h5, h6, hr, p, blockquote,
+pre,dl, dt, dd, ul, ol, li,
+form, fieldset, lengend, button, input, textarea,
+th, td { margin: 0; padding: 0; }
+
+/* 重置列表元素 */
+ul, ol { list-style: none; }
+
+/* img 搭车：让链接里的 img 无边框 */
+fieldset, img { border: 0; }
 
 body {
   height: 100%;
