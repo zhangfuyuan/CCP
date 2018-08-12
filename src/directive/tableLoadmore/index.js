@@ -17,7 +17,7 @@ const tabelLoadmore = function () {
          * ele.scrollHeight - ele.scrollTop === ele.clientHeight;
          */
         let sign = 80; // 定义默认的向上滚于乡下滚的边界
-        const CONDITION = ((Math.floor(this.scrollHeight) - Math.floor(this.scrollTop) <= Math.floor(this.clientHeight+50)) &&
+        const CONDITION = ((Math.floor(this.scrollHeight) - Math.floor(this.scrollTop) <= Math.floor(this.clientHeight+15)) &&
         (Math.floor(this.scrollTop) > sign)) // 注意: && this.scrollTop 而且都要取整
 
         if(this.scrollTop > sign) {

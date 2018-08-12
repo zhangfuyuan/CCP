@@ -350,11 +350,21 @@
       <div class="details-dialog" v-if="dialogKey === 'modify' && dialogInfo">
         <el-form :model="dialogInfo" label-width="100px" label-position="left">
           <el-form-item :label="$t('deviceManager.deviceName') + ' *'">
-            <el-input v-model="dialogInfo.name" @change.native="isChangeModifyDialog = true"></el-input>
+            <div class="el-input">
+              <input type="text"
+                     @input="isChangeModifyDialog = true"
+                     v-model="dialogInfo.name"
+                     :maxlength="24"
+                     :placeholder="$t('deviceManager.deviceNameNotExceed24')"
+                     class="el-input__inner"/>
+            </div>
           </el-form-item>
 
           <el-form-item :label="$t('deviceManager.mark')">
-            <el-input type="textarea" v-model="dialogInfo.remarks" :rows="5" @change.native="isChangeModifyDialog = true"></el-input>
+            <el-input type="textarea"
+                      v-model="dialogInfo.remarks"
+                      :rows="5"
+                      @focus="isChangeModifyDialog = true"></el-input>
           </el-form-item>
         </el-form>
 
@@ -435,7 +445,10 @@
             </template>
           </el-tab-pane>
 
-          <el-tab-pane :label="$t('deviceManager.lockScreenSettings')" name="lockScreenSettings" style="height: 500px;">
+          <el-tab-pane :label="$t('deviceManager.lockScreenSettings')"
+                       name="lockScreenSettings"
+                       class="lockScreenSettings-box"
+                       style="height: 500px;">
             <template v-if="settingsDialogActiveTabsName === 'lockScreenSettings'">
               <template v-if="lockScreenResultList.length===0">
                 <el-form label-position="left" label-width="100">
@@ -505,9 +518,9 @@
               <template v-else>
                 <ul class="el-upload-list el-upload-list--text el-upload-list-result">
                   <li :class="['el-upload-list__item', { 'is-success': item.result===1 }]"
-                      v-for="(item, index) in lockScreenResultList" :key="index" style="margin-bottom: 5px;">
+                      v-for="(item, index) in lockScreenResultList" :key="index" style="margin-bottom: 10px;">
                     <a class="el-upload-list__item-name">
-                      <i class="el-icon-document"></i>{{item.id}}
+                      <svg-icon icon-class="AIO" /> {{item.id}}
                     </a>
 
                     <el-progress :percentage="item.result===1 ? 100 : 50"
@@ -599,7 +612,7 @@
                       <li :class="['el-upload-list__item', { 'is-success': item.result===1 }]"
                           v-for="(item, index) in updateAPKResultList" :key="index" style="margin-bottom: 5px;">
                         <a class="el-upload-list__item-name">
-                          <i class="el-icon-document"></i>{{item.id}}
+                          <svg-icon icon-class="AIO" /> {{item.id}}
                         </a>
 
                         <el-progress :percentage="item.result===1 ? 100 : 50"
@@ -1718,7 +1731,7 @@ export default {
         isLockScreen: this.lockScreenRadio!=='0',
         lockScreenTime: this.lockScreenRadio,
         lockingMode: this.lockScreenImgRadio,
-        fid: this.uploadFileInfo.fid,
+        fid: this.uploadFileInfo ? this.uploadFileInfo.fid : '',
       }).then(res => {
         console.log('请求锁屏设置', res);
 
@@ -2197,10 +2210,13 @@ export default {
     margin-bottom: 20px;
   }
 
-  .el-upload-list-result {
+  .lockScreenSettings-box {
     @include scrollBar;
-    padding: 20px;
     overflow: auto;
+  }
+
+  .el-upload-list-result {
+    padding: 20px;
   }
 
   .apk-list {

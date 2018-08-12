@@ -47,10 +47,10 @@ export function dealOffice(info) {
   })
 }
 
-// 4.机构信息列表  prm-web/a/sys/office/list  method=get|post
+// 4.机构信息列表  prm-web/a/sys/office/list -> prm-web/a/terminalOffice/list   method=get|post
 export function getOfficeList() {
   return request({
-    url: '/a/sys/office/list',
+    url: '/a/terminalOffice/list',
     method: 'get'
   })
 }

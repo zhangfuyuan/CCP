@@ -347,7 +347,7 @@
           type: 'warning',
           closeOnClickModal: false,
           closeOnPressEscape: false,
-          showClose: false
+          showClose: false,
         }).then(() => {
         }).catch(() => { // 确认离开
           next();

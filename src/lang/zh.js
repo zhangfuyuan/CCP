@@ -93,6 +93,7 @@ export default {
     loading: "加载中",
     atAll: "到底了",
     deviceName: "设备名称",
+    deviceNameNotExceed24: "设备名称(不超过24个字)",
     subsidiaryOrgan: "所属机构",
     state: "状态",
     online: "在线",
@@ -242,7 +243,6 @@ export default {
     equipmentID: "设备ID",
     deviceName: "设备名称",
     organization:"所属机构",
-    planDetails: "计划详情",
     functionalType: "功能类型",
     powerSupplyPlan:"电源计划",
     associatedEquipmen:"关联设备",
@@ -356,5 +356,9 @@ export default {
     officeIsNull: "机构不存在",
     pointError: "原点数不正确",
     refreshCertification: "刷新认证",
+    cannotContinueIncreasePointTips: "因上级机构点数不足，无法继续增加点数！",
+    cannotContinueReducePoints: "因机构点数不能小于分配的点数，无法继续减少点数！",
+    moveOfficeTips: "关联设备与子机构跟随移动，点数回归上一级机构",
+    cannotMoveToThisOffice: "无法移动至本机构",
   }
 }

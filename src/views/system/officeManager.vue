@@ -49,11 +49,13 @@
     <!--右侧动态视图-->
     <div class="view" :style="{ 'height': viewHeight + 'px' }">
       <div style="margin-bottom: 30px;" v-if="!isSubRoute">
-        <span style="color: #409EFF;font-size: 16px;">{{$t('officeManager.intelligentAllocationPointsMode')}}</span>
+        <span style="color: #409EFF;font-size: 16px;">
+          <svg-icon icon-class="eglass-tag" style="font-size: 16px;cursor: pointer;" /> {{$t('officeManager.intelligentAllocationPointsMode')}}
+        </span>
       </div>
 
       <div v-if="isNoAuth && !isSubRoute"
-           style="width: 538px;margin: 0 0 10px 10%;border: 1px solid #F56C6C;display: flex;align-items: center;justify-content: space-between;cursor: pointer;border-radius: 4px;background-color: #fff;padding: 0 10px;"
+           style="width: 538px;margin: 0 0 10px;border: 1px solid #F56C6C;display: flex;align-items: center;justify-content: space-between;cursor: pointer;border-radius: 4px;background-color: #fff;padding: 0 10px;"
            @click="toggleDialogInfo('verify')">
         <span>
           <i class="el-icon-warning" style="color: #F56C6C;"></i>
@@ -76,7 +78,7 @@
                 </div>
 
                 <div class="info">
-                  <div class="id">{{$t('officeManager.id')}} &nbsp;{{curClickOfficeParentInfo.id}}</div>
+                  <div class="id">{{$t('officeManager.id')}} &nbsp;{{curClickOfficeParentInfo.organizationCode}}</div>
 
                   <div class="points">
                     {{$t('officeManager.mechanismTotalPoints')}} {{curClickOfficeParentInfo.terminalTotal||0}}
@@ -119,7 +121,7 @@
               </div>
 
               <div class="info">
-                <div class="id">{{$t('officeManager.id')}} &nbsp;{{curClickOfficeInfo.id}}</div>
+                <div class="id">{{$t('officeManager.id')}} &nbsp;{{curClickOfficeInfo.organizationCode}}</div>
 
                 <div class="points">
                   {{$t('officeManager.mechanismTotalPoints')}} {{curClickOfficeInfo.terminalTotal||0}} =
@@ -186,7 +188,7 @@
                   </div>
 
                   <div class="info">
-                    <div class="id">{{$t('officeManager.id')}} &nbsp;{{item.id}}</div>
+                    <div class="id">{{$t('officeManager.id')}} &nbsp;{{item.organizationCode}}</div>
 
                     <div class="points">
                       {{$t('officeManager.mechanismTotalPoints')}} {{item.terminalTotal||0}}
@@ -241,7 +243,7 @@
                     :maxlength="24"
                     :autofocus="true"></el-input>
         </div>
-        <div v-if="curClickOfficeId === officeId && !isNoAuth"
+        <div v-if="!isNoAuth && curClickOfficeInfo.type===0"
              style="display: flex;justify-content: space-between;align-items: center;color: #606266;padding-top: 20px;font-size: 16px;">
           <span>
             {{$t('officeManager.distributablePoints')}}: &nbsp; <span style="color: #409EFF;">{{newInputTotalNumber}}</span>
@@ -251,15 +253,19 @@
             <el-input-number size="small"
                              v-model="newOfficeForm.inputNumberVal"
                              :min="0"
-                             :max="newInputTotalNumber"></el-input-number>
+                             :max="newInputTotalNumber"
+                             @change="changePointsToNewOfficeHandle"
+                             :precision="0"></el-input-number>
           </span>
         </div>
-        <div v-else style="color: #909399;padding-top: 20px;">
+        <div v-if="!isNoAuth && curClickOfficeInfo.type!==0" style="color: #909399;padding-top: 20px;">
           {{$t('officeManager.intelligentAllocationPointsMode')}}
         </div>
 
         <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="append(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
+          <el-button type="primary"
+                     @click="append(), isShowDialog = false"
+                     :disabled="!newOfficeForm.name || (!newOfficeForm.inputNumberVal&&newOfficeForm.inputNumberVal!==0)" >{{$t('common.confirm')}}</el-button>
           <el-button plain @click="isShowDialog = false">{{$t('common.cancel')}}</el-button>
         </div>
       </template>
@@ -301,6 +307,8 @@
           check-strictly
           :default-expanded-keys="moveOfficeDefaultExpandedKeys">
         </el-tree>
+
+        <div style="color: #999;font-size: 12px;">* {{$t('officeManager.moveOfficeTips')}}</div>
 
         <div slot="footer" class="dialog-footer">
           <el-button :disabled="!curCheckedMoveOfficeId" type="primary" @click="move(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
@@ -402,21 +410,25 @@
           title: '--',
           width: '30%'
         },
+        // 新建
         newOfficeForm: { // 新建子机构表单 newOfficeForm.inputNumberVal
           name: '',
           inputNumberVal: 0
         },
         g_loading: null, // loading 全局单例
+        // 移动
         curCheckedMoveOfficeId: '', // 移动机构树当前选中机构ID
         moveOfficeTree: null, // 移动机构树（同步officeTree）（但一定是个数组）
         moveOfficeProps: { // 移动机构树的设置
           children: 'children',
           label: 'name'
         },
+        // 认证
         authForm: { // 认证表单数据
           officeUserName: '',
           verificationCode: ''
         },
+        // 修改
         editOfficeName: '', // 修改名称表单数据
         editNameOfficeId: '', // 修改名称的机构id
         subRoute: { // 子路由（分配点数）模块属性
@@ -446,7 +458,7 @@
       },
       newInputTotalNumber() {
         return this.curClickOfficeInfo&&this.curClickOfficeInfo.terminalTotal ?
-                this.curClickOfficeInfo.terminalTotal - this.curClickOfficeInfo.terminalAssigned - this.newOfficeForm.inputNumberVal :
+                this.curClickOfficeInfo.terminalTotal - this.curClickOfficeInfo.terminalAssigned:
                 0;
       },
       moveOfficeDefaultExpandedKeys() {
@@ -515,8 +527,8 @@
           newChild.intelligentOfficeId = this.curClickOfficeId;
           newChild.type = 2;
         }
-        if (this.curClickOfficeInfo.type!==1 && this.curClickOfficeInfo.intelligentOfficeId) {
-          newChild.intelligentOfficeId = this.curClickOfficeInfo.intelligentOfficeId;
+        if (this.curClickOfficeInfo.type===2) {
+          newChild.intelligentOfficeId = this.curClickOfficeInfo.intelligentOfficeId || this.curClickOfficeInfo.id; // todo 留个小坑
           newChild.type = 2;
         }
 
@@ -536,9 +548,10 @@
           console.log(res);
 
           res.data.map(item => {
-              if (item.operation === 'add') {
-                newChild.id = item.id
-              }
+            if (item.operation === 'add') {
+              newChild.id = item.id;
+              newChild.organizationCode = item.organizationCode;
+            }
           });
           this.$refs['officeTree'].append(newChild, this.curClickOfficeId);
           let curNode = this.$refs['officeTree'].getNode(this.curClickOfficeId).data;
@@ -569,7 +582,7 @@
                   msg = ': ' +this.$t('officeManager.pointError');
                   break;
                 default:
-                  msg = d ? (': ' + d) : '';
+                  msg = ': ' + this.$t('common.unknownError');
                   break;
               }
 
@@ -626,7 +639,7 @@
                   msg = ': ' +this.$t('officeManager.pointError');
                   break;
                 default:
-                  msg = d ? (': '+d) : '';
+                  msg = ': ' + this.$t('common.unknownError');
                   break;
               }
 
@@ -715,7 +728,7 @@
                     msg = ': ' + this.$t('officeManager.pointError');
                     break;
                   default:
-                    msg = d ? (': '+d) : '';
+                    msg = ': ' + this.$t('common.unknownError');
                     break;
                 }
 
@@ -770,7 +783,7 @@
                   msg = ': ' + this.$t('officeManager.pointError');
                   break;
                 default:
-                  msg = d ? (': '+ d) : '';
+                  msg = ': ' + this.$t('common.unknownError');
                   break;
               }
 
@@ -812,7 +825,7 @@
                   msg = ': ' + this.$t('officeManager.authenticationCodeIsEmpty');
                   break;
                 default:
-                  msg = d ? (': '+d) : '';
+                  msg = ': ' + this.$t('common.unknownError');
                   break;
               }
 
@@ -854,7 +867,7 @@
                   msg = ': ' + this.$t('officeManager.authenticationCodeIsEmpty');
                   break;
                 default:
-                  msg = d ? (': ' + d) : '';
+                  msg = ': ' + this.$t('common.unknownError');
                   break;
               }
 
@@ -867,7 +880,7 @@
       filterNode(value, data) {
         if (!value) return true;
 
-        return data['name'].indexOf(value) !== -1;
+        return (data['name'].indexOf(value)!==-1) || (data['organizationCode'].indexOf(value)!==-1);
       },
       showPopover(id, info, $event) { //这里留个BUG：最后节点点击更多后会关闭Popover！
         this.isClickMoreIcon = true
@@ -897,7 +910,8 @@
             this.$confirm(this.$t('officeManager.modifiedPointsSavedTips'), this.$t('common.notice'), {
               confirmButtonText: this.$t('common.confirm'),
               cancelButtonText: this.$t('common.cancel'),
-              type: 'warning'
+              type: 'warning',
+              showClose: false,
             }).then(() => {
               this.$refs['subRoute'].confirmSubmit().then(() => {
                 this.distributionPoints(d.id);
@@ -924,7 +938,11 @@
               key: key,
               title: this.$t('officeManager.newSubOffice'),
               width: '35%',
-            }
+            };
+            this.newOfficeForm = {
+              name: '',
+              inputNumberVal: 0
+            };
             break;
           case 'remove':
             this.dialogInfo = {
@@ -986,7 +1004,15 @@
       checkMoveOfficeHandle(data, checkedMap) {
         let checkedList = this.$refs['moveOfficeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
 
-        console.log(data.id, checkedList)
+        if (checkedList.indexOf(this.curClickOfficeId) > -1) {
+          this.$message({
+            message: this.$t('officeManager.cannotMoveToThisOffice'),
+            type: 'warning'
+          });
+          this.$refs['moveOfficeTree'].setCheckedKeys([]);
+          return false;
+        }
+
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
           this.$refs['moveOfficeTree'].setCheckedKeys([data.id]);
           this.$refs['moveOfficeTree'].setCurrentKey(data.id);
@@ -998,16 +1024,16 @@
       },
       openDialogHandle() {
         if (this.dialogInfo.key === 'move') {
-          this.moveOfficeTree = JSON.parse(JSON.stringify(this.officeTree))
+          this.moveOfficeTree = JSON.parse(JSON.stringify(this.officeTree));
 
           this.$nextTick(() => {
             let resetTree = this.$refs['moveOfficeTree'].getNode(this.curClickOfficeId).data; // 此处不能用 curClickOfficeInfo
 
-            this.$refs['moveOfficeTree'].setCheckedKeys([this.curClickOfficeId]);
+            this.$refs['moveOfficeTree'].setCheckedKeys([]);
             this.$refs['moveOfficeTree'].setCurrentKey(this.curClickOfficeId);
-            this.updateMoveOfficeCurCheckedOffice(this.curClickOfficeId);
+            this.updateMoveOfficeCurCheckedOffice('');
             try {
-              setBFS(resetTree, 'disabled', true, 'children', 'id', this.curClickOfficeId)
+              setBFS(resetTree, 'disabled', true, 'children', 'id')
             } catch (err) {
               console.log('openDialogHandle', err)
             }
@@ -1093,6 +1119,19 @@
           node.type = params.curOfficeInfo.type;
 
           this.updateCurClickOffice(params.curOfficeId, node);
+        }
+      },
+      changePointsToNewOfficeHandle(val) {
+        if (val >= this.newInputTotalNumber) {
+          this.$message({
+            message: this.$t('officeManager.cannotContinueIncreasePointTips'),
+            type: 'warning'
+          });
+        } else if (val <= 0) {
+          this.$message({
+            message: this.$t('officeManager.cannotContinueReducePoints'),
+            type: 'warning'
+          });
         }
       }
     }
@@ -1341,8 +1380,8 @@
 
   .move-tree {
     @include scrollBar;
-    width: 400px;
-    min-height: 400px;
+    width: 350px;
+    min-height: 350px;
     max-height: 500px;
     overflow: auto;
     border: 1px solid #DCDFE6;

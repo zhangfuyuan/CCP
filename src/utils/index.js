@@ -337,23 +337,22 @@ export function getChildrenByBFS(source, childKey) {
  *  val         无限制 设置的属性值
  *  childKey    字符串 子节点数组属性名
  *  idKey       字符串 类似id的区分属性名
- *  rootId      数字   区分根节点id
  *
  *  return      null
  *
  *  仅能在结合 element-ui tree 控件下使用,仅供参考
  *  注意：遍历的层级超过 8000 会导致栈溢出，建议 try catch 一下
  * */
-export function setBFS(tree, key, val, childKey, idKey, rootId) {
+export function setBFS(tree, key, val, childKey, idKey) {
   if (!tree) return;
 
-  if (tree[idKey] !== rootId ) tree[key] = val;
+  if (tree[idKey]) tree[key] = val;
 
   if (tree[childKey] && tree[childKey].length > 0) {
-    let len = tree[childKey].length
+    let len = tree[childKey].length;
 
     for (let i=0; i < len; i++) {
-      setBFS(tree[childKey][i], key, val, childKey, idKey, rootId);
+      setBFS(tree[childKey][i], key, val, childKey, idKey);
     }
   }
 }

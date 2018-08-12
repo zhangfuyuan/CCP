@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="info">
-                  <div class="id">{{$t('officeManager.id')}} &nbsp; {{curOfficeId}}</div>
+                  <div class="id">{{$t('officeManager.id')}} &nbsp; {{confirmForm.curOfficeInfo.organizationCode}}</div>
 
                   <div class="points">
                     {{$t('officeManager.distributablePoints')}} {{(confirmForm.curOfficeInfo.terminalTotal||0) - (confirmForm.curOfficeInfo.terminalAssigned||0)}} &nbsp;
@@ -92,9 +92,10 @@
                                        :min="confirmForm.curOfficeInfo.terminalAssigned"
                                        v-model="confirmForm.curOfficeInfo.terminalTotal"
                                        :max="confirmForm.curOfficeInfo.terminalTotal+higherDistributablePoints"
-                                       @change="changePointsHandle(arguments, confirmForm.curOfficeInfo.terminalAssigned, confirmForm.curOfficeInfo.terminalTotal+higherDistributablePoints)"
+                                       @change="changePointsHandle(arguments, confirmForm.curOfficeInfo.terminalAssigned, confirmForm.curOfficeInfo.terminalTotal+higherDistributablePoints, confirmForm.curOfficeInfo)"
                                        :key="confirmForm.curOfficeInfo.id"
-                                       :name="confirmForm.curOfficeInfo.id + 'inputNumber'">
+                                       :name="confirmForm.curOfficeInfo.id + 'inputNumber'"
+                                       :precision="0">
                       </el-input-number>
                     </span>
                     <span v-else style="color:#409EFF;font-size: 20px;padding-right: 20px;">
@@ -158,9 +159,10 @@
                                      :min="item.terminalAssigned"
                                      v-model="item.terminalTotal"
                                      :max="childrenHigherDistributablePoints+item.terminalTotal"
-                                     @change="changePointsHandle(arguments, item.terminalAssigned, childrenHigherDistributablePoints+item.terminalTotal)"
+                                     @change="changePointsHandle(arguments, item.terminalAssigned, childrenHigherDistributablePoints+item.terminalTotal, item)"
                                      :key="item.id"
-                                     :name="item.id + 'inputNumber'">
+                                     :name="item.id + 'inputNumber'"
+                                     :precision="0">
                     </el-input-number>
                   </div>
                 </div>
@@ -238,7 +240,7 @@
         if (!val) return;
 
         this.confirmForm.curOfficeInfo = JSON.parse(JSON.stringify(val));
-        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo&&(this.confirmForm.curOfficeInfo.intelligentOfficeId);
+        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo.type===2;
         this.curOfficeIsWisdom = this.confirmForm.curOfficeInfo.type===1;
         this.confirmForm.curOfficeInfo.oldTerminalTotal = this.confirmForm.curOfficeInfo.terminalTotal;
         this.confirmForm.curOfficeInfo.oldTerminalAssigned = this.confirmForm.curOfficeInfo.terminalAssigned;
@@ -278,7 +280,7 @@
           curOfficeParents: JSON.parse(JSON.stringify(this.curOfficeParents)).reverse(),
           curOfficeAllSun: []
         };
-        this.isSubOpenIntelligentPointAllocation = !!this.confirmForm.curOfficeInfo.intelligentOfficeId;
+        this.isSubOpenIntelligentPointAllocation = this.confirmForm.curOfficeInfo.type===2;
         this.higherDistributablePoints = this.getHigherDistributablePoints();
         this.childrenHigherDistributablePoints = this.higherDistributablePoints + (this.confirmForm.curOfficeInfo.terminalTotal-this.confirmForm.curOfficeInfo.terminalAssigned);
         this.curOfficeIsWisdom = this.confirmForm.curOfficeInfo.type===1;
@@ -308,7 +310,7 @@
           return total + (item.terminalTotal - item.terminalAssigned);
         }, 0)
       },
-      changePointsHandle(args, min, max) {
+      changePointsHandle(args, min, max, obj) {
         console.log('最后变更点数后', args, min, max);
         this.$bus.emit('distribution-points-operated', true);
 
@@ -321,14 +323,28 @@
 
         let newVal = args[0];
         let oldVal = args[1];
-        let diffVal = oldVal - newVal;
-        let minVal = min;
-        let maxVal = max + diffVal;
 
+        if (!newVal && newVal!==0) {
+          newVal = min;
+          let diffVal = oldVal - newVal;
+          let minVal = min;
+          let maxVal = max + diffVal;
+
+          this.$nextTick(() => {
+            obj.terminalTotal = min;
+            this.changePoints(diffVal, newVal, maxVal, minVal);
+          })
+        } else {
+          let diffVal = oldVal - newVal;
+          let minVal = min;
+          let maxVal = max + diffVal;
+
+          this.changePoints(diffVal, newVal, maxVal, minVal);
+        }
+      },
+      changePoints(diffVal, newVal, maxVal, minVal) {
         if (this.isShowAllChildren) { // 子机构操作
           this.childrenHigherDistributablePoints += diffVal;
-
-          if (!this.confirmForm.curOfficeInfo.terminalTotal) return;
 
           if (diffVal > 0) { // 减操作
             console.log(`本机构回收分配点数${diffVal}`);
@@ -386,8 +402,6 @@
         } else { // 本机构操作
           this.higherDistributablePoints += diffVal;
 
-          if (!this.confirmForm.curOfficeParents[this.confirmForm.curOfficeParents.length-1].terminalTotal) return;
-
           if (diffVal > 0) { // 减操作
             console.log(`${this.confirmForm.curOfficeParents[this.confirmForm.curOfficeParents.length-1].name}机构回收分配点数${diffVal}`);
             // todo 本机构【减】总点数 -> 直属父机构【减】已分配数，总点数不变
@@ -428,16 +442,16 @@
           }
         }
 
-        console.log('分配点数后：', this.confirmForm.curOfficeInfo, this.confirmForm.curOfficeParents)
+        console.log('分配点数后：', this.confirmForm.curOfficeInfo, this.confirmForm.curOfficeParents);
 
         if (newVal >= maxVal) {
           this.$message({
-            message: '警告哦，因上级机构点数不足，无法继续增加点数！',
+            message: this.$t('officeManager.cannotContinueIncreasePointTips'),
             type: 'warning'
           });
         } else if (newVal <= minVal) {
           this.$message({
-            message: '警告哦，因机构点数不能小于分配的点数，无法继续减少点数！',
+            message: this.$t('officeManager.cannotContinueReducePoints'),
             type: 'warning'
           });
         }
@@ -589,7 +603,7 @@
         } catch (err) {
           console.log(err)
         }
-      }
+      },
     }
   }
 </script>

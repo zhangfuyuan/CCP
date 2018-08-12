@@ -93,6 +93,7 @@ export default {
     loading: "Loading",
     atAll: "At all",
     deviceName: "Device name",
+    deviceNameNotExceed24: "Device name(no more than 24 words)",
     subsidiaryOrgan: "Subsidiary organ",
     state: "State",
     online: "Online",
@@ -242,7 +243,6 @@ export default {
     equipmentID: "Equipment ID",
     deviceName:"Device name",
     organization:"Organization",
-    planDetails:"Details of the plan",
     functionalType: "Functional type",
     powerSupplyPlan:"Power supply plan",
     associatedEquipmen:"Associated equipment",
@@ -356,5 +356,9 @@ export default {
     officeIsNull: "Office is null",
     pointError: "Point error",
     refreshCertification: "Refresh the certification",
+    cannotContinueIncreasePointTips: "Because superior organization point is insufficient, cannot continue to increase point!",
+    cannotContinueReducePoints: "Because the number of agency points cannot be less than the number of allocated points, cannot continue to reduce points!",
+    moveOfficeTips: "The device and sub - mechanism move with each other",
+    cannotMoveToThisOffice: "Cannot move to this body",
   }
 }

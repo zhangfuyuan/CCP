@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/prm-web/**': {
-        target: 'http://192.168.1.155:8080',
+        target: 'http://localhost:8283', // 这个不用合！！！
       },
     },
 
