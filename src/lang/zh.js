@@ -199,6 +199,8 @@ export default {
     replaceImage: "替换图像",
     remoteUpdate: "远程更新",
     apkNotJikong: "不是集控APK",
+    sureLeaveTips: "正在处理，确定离开？",
+    uploadBtn: "上 传",
   },
   planManager: {
     associatedApparatus: "关联设备",
@@ -248,7 +250,7 @@ export default {
     associatedEquipmen:"关联设备",
     totalSelection:"全选",
     addDevice:"添加设备",
-    disassociate:"取消关联"
+    disassociate:"取消关联",
   },
   accountManager: {
     total: "共",
@@ -273,6 +275,7 @@ export default {
     searchNameOrUsername: "搜索名称或用户名",
     createdSuccess:"新建成功！",
     createdError:"新建失败！",
+    createdErr: "无法为该机构创建系统管理员角色账号"
   },
   ipManager: {
     serverIP: "服务器 IP / 域名",

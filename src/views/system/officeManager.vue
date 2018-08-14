@@ -1106,12 +1106,14 @@
             node.terminalAssigned = item.terminalAssigned;
             node.terminalTotal = item.terminalTotal;
             node.intelligentOfficeId = item.intelligentOfficeId;
+            node.type = item.type;
           });
           params.bloodList.map(item => {
             node = this.$refs['officeTree'].getNode(item.id).data;
             node.terminalAssigned = item.terminalAssigned;
             node.terminalTotal = item.terminalTotal;
-            node.intelligentOfficeId = item.intelligentOfficeId || '';
+            node.intelligentOfficeId = item.intelligentOfficeId || item.intelligentOfficeId; // todo 留个坑
+            node.type = item.type;
           });
           node = this.$refs['officeTree'].getNode(params.curOfficeId).data;
           node.terminalAssigned = params.curOfficeInfo.terminalAssigned;

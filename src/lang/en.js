@@ -199,6 +199,8 @@ export default {
     replaceImage: "Replace the image",
     remoteUpdate: "Remote update",
     apkNotJikong: "Not centrally controlled APK",
+    sureLeaveTips: "Processing, making sure to leave?",
+    uploadBtn: "Upload",
   },
   planManager: {
     associatedApparatus: "Associated apparatus",
@@ -273,6 +275,7 @@ export default {
     searchNameOrUsername: "Search for a name or username",
     createdSuccess:"New success",
     createdError:"New failure",
+    createdErr:"Unable to create system administrator role account for this organization"
   },
   ipManager: {
     serverIP: "Server IP/domain name",

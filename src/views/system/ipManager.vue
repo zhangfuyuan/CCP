@@ -1,6 +1,13 @@
 <template>
   <div class="ipManager-wrapper">
-    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="150px" class="ruleForm" inline-message label-position="left">
+    <el-form :model="ruleForm"
+             status-icon
+             :rules="rules"
+             ref="ruleForm"
+             label-width="150px"
+             class="ruleForm"
+             inline-message
+             label-position="left">
       <el-form-item :label="$t('ipManager.serverIP')" prop="serverIP">
         <el-input v-if="isEdit" v-model="ruleForm.serverIP" auto-complete="on" style="width: 300px;"></el-input>
         <span v-else>{{ruleForm.serverIP}}</span>
@@ -78,7 +85,7 @@
         this.ruleForm.serverIP = res.serverIp
         this.ruleForm.terminalIP = res.teIp
         this.defServerIP = res.serverIp
-        this.terminalIP = res.teIp
+        this.defTerminalIP = res.teIp
       }).catch(err => {
         this.ruleForm.serverIP = ''
         this.ruleForm.terminalIP = ''
@@ -115,6 +122,9 @@
         });
       },
       resetForm(formName) {
+        this.$refs['ruleForm'].clearValidate();
+        this.ruleForm.serverIP = this.defServerIP
+        this.ruleForm.terminalIP = this.defTerminalIP
         this.isEdit = false
       },
       defaultForm() {
@@ -132,7 +142,6 @@
       errored() {
         this.$message.error(this.$t('ipManager.errored'));
       }
-
     }
   }
 </script>
@@ -141,7 +150,6 @@
 
 .ipManager-wrapper {
   .ruleForm {
-
   }
 }
 </style>

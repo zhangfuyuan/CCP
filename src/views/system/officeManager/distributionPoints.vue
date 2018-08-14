@@ -145,7 +145,7 @@
                   </div>
 
                   <div class="info">
-                    <div class="id">{{$t('officeManager.id')}} &nbsp; {{item.id}}</div>
+                    <div class="id">{{$t('officeManager.id')}} &nbsp; {{item.organizationCode}}</div>
 
                     <div class="points">
                       {{$t('officeManager.assignedPoints')}} {{item.terminalAssigned||0}} &nbsp; | &nbsp;
@@ -580,9 +580,16 @@
 
         try {
           let allChildren =  getChildrenByBFS(this.confirmForm.curOfficeInfo, 'children');
+          let allChildrenFilter = [];
 
+          // 过滤出直属下级机构
+          allChildren.map(item => {
+            if (item.parentId !== this.curOfficeId) allChildrenFilter.push(item);
+          });
           // 将孙子及以下节点重置
-          this.confirmForm.curOfficeAllSun = allChildren.slice(this.confirmForm.curOfficeChildren.length).map(item => {
+          this.confirmForm.curOfficeAllSun = allChildrenFilter.map(item => {
+            item.oldTerminalTotal = item.terminalTotal;
+            item.oldTerminalAssigned = item.terminalAssigned;
             item.intelligentOfficeId = this.confirmForm.curOfficeInfo.type===1 ? this.curOfficeId : '';
             item.terminalAssigned = 0;
             item.terminalTotal = 0;

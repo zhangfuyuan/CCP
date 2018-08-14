@@ -31,13 +31,13 @@
                      icon="el-icon-search"
                      style="margin-left: 15px;"
                      @click="isShowSearchBtn = false"></el-button>
-          <el-input v-else @keyup.enter.native="handleSearch"
+          <el-input v-else @keyup.enter.native="handleCurDeviceSearch"
                     style="width: 200px;margin-left: 15px;"
                     :placeholder="$t('accountManager.searchNameOrUsername')"
                     v-model="searchVal"
                     clearable
                     @clear="() => { isShowSearchBtn = true }">
-            <i slot="suffix" style="cursor: pointer;" class="el-input__icon el-icon-search" @click="handleSearch"></i>
+            <i slot="suffix" style="cursor: pointer;" class="el-input__icon el-icon-search" @click="handleCurDeviceSearch"></i>
           </el-input>
 
           <span :style="{ 'font-size': '30px', 'cursor': 'pointer', 'margin-left': '15px', 'position': 'relative', 'top': '-1px', 'left': '3px' }"
@@ -384,26 +384,25 @@
 
       <!--添加设备-->
       <div v-if="dialogKey === 'add'" style="width: 800px">
-        <div class="search" style="display: inline-block;"  v-if="isofficeShow">
-          <el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('planManager.searchDeviceName')" v-model="searchOfficeVal">
-            <i slot="suffix" class="el-input__icon el-icon-search" @click="handleSearch"></i>
+        <div class="search" style="display: inline-block;"  v-if="isOfficeShow">
+          <el-input @keyup.enter.native="handleAllDeviceSearch" style="width: 200px;" :placeholder="$t('planManager.searchDeviceName')" v-model="searchOfficeDeviceVal">
+            <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleAllDeviceSearch"></i>
           </el-input>
         </div>
-        <el-row style="margin-top: 10px;" v-if="isofficeShow">
+        <el-row style="margin-top: 10px;" v-if="isOfficeShow">
           <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">返回</a>{{officeName}}</span>
         </el-row>
         <div class="whiteBox"
              :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '330px','z-index': wIndex +'' }">
-
         </div>
         <el-transfer
           :style="{ 'width': '100%', 'position': 'absolute', 'top': '100px', 'left': '10px', 'z-index': zIndex +'' }"
-          v-model="officeVal"
-          :data="officeData"
-          :titles="['设备名称',$t('planManager.selectedEquipment')]"
+          v-model="OfficeDeviceVal"
+          :data="OfficeDeviceData"
+          :titles="[$t('planManager.deviceName'),$t('planManager.selectedEquipment')]"
           :button-texts="[$t('planManager.deleteEquipment'), $t('planManager.addEquipment')]">
         </el-transfer>
-        <el-form style="width: 320px;height: 300px;position: absolute;top: 100px;left: 10px;z-index: 1111">
+        <el-form style="width: 320px;height: 300px;position: absolute;top: 100px;left: 10px;z-index: 1111" v-if="zIndex === 1">
           <el-form-item>
             <el-input
               :placeholder="$t('common.searchOrganizationName')"
@@ -420,11 +419,11 @@
               :default-expanded-keys="[officeId]"
               :filter-node-method="filterNode"
               ref="officeTree"
-              show-checkbox
               highlight-current
               node-key="id"
               check-on-click-node
               :expand-on-click-node="false"
+              @node-click="clickOfficeHandle"
               @check="checkOfficeHandle"
               check-strictly
               style="border: 1px solid #d3dce6;min-height: 248px;">
@@ -435,7 +434,9 @@
 
       <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'add'" style="margin-top: 320px">
         <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;addDecial()" :disabled="isAddDevice">{{$t('common.confirmBtn')}}</el-button>
+        <el-button type="primary"
+                   @click="dialogVisible = false, addDecial()"
+                   :disabled="OfficeDeviceVal.length===0">{{$t('common.confirmBtn')}}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -447,6 +448,7 @@
   import { mapGetters } from 'vuex'
   import { getOfficeList } from '@/api/office'
   import { getPlanList,saveStrategy,delStrategys,strategyTerminal,terminalPageByOffices,strategyRelatedTerminal,delStrategyterminal } from '@/api/plan'
+  import { getDeviceList } from '@/api/device'
 
   export default {
     name: 'deviceManager-screen',
@@ -464,7 +466,7 @@
         showDeviceList: [],
         totalDeviceList: [],
         pageSize: 8,
-        page: 1,
+        page: 0,
         listHeight: document.documentElement.clientHeight - 190,
         searchVal: '',
         isShowSearchBtn: true,
@@ -484,15 +486,15 @@
           label: 'name'
         },
         treeData: [],
-        isofficeShow: false,
-        searchOfficeVal: '',
+        isOfficeShow: false,
+        searchOfficeDeviceVal: '',
         isAddDevice:false,
         wIndex:1200,
         zIndex:1,
-        officeData:[],
-        officeVal:[0,0],
+        OfficeDeviceData:[],
+        OfficeDeviceDataCopy: [], //过滤器备份
+        OfficeDeviceVal:[],
         filterText: '',
-        isChangeContent: "source"
       }
     },
     created() {
@@ -502,11 +504,12 @@
         // todo 根据 curCheckedDeviceList 请求数据
 
         this.totalDeviceList = this.curCheckedDeviceList;
-        this.showDeviceList.push(...this.curCheckedDeviceList.slice(0,8));
+
+        this.showDeviceList.push(...this.totalDeviceList.slice(0,8));
         this.showDeviceList = this.showDeviceList.map(item => {
           item.isLoading = true;
           return item;
-        })
+        });
         this.getScreenList(this.showDeviceList);
 
         console.log(this.showDeviceList);
@@ -527,6 +530,9 @@
       ]),
     },
     watch: {
+      filterText(val) {
+        this.$refs.officeTree.filter(val);
+      }
     },
     mounted() {
     },
@@ -542,7 +548,7 @@
 
             let tid = item.id;
             let count = 1;
-            let sId= setInterval(() => {
+            let sId = setInterval(() => {
               getRltMonitor({ tid }).then(r => {
                 console.log(r);
 
@@ -550,30 +556,31 @@
                   count++;
                   if(count >= 20) {
                     clearInterval(sId);
-                    this.showDeviceList[index].status = '-1';
-                    this.showDeviceList[index].isLoading = false;
+                    this.showDeviceList[index+(this.page*this.pageSize)].status = '-1';
+                    this.showDeviceList[index+(this.page*this.pageSize)].isLoading = false;
                   }
                 } else {
                   clearInterval(sId);
-                  this.showDeviceList[index].status = r.status;
-                  this.showDeviceList[index].isHaveRealCapture = r.isHaveRealCapture;
-                  this.showDeviceList[index].onLineTime = r.onLineTime;
-                  this.showDeviceList[index].captureList = r.captureList;
-                  this.showDeviceList[index].isLoading = false;
+                  this.showDeviceList[index+(this.page*this.pageSize)].status = r.status;
+                  this.showDeviceList[index+(this.page*this.pageSize)].isHaveRealCapture = r.isHaveRealCapture;
+                  this.showDeviceList[index+(this.page*this.pageSize)].onLineTime = r.onLineTime;
+                  this.showDeviceList[index+(this.page*this.pageSize)].captureList = r.captureList;
+                  this.showDeviceList[index+(this.page*this.pageSize)].isLoading = false;
                 }
               }).catch(e => {
                 console.log(e);
+                count++;
                 if(count >= 20) {
                   clearInterval(sId);
-                  this.showDeviceList[index].status = '-1';
-                  this.showDeviceList[index].isLoading = false;
+                  this.showDeviceList[index+(this.page*this.pageSize)].status = '-1';
+                  this.showDeviceList[index+(this.page*this.pageSize)].isLoading = false;
                 }
               });
             }, 3000);
           }).catch(err => {
             console.log(err);
-            this.showDeviceList[index].status = '-1';
-            this.showDeviceList[index].isLoading = false;
+            this.showDeviceList[index+(this.page*this.pageSize)].status = '-1';
+            this.showDeviceList[index+(this.page*this.pageSize)].isLoading = false;
           })
         });
       },
@@ -581,13 +588,20 @@
         if (this.page*this.pageSize < this.totalDeviceList.length) {
           this.busy = true;
           this.page++;
-          this.showDeviceList.push(...this.curCheckedDeviceList.slice(0+this.page, this.pageSize+this.page));
-          this.getScreenList(this.showDeviceList);
+          let newList = this.totalDeviceList.slice(this.page*this.pageSize, this.pageSize*(this.page+1));
+          this.showDeviceList.push(...newList);
+          console.log('轮询', this.showDeviceList, newList);
+          this.getScreenList(newList);
           this.busy = false;
         }
       },
-      handleSearch() {
+      handleCurDeviceSearch() {
         alert('施工中...')
+      },
+      handleAllDeviceSearch() {
+        this.OfficeDeviceData = this.OfficeDeviceDataCopy.filter(item => {
+          return item['label'].indexOf(this.searchOfficeDeviceVal) !== -1;
+        });
       },
       handleAdd() {
         this.toggleDialog('add');
@@ -654,41 +668,55 @@
         this.dialogVisible = true;
       },
       changezIndex() {
-        this.wIndex = 1200
-        this.isAddDevice = false
-        this.dialogTitle = this.$t('planManager.deviceManagement');
+        this.wIndex = 1200;
+        this.isAddDevice = false;
         this.zIndex = 1;
-        this.isofficeShow = false
+        this.isOfficeShow = false;
+      },
+      clickOfficeHandle(data, node, component) {
+
       },
       checkOfficeHandle(data, checkedMap) {
         let checkedList = this.$refs['officeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
           this.zIndex = 1200;
-          this.isAddDevice = true
-          this.dialogTitle = this.$t('planManager.addDevice');
-          this.wIndex = 1
-          $('.el-transfer-panel input[type="checkbox"]').attr('disabled','disabled')
-          this.isofficeShow = true
+          this.isAddDevice = true;
+          this.wIndex = 1;
+          $('.el-transfer-panel input[type="checkbox"]').attr('disabled','disabled');
+          this.isOfficeShow = true;
           this.$refs['officeTree'].setCurrentKey(data.id);
-          this.curofficeId = data.id
-          this.officeName = data.name
-          // officeData
-          terminalPageByOffices({officeIds: this.curofficeId}).then(res => {
-            this.officeData = []
-            for(let key in res.data){
-              let id = res.data[key].id
-              let decimalId = res.data[key].decimalId
-              let decaimalName = res.data[key].name
-              let obj = {}
-              obj.key = id
-              obj.label = decaimalName
-              this.officeData.push(obj)
-            }
-            //this.officeData = res.data;
-            console.log(res)
-          }).catch(err => {
-            console.log(err)
-          })
+          this.curofficeId = data.id;
+          this.officeName = data.name;
+
+          let pageNo = 1;
+          let pageSize = 17;
+          let self = this;
+          this.OfficeDeviceData = [];
+          this.OfficeDeviceDataCopy = [];
+
+          (function getAllDevice() {
+            terminalPageByOffices({
+              officeIds: self.curofficeId,
+              pageNo: pageNo,
+            }).then(res => {
+              for(let key in res.data){
+                let id = res.data[key].id;
+                let decaimalName = res.data[key].name;
+                let obj = {};
+                obj.key = id;
+                obj.label = decaimalName;
+                self.OfficeDeviceData.push(obj);
+                self.OfficeDeviceDataCopy.push(obj);
+              }
+              if (pageNo*pageSize < res.count) {
+                pageNo++;
+                getAllDevice();
+              }
+
+            }).catch(err => {
+              console.log(err)
+            })
+          })();
         } else { // 已选 -> 去选
           this.$refs['officeTree'].setCheckedKeys([]);
           this.curofficeId = ''
@@ -699,6 +727,21 @@
       filterNode(value, data) {
         if (!value) return true;
         return data.name.indexOf(value) !== -1;
+      },
+      addDecial() {
+        console.log(8126, this.OfficeDeviceVal)
+
+        getDeviceList().then(res => {
+
+        }).catch(err => {
+
+        })
+
+        if (this.showDeviceList.length < this.totalDeviceList.length) {
+          this.totalDeviceList.push()
+        } else {
+
+        }
       },
     }
   }

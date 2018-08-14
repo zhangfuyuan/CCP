@@ -11,9 +11,22 @@
         </div>
 
         <div class="search">
-          <el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('accountManager.searchNameOrUsername')" v-model="searchVal">
+          <!--<el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('accountManager.searchNameOrUsername')" v-model="searchVal">
             <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleSearch"></i>
-          </el-input>
+          </el-input>-->
+          <div class="el-input el-input--suffix" style="width: 200px;">
+            <input type="text"
+                   v-model="searchVal"
+                   @input="searchUser"
+                   :placeholder="$t('accountManager.searchNameOrUsername')"
+                   class="el-input__inner" />
+            <span class="el-input__suffix" v-show="!searchVal">
+              <span class="el-input__suffix-inner"><i class="el-input__icon el-icon-search"></i></span>
+            </span>
+            <span class="el-input__suffix" v-show="searchVal" @click="searchVal = '', searchUser()">
+              <span class="el-input__suffix-inner" style="cursor: pointer;"><i class="el-input__icon el-icon-circle-close"></i></span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -283,6 +296,24 @@
             message: '已取消删除'
           });
         });
+      },
+      searchUser(){
+        this.tableData = []
+        getAccountList({
+          pageSize: this.listQuery.limit,
+          searchKey: this.searchVal
+        }).then(res => {
+          this.count = res.count
+          this.tableData = res.userMsg.map(item => {
+            item.roleName = item.roleArray.reduce((total, item) => {
+              return total + (this.language==='zh' ? item.name : item.enname);
+            }, '');
+            item.updateDate = this.formatDateHandle(item.updateDate);
+            return item;
+          });
+        }).catch(err => {
+          console.log(err);
+        })
       },
       delsuccessed() {
         this.$message({

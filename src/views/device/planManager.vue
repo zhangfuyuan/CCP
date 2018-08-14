@@ -551,7 +551,7 @@
           <!-- <el-button v-if="delPlan" type="danger" style="position: absolute;right: 10px" @click="disassociation">{{$t('planManager.disassociate')}}</el-button>-->
            <!--<el-button v-if="!delPlan" type="info"  style="position: absolute;right: 10px" disabled>{{$t('planManager.disassociate')}}</el-button>-->
            <el-popover
-             placement="top"
+             placement="bottom"
              width="160"
              v-model="visible2"
              style="position: absolute;right: 10px;z-index: 1200" >
@@ -619,14 +619,21 @@
         </el-row>
         <div class="whiteBox"
              :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '330px','z-index': wIndex +'' }">
-
         </div>
+        <div class="whiteSmallBox"
+             :style="{'width': '50px','height': '20px','background':'#f5f7fa','position': 'absolute','top': '110px','left': '270px','z-index': zIndex+1 +'' }"
+        ></div>
         <el-transfer
           :style="{ 'width': '100%', 'height': '300px','position': 'absolute', 'top': '100px', 'left': '10px', 'z-index': zIndex +'' }"
           v-model="officeVal"
+          :left-default-checked="officeVal"
           :data="officeData"
-          :titles="['设备名称',$t('planManager.selectedEquipment')]"
+          @change="handleChange"
+          :titles="[$t('planManager.deviceName'),$t('planManager.selectedEquipment')]"
           :button-texts="[$t('planManager.deleteEquipment'), $t('planManager.addEquipment')]">
+          <span slot-scope="{ option }"
+                :class="{ 'cjc_isHidden': (option.officeid!==curofficeId) && (officeVal.indexOf(option.key)===-1),
+                           'cjc_isShow': (option.officeid===curofficeId) && (officeVal.indexOf(option.key)===-1) }">{{ option.label }}</span>
         </el-transfer>
        <!-- <el-transfer
           style="width: 100%;position: absolute;top: 100px;left: 10px;"
@@ -677,7 +684,6 @@
               :default-expanded-keys="[curofficeId]"
               :filter-node-method="filterNode"
               ref="officeTree"
-              show-checkbox
               highlight-current
               node-key="id"
               check-on-click-node
@@ -706,8 +712,8 @@
         <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;delDevice()" :disabled="!isManagerDel && !delPlan">{{$t('common.confirmBtn')}}</el-button>
       </div>
       <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'device'" style="margin-top: 320px">
-        <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;addDecial()" :disabled="isAddDevice">{{$t('common.confirmBtn')}}</el-button>
+        <el-button @click="isShowFn" >{{$t('common.cancelBtn')}}</el-button>
+        <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;addDecial()" :disabled="!isAddDevice">{{$t('common.confirmBtn')}}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -739,7 +745,7 @@
         equipDatadCopy: [],
         officeData:[],
         officeDataCopy:[],
-        officeVal:[0,0],
+        officeVal:[],
         deleteEquip:"",
         delPlan:"",
         idArr:[],
@@ -890,6 +896,9 @@
     watch: {
       filterText(val) {
         this.$refs.officeTree.filter(val);
+      },
+      officeData() {
+
       }
     },
     filters:{
@@ -993,13 +1002,58 @@
                 this.createForm.type = data.type
                 this.createForm.name=data.name;
                 this.createForm.id = data.id
-                this.createForm.weeklyPlan.planList= []
-                this.createForm.specialPlan.planList= []
-                this.createVol.defaultVol.volList= []
-                this.createVol.timingVol.volList= []
-                console.log(data.content)
+                /*this.createForm.weeklyPlan.planList= [
+                  {
+                    id: Date.now(),
+                    isAllCheckedWeek: false,
+                    time: '1533871759000',
+                    planType:"1",
+                    operation: '1',
+                    weeks: [],
+                  }
+                ]
+                this.createForm.specialPlan.planList= [
+                  {
+                    id: Date.now(),
+                    time: '1533871759000',
+                    planType:"2",
+                    operation: '2',
+                    date: (function () {
+                      const end = new Date();
+                      const start = new Date();
+                      end.setTime(start.getTime() + 3600 * 1000 * 24);
+                      return [start.getTime(), end.getTime()];
+                    })(),
+
+                  }
+                ]
+                this.createVol.defaultVol.volList= [
+                  {
+                    id: Date.now(),
+                    planType:"1",
+                    volume: 20,
+                  }
+                ]
+                this.createVol.timingVol.volList= [
+                  {
+                    id: Date.now(),
+                    isAllCheckedWeek: false,
+                    planType:"2",
+                    volume: 20,
+                    weeks: [],
+                    date: (function () {
+                      const end = new Date();
+                      const start = new Date();
+                      end.setTime(start.getTime() + 1000*60*60);
+                      return [start.getTime(), end.getTime()];
+                    })(),
+                  }
+                ]*/
+
+
                 for(let index in data.content){
-                    if(data.content[index].planType ==='1'){
+                    if(data.content[index].planType === '1'){
+                      this.createForm.weeklyPlan.planList = []
                       this.createForm.weeklyPlan.isOpen = true
                         let operation = data.content[index].operation
                         let planType = data.content[index].planType
@@ -1016,10 +1070,11 @@
                         arr.planType = planType
                         arr.time = time
                         arr.weeks = weeks
-                       arr.isAllCheckedWeek = isAllCheckedWeek
+                        arr.isAllCheckedWeek = isAllCheckedWeek
                         this.createForm.weeklyPlan.planList.push(arr)
 
                     }else {
+                      this.createForm.specialPlan.planList=[]
                       this.createForm.specialPlan.isOpen = true
                       let operation = data.content[index].operation
                       let planType = data.content[index].planType
@@ -1057,6 +1112,7 @@
                if(choseType === '1'){
                  for(let index in data.content){
                    if(data.content[index].planType ==='1'){
+                     this.createVol.defaultVol.volList=[]
                      this.createVol.defaultVol.isOpen = true
                      this.createVol.timingVol.isOpen = false
                      let planType = data.content[index].planType
@@ -1067,6 +1123,7 @@
                      this.createVol.defaultVol.volList.push(arr)
                      this.createVol.defaultVol.volList.push()
                    }else {
+                     this.createVol.timingVol.volList=[]
                      this.createVol.timingVol.isOpen = true
                      this.createVol.defaultVol.isOpen = false
                      let planType = data.content[index].planType
@@ -1092,6 +1149,7 @@
                }else{
                  for(let index in data.content){
                    if(data.content[index].planType ==='1'){
+                     this.createVol.defaultVol.volList=[]
                      this.createVol.defaultVol.isOpen = true
                      let planType = data.content[index].planType
                      let volume = data.content[index].volume
@@ -1101,6 +1159,7 @@
                      this.createVol.defaultVol.volList.push(arr)
                      this.createVol.defaultVol.volList.push()
                    }else {
+                     this.createVol.timingVol.volList=[]
                      this.createVol.timingVol.isOpen = true
                      let planType = data.content[index].planType
                      let volume = data.content[index].volume
@@ -1225,10 +1284,10 @@
               for(let key in data.content){
                 let obj = {}
                 if(data.content[key].planType === '1'){
-                      let planType = data.content[key].planType
-                      let volume = data.content[key].volume
-                      obj.planType = planType
-                      obj.volume = volume
+                  let planType = data.content[key].planType
+                  let volume = data.content[key].volume
+                  obj.planType = planType
+                  obj.volume = volume
                   this.detailData.push(obj)
                 }else {
                    let dat = data.content[key].date
@@ -1302,7 +1361,6 @@
 
       },
       isChangeContents(type) {
-          console.log('fjdkf')
           this.isChangeContent = type
       },
       emptySetting() {
@@ -1496,10 +1554,10 @@
       },
       changeVolumeTimePicker(val) {
           this.isChangePlan = true
-          console.log(8126, val)
       },
       addDevice(){
-          this.dialogKey = "device";
+        this.dialogTitle = this.$t('planManager.addDevice');
+        this.dialogKey = "device";
       },
       deleteSingleEquipment(){
           this.isManagerDel = true
@@ -1613,7 +1671,6 @@
             console.log(err)
           })
         }
-
       },
       addVolume(type) {
         var content = []
@@ -1623,7 +1680,6 @@
             content.push(this.createVol.defaultVol.volList[i])*/
            let obj = {}
            let planType =this.createVol.defaultVol.volList[i].planType;
-           console.log(planType)
            let volume = this.createVol.defaultVol.volList[i].volume;
            obj.planType = planType;
            obj.volume = volume
@@ -1638,7 +1694,6 @@
            let obj = {}
            let date =this.createVol.timingVol.volList[j].date;
            let planType = this.createVol.timingVol.volList[j].planType;
-           console.log(planType)
            let volume = this.createVol.timingVol.volList[j].volume;
            let weeks = this.createVol.timingVol.volList[j].weeks;
            let weeksStr = weeks.join();
@@ -1682,7 +1737,6 @@
 
       },
       deletePlan(){
-          console.log('5454')
         delStrategys(this.idstr).then(res => {
             this.addSourceSuccess()
           console.log(res)
@@ -1691,10 +1745,9 @@
           console.log(err)
         })
       },
+
       changezIndex(){
           this.wIndex = 1200
-        this.isAddDevice = false
-        this.dialogTitle = this.$t('planManager.deviceManagement');
         this.zIndex = 1;
         this.isofficeShow = false
       },
@@ -1719,8 +1772,6 @@
         let checkedList = this.$refs['officeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
           this.zIndex = 1200;
-          this.isAddDevice = true
-          this.dialogTitle = this.$t('planManager.addDevice');
           this.wIndex = 1
          $('.el-transfer-panel input[type="checkbox"]').attr('disabled','disabled')
           this.isofficeShow = true
@@ -1728,8 +1779,10 @@
           this.curofficeId = data.id
           this.officeName = data.name
          // officeData
+          console.log(this.officeVal)
           terminalPageByOffices({officeIds: this.curofficeId}).then(res => {
-            this.officeData = []
+//              this.officeData = []
+            let arr = [], tmp = [];
               for(let key in res.data){
                   let id = res.data[key].id
                   let decimalId = res.data[key].decimalId
@@ -1737,9 +1790,24 @@
                   let obj = {}
                   obj.key = id
                   obj.label = decaimalName
-                  this.officeData.push(obj)
+                  obj.officeid = res.data[key].officeId;
+//                this.officeData.push(obj)
+                arr.push(obj)
               }
+            this.officeData.map(item => {
+              tmp.push(item.key);
+            })
+            arr = arr .filter(item => {
+                return tmp.indexOf(item.key) === -1;
+            })
+            this.officeData.push(...arr);
+          //  $('.el-transfer').find('.el-transfer-panel').eq(1).find('.el-transfer-panel__body').find('.el-transfer-panel__list').empty().append('<label role="checkbox" class="el-checkbox el-transfer-panel__item"><span aria-checked="mixed" class="el-checkbox__input"><span class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="true" class="el-checkbox__original" value="40b241d52a7d90c0a8194"></span><span class="el-checkbox__label"><span data-v-1451f772="">zfy</span><!----></span></label>');
               //this.officeData = res.data;
+//            console.log(8126, $('.cjc_isHidden').parents('.el-transfer-panel__item'));
+            $('.cjc_isHidden').parents('.el-transfer-panel__item').hide();
+            $('.cjc_isShow').parents('.el-transfer-panel__item').show();
+            console.log(8126.1, this.officeData)
+            console.log(8126.2, this.officeVal)
               console.log(res)
           }).catch(err => {
               console.log(err)
@@ -1766,14 +1834,13 @@
         }
       },
       addDecial() {
-        console.log(this.officeVal)
-        let officeV = this.officeVal;
-        officeV.splice(0,2)
-        let officeStr = officeV.join()
-        console.log(this.createForm.id)
-        console.log(officeStr)
-        strategyRelatedTerminal({strategyId:this.createForm.id,terminalIds:officeStr}).then(res => {
+        let officeV = this.officeVal.join();
+        strategyRelatedTerminal({strategyId:this.createForm.id,terminalIds:officeV}).then(res => {
          console.log(res)
+          this.$message({
+            message: this.$t('common.operationSucceeds'),
+            type: 'success'
+          })
          }).catch(err => {
          console.log(err)
          })
@@ -1806,6 +1873,7 @@
            obj.label = decaimalName
            this.officeData.push(obj)
          }
+
         }).catch(err => {
          console.log(err)
         })
@@ -1814,6 +1882,22 @@
         }
 
       },
+
+      handleChange(val, f, k) {
+         if(this.officeVal.length !== 0){
+           this.isAddDevice = true
+         }else {
+           this.isAddDevice = false
+         }
+
+      },
+      isShowFn() {
+        this.dialogKey = "manager";
+        this.dialogTitle = this.$t('planManager.deviceManagement');
+
+      },
+
+
    DateAdd(interval, number, date) {
    date = new Date(date)
     switch (interval) {

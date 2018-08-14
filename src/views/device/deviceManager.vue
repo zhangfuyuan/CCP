@@ -215,8 +215,12 @@ export default {
     checkOfficeHandle(data, status) {
       console.log(`当前勾选的机构id：${data.id} - ${data.name}`)
       console.log(`已勾选的所有机构id：${status.checkedKeys}`)
+      this.$refs.officeTree.setCurrentKey(data.id);
+      this.curClickOfficeId = data.id;
+      this.curClickOfficeInfo = this.$refs.officeTree.getNode(data.id);
       this.updateCheckedOffice();
       this.toggleDeselectAllBtn()
+
     },
     clickTotalBoxHandle() {
       if (this.checkedOfficeList.length===0) return false;
@@ -226,7 +230,8 @@ export default {
     checkAllHandle() { // 机构树全选处理
       if (this.curClickOfficeInfo) {
         console.log(`全选全部子节点的此节点id：${this.curClickOfficeId}`)
-        this.$refs.officeTree.setCheckedKeys(this.curClickOfficeAndChildrenId);
+        let oldCheckedList = this.$refs.officeTree.getCheckedKeys();
+        this.$refs.officeTree.setCheckedKeys([...this.curClickOfficeAndChildrenId, ...oldCheckedList]);
         this.updateCheckedOffice();
         this.toggleDeselectAllBtn();
       }

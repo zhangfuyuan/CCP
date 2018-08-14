@@ -206,7 +206,7 @@
           }
 
           console.error(errorMessage);
-          this.$emit('error', errorMessage);
+          this.$emit('error', type);
         });
       },
       /**

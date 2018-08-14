@@ -142,7 +142,8 @@
                :close-on-click-modal="false"
                :close-on-press-escape="false"
                :width="dialogWidth"
-               id="deviceDialog" @close="dialogKey = ''">
+               id="deviceDialog"
+               @close="handleCloseDialog">
       <!--dialog标题-->
       <div slot="title">
         <template v-if="(dialogKey==='settings'||dialogKey==='plan') && dialogInfo.length===1">
@@ -192,7 +193,7 @@
               </el-form-item>
 
               <el-form-item :label="$t('deviceManager.onlineTime')" style="width: 30%;">
-                <span>{{dialogInfo.onLineTime}}</span>
+                <span>{{+dialogInfo.onLineTime | formatDay}}</span>
               </el-form-item>
 
               <el-form-item :label="$t('deviceManager.cumulativeRunningTime')" style="width: 30%;">
@@ -260,34 +261,31 @@
                 <div style="white-space: nowrap;font-size: 16px;">{{$t('deviceManager.powerPlan')}}</div>
 
                 <div class="timingPlan-power-list" v-if="dialogInfo['1'] && dialogInfo['1'].length>0">
+                  <div style="margin-bottom: 10px;">{{dialogInfo.name1}}</div>
+
                   <ul>
                     <li v-for="(item, index) in dialogInfo['1']" :key="index" style="margin-bottom: 10px">
-                      <div style="margin-bottom: 10px;">{{item.name}}</div>
-
-                      <div v-for="(c, i) in item.content" :key="i"  style="margin-bottom: 10px;">
-                        <span v-if="c.planType==='1'">{{$t('deviceManager.weeklyPlan')}}</span>
-                        <span v-else>{{$t('deviceManager.specialPlan')}}</span>
-                        &nbsp;
-                        <span v-if="c.operation==='1'">{{$t('deviceManager.startingUp')}}</span>
-                        <span v-else-if="c.operation==='2'">{{$t('deviceManager.standby')}}</span>
-                        <span v-else>{{$t('deviceManager.powerOff')}}</span>
-                        &nbsp;
-                        <span>{{+c.time | formatDateTime}}</span>
-                        &nbsp;
-                        <template v-if="c.planType==='1'">
-                          <span v-if="c.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
-                          <span v-if="c.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
-                          <span v-if="c.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
-                          <span v-if="c.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
-                          <span v-if="c.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
-                          <span v-if="c.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
-                          <span v-if="c.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
-                        </template>
-                        <template v-else>
-                          <span v-for="(date, ind) in c.date.split(',')" :key="ind">{{+date | formatDateDate}}<span v-if="ind===0">~</span></span>
-                        </template>
-
-                      </div>
+                      <span v-if="item.planType==='1'">{{$t('deviceManager.weeklyPlan') + ' ' + (index+1)}}</span>
+                      <span v-else>{{$t('deviceManager.specialPlan') + ' ' + (index+1)}}</span>
+                      &nbsp;
+                      <span v-if="item.operation==='1'">{{$t('deviceManager.startingUp')}}</span>
+                      <span v-else-if="item.operation==='2'">{{$t('deviceManager.standby')}}</span>
+                      <span v-else>{{$t('deviceManager.powerOff')}}</span>
+                      &nbsp;
+                      <span>{{+item.time | formatDateTime}}</span>
+                      &nbsp;
+                      <template v-if="item.planType==='1'">
+                        <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
+                        <span v-if="item.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
+                        <span v-if="item.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
+                        <span v-if="item.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
+                        <span v-if="item.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
+                        <span v-if="item.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
+                        <span v-if="item.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
+                      </template>
+                      <template v-else>
+                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{+date | formatDateDate}}<span v-if="i===0">~</span></span>
+                      </template>
                     </li>
                   </ul>
                 </div>
@@ -301,32 +299,29 @@
                 <div style="white-space: nowrap;font-size: 16px;">{{$t('deviceManager.volumePlan')}}</div>
 
                 <div class="timingPlan-volume-list" v-if="dialogInfo['2'] && dialogInfo['2'].length>0">
+                  <div style="margin-bottom: 10px;">{{dialogInfo.name2}}</div>
+
                   <ul>
                     <li v-for="(item, index) in dialogInfo['2']" :key="index" style="margin-bottom: 10px">
-                      <div style="margin-bottom: 10px;">{{item.name}}</div>
-
-                      <div v-for="(c, i) in item.content" :key="i"  style="margin-bottom: 10px;">
-                        <span v-if="c.planType==='1'">{{$t('deviceManager.fixedVolume')}}</span>
-                        <span v-else>{{$t('deviceManager.plan') + ' ' + i}}</span>
+                      <span v-if="item.planType==='1'">{{$t('deviceManager.fixedVolume')}}</span>
+                      <span v-else>{{$t('deviceManager.plan') + ' ' + (index+1)}}</span>
+                      &nbsp;
+                      <template v-if="item.planType==='1'">
+                        <span>{{item.volume}}</span>
+                      </template>
+                      <template v-else>
+                        <span>{{$t('deviceManager.volume')}}: {{item.volume}}</span>
                         &nbsp;
-                        <template v-if="c.planType==='1'">
-                          <span>{{c.volume}}</span>
-                        </template>
-                        <template v-else>
-                          <span>{{$t('deviceManager.volume')}}: {{c.volume}}</span>
-                          &nbsp;
-                          <span v-for="(date, ind) in c.date.split(',')" :key="ind">{{+date | formatDateTime}}<span v-if="ind===0">~</span></span>
-                          &nbsp;
-                          <span v-if="c.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
-                          <span v-if="c.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
-                          <span v-if="c.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
-                          <span v-if="c.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
-                          <span v-if="c.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
-                          <span v-if="c.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
-                          <span v-if="c.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
-                        </template>
-
-                      </div>
+                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{+date | formatDateTime}}<span v-if="i===0">~</span></span>
+                        &nbsp;
+                        <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
+                        <span v-if="item.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
+                        <span v-if="item.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
+                        <span v-if="item.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
+                        <span v-if="item.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
+                        <span v-if="item.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
+                        <span v-if="item.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
+                      </template>
                     </li>
                   </ul>
                 </div>
@@ -380,7 +375,8 @@
       <div class="modify-dialog" v-if="dialogKey === 'settings' && dialogInfo.length>0" style="position: relative;">
         <el-tabs tab-position="left"
                  style="min-height: 300px;"
-                 v-model="settingsDialogActiveTabsName">
+                 v-model="settingsDialogActiveTabsName"
+                 :before-leave="leaveSettingsTabs">
           <el-tab-pane :label="$t('deviceManager.basicSettings')" name="basicSettings">
             <template v-if="settingsDialogActiveTabsName === 'basicSettings'">
               <div style="margin-bottom: 20px;border-bottom: 1px solid #DCDFE6;padding-bottom: 20px;">
@@ -518,13 +514,14 @@
               <template v-else>
                 <ul class="el-upload-list el-upload-list--text el-upload-list-result">
                   <li :class="['el-upload-list__item', { 'is-success': item.result===1 }]"
-                      v-for="(item, index) in lockScreenResultList" :key="index" style="margin-bottom: 10px;">
+                      v-for="(item, index) in lockScreenResultList" :key="index" style="margin-bottom: 20px;">
                     <a class="el-upload-list__item-name">
-                      <svg-icon icon-class="AIO" /> {{item.id}}
+                      <svg-icon icon-class="AIO" /> {{item.id}} &nbsp;&nbsp;&nbsp;&nbsp;
+                      {{item.txt}}
                     </a>
 
-                    <el-progress :percentage="item.result===1 ? 100 : 50"
-                                 :status="item.result===1 ? 'success' : 'exception'"></el-progress>
+                    <el-progress :percentage="item.result===1 ? 100 : (item.result===0 ? 0 : 50)"
+                                 :status="item.result===1 ? 'success' : (item.result===0 ? 'exception' : '')"></el-progress>
                   </li>
                 </ul>
               </template>
@@ -552,12 +549,12 @@
                 </ul>
               </div>
 
-              <div style="width: 100%;display: flex;margin-top: 20px;">
+              <div style="width: 100%;display: flex;margin-top: 20px;height: 445px;" class="ApkUpdate-box">
                 <div style="width: 80px;">
                   {{$t('deviceManager.remoteUpdate')}}
                 </div>
 
-                <div style="width: 100%;padding: 20px;">
+                <div style="width: 100%;">
                   <template v-if="updateApkStep==='1'">
                     <div class="upload-box" style="padding: 24px;">
                       <div class="upload-wrapper" style="width: 360px;">
@@ -610,13 +607,14 @@
                   <template v-else-if="updateApkStep==='3'">
                     <ul class="el-upload-list el-upload-list--text el-upload-list-result">
                       <li :class="['el-upload-list__item', { 'is-success': item.result===1 }]"
-                          v-for="(item, index) in updateAPKResultList" :key="index" style="margin-bottom: 5px;">
+                          v-for="(item, index) in updateAPKResultList" :key="index" style="margin-bottom: 20px;">
                         <a class="el-upload-list__item-name">
-                          <svg-icon icon-class="AIO" /> {{item.id}}
+                          <svg-icon icon-class="AIO" /> {{item.id}} &nbsp;&nbsp;&nbsp;&nbsp;
+                          {{item.txt}}
                         </a>
 
-                        <el-progress :percentage="item.result===1 ? 100 : 50"
-                                     :status="item.result===1 ? 'success' : 'exception'"></el-progress>
+                        <el-progress :percentage="item.result===1 ? 100 : (item.result===0 ? 0 : 50)"
+                                     :status="item.result===1 ? 'success' : (item.result===0 ? 'exception' : '')"></el-progress>
                       </li>
                     </ul>
                   </template>
@@ -638,15 +636,15 @@
         </template>
         <template v-else-if="settingsDialogActiveTabsName === 'lockScreenSettings'">
           <div slot="footer" style="text-align: right;">
-            <el-button :disabled="(!uploadFileInfo && lockScreenRadio!=='0' && lockScreenImgRadio==='1') || !lockScreenRadio"
+            <el-button :disabled="(!uploadFileInfo && lockScreenRadio!=='0' && lockScreenImgRadio==='1') || !lockScreenRadio || !!timer"
                        type="primary"
-                       @click="setLockScreenDevice">{{$t('common.confirm')}}</el-button>
+                       @click="setLockScreenDevice">{{$t('deviceManager.uploadBtn')}}</el-button>
             <el-button plain @click="resetLockScreenSettings">{{$t('common.resetBtn')}}</el-button>
           </div>
         </template>
         <template v-else-if="settingsDialogActiveTabsName === 'apkSettings'">
           <div slot="footer" style="text-align: right;">
-            <el-button :disabled="!uploadAPKInfo || (uploadAPKInfo&&uploadAPKInfo.percentage!==100)"
+            <el-button :disabled="!uploadAPKInfo || (uploadAPKInfo&&uploadAPKInfo.percentage!==100) || !!timer"
                        type="primary"
                        @click="updateAPKDevice">{{$t('common.updateBtn')}}</el-button>
             <el-button plain @click="resetAPKSettings">{{$t('common.resetBtn')}}</el-button>
@@ -660,36 +658,39 @@
           <el-tab-pane :label="$t('deviceManager.currentPlan')" name="currentPlan">
             <div class="timingPlan-box" v-if="planDialogUniformPlan">
               <div class="timingPlan-power">
-                <div style="white-space: nowrap;font-size: 16px;">{{$t('deviceManager.powerPlan')}}</div>
+                <div style="white-space: nowrap;font-size: 16px;">
+                  <div>{{$t('deviceManager.powerPlan')}}</div>
+                  <div style="text-align: center;">
+                    <el-button type="text" style="color: #F56C6C;"  @click="deleteTimingPlan(true)">{{$t('common.delete')}}</el-button>
+                  </div>
+                </div>
 
                 <div class="timingPlan-power-list" v-if="planDialogUniformPlan['1'] && planDialogUniformPlan['1'].length>0">
+                  <div style="margin-bottom: 10px;">{{planDialogUniformPlan.name1}}</div>
+
                   <ul>
                     <li v-for="(item, index) in planDialogUniformPlan['1']" :key="index" style="margin-bottom: 10px">
-                      <div style="margin-bottom: 10px;">{{item.name}}</div>
-
-                      <div v-for="(c, i) in item.content" :key="i"  style="margin-bottom: 10px;">
-                        <span v-if="c.planType==='1'">{{$t('deviceManager.weeklyPlan')}}</span>
-                        <span v-else>{{$t('deviceManager.specialPlan')}}</span>
-                        &nbsp;
-                        <span v-if="c.operation==='1'">{{$t('deviceManager.startingUp')}}</span>
-                        <span v-else-if="c.operation==='2'">{{$t('deviceManager.standby')}}</span>
-                        <span v-else>{{$t('deviceManager.powerOff')}}</span>
-                        &nbsp;
-                        <span>{{+c.time | formatDateTime}}</span>
-                        &nbsp;
-                        <template v-if="c.planType==='1'">
-                          <span v-if="c.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
-                          <span v-if="c.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
-                          <span v-if="c.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
-                          <span v-if="c.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
-                          <span v-if="c.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
-                          <span v-if="c.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
-                          <span v-if="c.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
-                        </template>
-                        <template v-else>
-                          <span v-for="(date, ind) in c.date.split(',')" :key="ind">{{+date | formatDateDate}}<span v-if="ind===0">~</span></span>
-                        </template>
-                      </div>
+                      <span v-if="item.planType==='1'">{{$t('deviceManager.weeklyPlan') + ' ' + (index+1)}}</span>
+                      <span v-else>{{$t('deviceManager.specialPlan')+ ' ' + (index+1)}}</span>
+                      &nbsp;
+                      <span v-if="item.operation==='1'">{{$t('deviceManager.startingUp')}}</span>
+                      <span v-else-if="item.operation==='2'">{{$t('deviceManager.standby')}}</span>
+                      <span v-else>{{$t('deviceManager.powerOff')}}</span>
+                      &nbsp;
+                      <span>{{+item.time | formatDateTime}}</span>
+                      &nbsp;
+                      <template v-if="item.planType==='1'">
+                        <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
+                        <span v-if="item.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
+                        <span v-if="item.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
+                        <span v-if="item.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
+                        <span v-if="item.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
+                        <span v-if="item.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
+                        <span v-if="item.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
+                      </template>
+                      <template v-else>
+                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{+date | formatDateDate}}<span v-if="i===0">~</span></span>
+                      </template>
                     </li>
                   </ul>
                 </div>
@@ -700,34 +701,37 @@
               </div>
 
               <div class="timingPlan-volume">
-                <div style="white-space: nowrap;font-size: 16px;">{{$t('deviceManager.volumePlan')}}</div>
+                <div style="white-space: nowrap;font-size: 16px;">
+                  <div>{{$t('deviceManager.volumePlan')}}</div>
+                  <div style="text-align: center;">
+                    <el-button type="text" style="color: #F56C6C;" @click="deleteTimingPlan(false)">{{$t('common.delete')}}</el-button>
+                  </div>
+                </div>
 
                 <div class="timingPlan-volume-list" v-if="planDialogUniformPlan['2'] && planDialogUniformPlan['2'].length>0">
+                  <div style="margin-bottom: 10px;">{{planDialogUniformPlan.name2}}</div>
+
                   <ul>
                     <li v-for="(item, index) in planDialogUniformPlan['2']" :key="index" style="margin-bottom: 10px">
-                      <div style="margin-bottom: 10px;">{{item.name}}</div>
-
-                      <div v-for="(c, i) in item.content" :key="i"  style="margin-bottom: 10px;">
-                        <span v-if="c.planType==='1'">{{$t('deviceManager.fixedVolume')}}</span>
-                        <span v-else>{{$t('deviceManager.plan') + ' ' + i}}</span>
+                      <span v-if="item.planType==='1'">{{$t('deviceManager.fixedVolume')}}</span>
+                      <span v-else>{{$t('deviceManager.plan') + ' ' + (index+1)}}</span>
+                      &nbsp;
+                      <template v-if="item.planType==='1'">
+                        <span>{{item.volume}}</span>
+                      </template>
+                      <template v-else>
+                        <span>{{$t('deviceManager.volume')}}: {{item.volume}}</span>
                         &nbsp;
-                        <template v-if="c.planType==='1'">
-                          <span>{{c.volume}}</span>
-                        </template>
-                        <template v-else>
-                          <span>{{$t('deviceManager.volume')}}: {{c.volume}}</span>
-                          &nbsp;
-                          <span v-for="(date, ind) in c.date.split(',')" :key="ind">{{+date | formatDateTime}}<span v-if="ind===0">~</span></span>
-                          &nbsp;
-                          <span v-if="c.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
-                          <span v-if="c.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
-                          <span v-if="c.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
-                          <span v-if="c.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
-                          <span v-if="c.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
-                          <span v-if="c.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
-                          <span v-if="c.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
-                        </template>
-                      </div>
+                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{+date | formatDateTime}}<span v-if="i===0">~</span></span>
+                        &nbsp;
+                        <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
+                        <span v-if="item.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
+                        <span v-if="item.weeks.indexOf('3')>-1">{{$t('deviceManager.wednesday')}}</span>
+                        <span v-if="item.weeks.indexOf('4')>-1">{{$t('deviceManager.thursday')}}</span>
+                        <span v-if="item.weeks.indexOf('5')>-1">{{$t('deviceManager.friday')}}</span>
+                        <span v-if="item.weeks.indexOf('6')>-1">{{$t('deviceManager.saturday')}}</span>
+                        <span v-if="item.weeks.indexOf('7')>-1">{{$t('deviceManager.sunday')}}</span>
+                      </template>
                     </li>
                   </ul>
                 </div>
@@ -945,7 +949,7 @@ import Multiselect from 'vue-multiselect'
 import { mapGetters } from 'vuex'
 import { getDeviceList, getPlanOfDevice, movePlanToDevice, getPlanList, setDevice_powerOff, setDevice_standby,
           setDevice_awake, setDevice_restart, setDeviceVolume, setLockScreen, getLockScreenInfo,setDedicatedApk,
-          getApkUpdateInfo, updateTeOffice, deleteTerminal, submitTeInfo } from '@/api/device'
+          getApkUpdateInfo, updateTeOffice, deleteTerminal, submitTeInfo, removePlanOfDevice } from '@/api/device'
 import { getOfficeList } from '@/api/office'
 import Webuploader from '@/components/Webuploader'
 import { myMixin } from '@/assets/js/mixins'
@@ -1114,6 +1118,8 @@ export default {
       uploadAPKInfo: null,
       updateAPKResultList: [],
       updateApkversion: '',
+      // 定时器
+      timer: null,
     }
   },
   filters: {
@@ -1131,9 +1137,10 @@ export default {
     },
     formatDay(time) {
       let day = Math.floor(time/(1000*60*60*24)),
-        hour = Math.floor((time-day*(1000*60*60*24))/(1000*60*60));
+        hour = Math.floor((time-day*(1000*60*60*24))/(1000*60*60)),
+        min = Math.floor((time-day*(1000*60*60*24)-hour*(1000*60*60))/(1000*60));
 
-      return day + 'd' + ' ' + hour + 'h';
+      return day + 'd' + ' ' + hour + 'h' + ' ' + min + 'm';
     }
   },
   created() {
@@ -1446,10 +1453,14 @@ export default {
           getPlanOfDevice({ terminalId: data.id }).then(res => {
             console.log(res);
 
-            this.dialogInfo['1'] = res['1'];
-            this.dialogInfo['2'] = res['2'];
+            if (res['1']) this.dialogInfo['1'] = res['1'];
+            if (res['2']) this.dialogInfo['2'] = res['2'];
+            if (res['name1']) this.dialogInfo['name1'] = res['name1'];
+            if (res['name2']) this.dialogInfo['name2'] = res['name2'];
+            if (res['id1']) this.dialogInfo['id1'] = res['id1'];
+            if (res['id2']) this.dialogInfo['id2'] = res['id2'];
 
-            console.log('根据设备查计划', this.planDialogUniformPlan); // todo =================================
+            console.log('根据设备查计划', this.dialogInfo); // todo =================================
           }).catch(err => {
             console.log(err)
           });
@@ -1504,7 +1515,12 @@ export default {
               if (res['1'] || res['2']) this.planDialogUniformPlan = {};
               if (res['1']) this.planDialogUniformPlan['1'] = res['1'];
               if (res['2']) this.planDialogUniformPlan['2'] = res['2'];
-              console.log('根据设备查计划', this.planDialogUniformPlan); // todo =================================
+              if (res['name1']) this.planDialogUniformPlan['name1'] = res['name1'];
+              if (res['name2']) this.planDialogUniformPlan['name2'] = res['name2'];
+              if (res['id1']) this.planDialogUniformPlan['id1'] = res['id1'];
+              if (res['id2']) this.planDialogUniformPlan['id2'] = res['id2'];
+
+              console.log('根据设备查计划', this.planDialogUniformPlan);
             }).catch(err => {
               console.log(err)
             });
@@ -1648,18 +1664,57 @@ export default {
       }).then(res => {
         console.log(res)
 
-        this.planDialogUniformPlan = {};
         console.log(8126, this.curCheckedPlanInfo)
         if (this.curCheckedPlanInfo.type === '1') {
-          this.planDialogUniformPlan['1'] = [this.curCheckedPlanInfo];
+          this.planDialogUniformPlan['1'] = this.curCheckedPlanInfo.content;
+          this.planDialogUniformPlan.name1 = this.curCheckedPlanInfo.name;
+          this.planDialogUniformPlan.id1 = this.curCheckedPlanInfo.id;
         } else if (this.curCheckedPlanInfo.type === '2') {
-          this.planDialogUniformPlan['2'] = [this.curCheckedPlanInfo];
+          this.planDialogUniformPlan['2'] = this.curCheckedPlanInfo.content;
+          this.planDialogUniformPlan.name2 = this.curCheckedPlanInfo.name;
+          this.planDialogUniformPlan.id2 = this.curCheckedPlanInfo.id;
         }
         this.$message({
           message: this.$t('common.operationSucceeds'),
           type: 'success'
         });
         this.planDialogActiveTabsName = 'currentPlan';
+      }).catch(err => {
+        console.log(err)
+        this.$message.error(this.$t('common.operationFailure'));
+      })
+    },
+    deleteTimingPlan(isPower) {
+      let deviceIds = [];
+      this.appMainLoading = this.showLoading('#deviceDialog');
+      this.dialogInfo.map(item => {
+        deviceIds.push(item.id)
+      });
+
+      removePlanOfDevice({
+        strategyId: isPower ? this.planDialogUniformPlan.id1 : this.planDialogUniformPlan.id2,
+        terminalIds: deviceIds + '',
+      }).then(res => {
+        console.log(res)
+
+        let tmp = this.planDialogUniformPlan;
+        this.planDialogUniformPlan = {};
+        if (isPower) {
+          if (tmp['2']) this.planDialogUniformPlan['2'] = tmp['2'];
+          if (tmp['name2']) this.planDialogUniformPlan['name2'] = tmp['name2'];
+          if (tmp['id2']) this.planDialogUniformPlan['id2'] = tmp['id2'];
+        } else {
+          if (tmp['1']) this.planDialogUniformPlan['1'] = tmp['1'];
+          if (tmp['name1']) this.planDialogUniformPlan['name1'] = tmp['name1'];
+          if (tmp['id1']) this.planDialogUniformPlan['id1'] = tmp['id1'];
+        }
+        
+        console.log(this.planDialogUniformPlan);
+        this.$message({
+          message: this.$t('common.operationSucceeds'),
+          type: 'success'
+        });
+        this.appMainLoading.close();
       }).catch(err => {
         console.log(err)
         this.$message.error(this.$t('common.operationFailure'));
@@ -1718,6 +1773,10 @@ export default {
       this.lockScreenImgRadio = '';
       this.uploadFileInfo =  null;
       this.lockScreenResultList = [];
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     },
     setLockScreenDevice() { // todo 锁屏设置
       let deviceIds = [];
@@ -1738,29 +1797,40 @@ export default {
         if (this.lockScreenRadio!=='0' && this.lockScreenImgRadio==='1' && res.uuid) {
           let uuid = res.uuid;
           let count = 1;
-          let sId= setInterval(() => {
+
+          if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+          }
+
+          this.timer = setInterval(() => {
             getLockScreenInfo({ uuid }).then(r => {
               console.log(r)
               const isHas2 = (Object.keys(r.data).map(item => r.data[item] ).indexOf(2) > -1);
 
+              if (r.data.updateDate) delete r.data.updateDate;
+              this.lockScreenResultList = Object.keys(r.data).map(item => {
+                return {
+                  id: item,
+                  result: r.data[item],
+                  txt: r.data[item]===0 ? this.$t('common.error') : (r.data[item]===1?this.$t('common.success'):this.$t('common.processing'))
+                };
+              });
+              this.appMainLoading.close();
+
               if (isHas2) { // 继续轮询
-                count++;
-                if(count >= 5) {
-                  clearInterval(sId);
-                  if (r.data.updateDate) delete r.data.updateDate;
-                  this.lockScreenResultList = Object.keys(r.data).map(item => {
-                    return { id: item, result: r.data[item] };
-                  });
-                  this.appMainLoading.close();
-                  this.$message.error(this.$t('common.operationFailure'));
-                }
+//                count++;
+//                if(count >= 5) {
+//                  clearInterval(sId);
+//                  if (r.data.updateDate) delete r.data.updateDate;
+//                  this.lockScreenResultList = Object.keys(r.data).map(item => {
+//                    return { id: item, result: r.data[item] };
+//                  });
+//                  this.appMainLoading.close();
+//                  this.$message.error(this.$t('common.operationFailure'));
+//                }
               } else { // 没有2（处理中）状态则轮询结束
                 clearInterval(sId);
-                if (r.data.updateDate) delete r.data.updateDate;
-                this.lockScreenResultList = Object.keys(r.data).map(item => {
-                  return { id: item, result: r.data[item] };
-                });
-                this.appMainLoading.close();
                 this.$message({
                   message: this.$t('common.operationSucceeds'),
                   type: 'success'
@@ -1769,12 +1839,9 @@ export default {
             }).catch(e => {
               console.log(e)
 
-              count++;
-              if(count >= 5) {
-                clearInterval(sId);
-                this.appMainLoading.close();
-                this.$message.error(this.$t('common.operationFailure'));
-              }
+              clearInterval(sId);
+              this.appMainLoading.close();
+              this.$message.error(this.$t('common.operationFailure'));
             });
           }, 5000);
 
@@ -1817,29 +1884,40 @@ export default {
         if (res.uuid) {
           let uuid = res.uuid;
           let count = 1;
-          let sId= setInterval(() => {
+
+          if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+          }
+
+          this.timer = setInterval(() => {
             getApkUpdateInfo({ uuid }).then(r => {
               console.log(r)
               const isHas2 = (Object.keys(r.data).map(item => r.data[item] ).indexOf(2) > -1);
 
+              if (r.data.updateDate) delete r.data.updateDate;
+              this.updateAPKResultList = Object.keys(r.data).map(item => {
+                return {
+                  id: item,
+                  result: r.data[item],
+                  txt: r.data[item]===0 ? this.$t('common.error') : (r.data[item]===1?this.$t('common.success'):this.$t('common.processing'))
+                };
+              });
+              this.appMainLoading.close();
+
               if (isHas2) { // 继续轮询
-                count++;
-                if(count >= 5) {
-                  clearInterval(sId);
-                  if (r.data.updateDate) delete r.data.updateDate;
-                  this.updateAPKResultList = Object.keys(r.data).map(item => {
-                    return { id: item, result: r.data[item] };
-                  });
-                  this.appMainLoading.close();
-                  this.$message.error(this.$t('common.operationFailure'));
-                }
+//                count++;
+//                if(count >= 5) {
+//                  clearInterval(this.timer);
+//                  if (r.data.updateDate) delete r.data.updateDate;
+//                  this.updateAPKResultList = Object.keys(r.data).map(item => {
+//                    return { id: item, result: r.data[item] };
+//                  });
+//                  this.appMainLoading.close();
+//                  this.$message.error(this.$t('common.operationFailure'));
+//                }
               } else { // 没有2（处理中）状态则轮询结束
-                clearInterval(sId);
-                if (r.data.updateDate) delete r.data.updateDate;
-                this.updateAPKResultList = Object.keys(r.data).map(item => {
-                  return { id: item, result: r.data[item] };
-                });
-                this.appMainLoading.close();
+                clearInterval(this.timer);
                 this.$message({
                   message: this.$t('common.operationSucceeds'),
                   type: 'success'
@@ -1848,12 +1926,15 @@ export default {
             }).catch(e => {
               console.log(e);
 
-              count++;
-              if(count >= 5) {
-                clearInterval(sId);
-                this.appMainLoading.close();
-                this.$message.error(this.$t('common.operationFailure'));
-              }
+              clearInterval(this.timer);
+              this.appMainLoading.close();
+              this.$message.error(this.$t('common.operationFailure'));
+//              count++;
+//              if(count >= 5) {
+//                clearInterval(this.timer);
+//                this.appMainLoading.close();
+//                this.$message.error(this.$t('common.operationFailure'));
+//              }
             });
           }, 5000);
         }
@@ -1875,6 +1956,10 @@ export default {
       this.uploadAPKInfo = null;
       this.updateAPKResultList = [];
       this.updateApkversion = '';
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
     },
     moveDevices() { // todo
       let deviceIds = [];
@@ -1894,6 +1979,7 @@ export default {
           message: this.$t('common.operationSucceeds'),
           type: 'success'
         });
+        this.dialogVisible = false;
         this.isMoveDevicesLoading = false;
       }).catch(err => {
         console.log(err);
@@ -1902,9 +1988,36 @@ export default {
         this.isMoveDevicesLoading = false;
       });
     },
-    updateDevicesTableData() { //  todo 根据当天条件重新请求数据
+    updateDevicesTableData() { //  todo 根据当前条件重新请求数据
       this.resetData();
       this.getList();
+    },
+    handleCloseDialog() {
+      this.dialogKey = '';
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+    },
+    leaveSettingsTabs() {
+      if (this.timer) {
+        return new Promise((resolve, reject) => {
+          this.$confirm(this.$t('deviceManager.sureLeaveTips'), this.$t('common.notice'), {
+            confirmButtonText: this.$t('common.confirmBtn'),
+            cancelButtonText: this.$t('common.cancelBtn'),
+            type: 'warning',
+            showClose: false,
+          }).then(() => {
+            clearInterval(this.timer);
+            this.timer = null;
+            this.resetAPKSettings();
+            this.resetLockScreenSettings();
+            resolve()
+          }).catch(() => {
+            reject();
+          });
+        })
+      }
     },
     /** 以下为 webuploader 监听处理方法
      *
@@ -2007,7 +2120,7 @@ export default {
       console.log('uploadComplete', errorMessage);
 
       if (errorMessage === 'F_EXCEED_SIZE') {
-        this.$message.error(this.$t('common.fileSizeCannotExceed') + (this.fileSingleSizeLimit/(1024*1024)) + 'M');
+        this.$message.error(this.$t('common.fileSizeCannotExceed') + '2M');
       } else if (errorMessage === 'Q_EXCEED_NUM_LIMIT') {
         this.$message.error(this.$t('common.fileNumberReachedMaximum'));
       } else if (errorMessage === 'Q_TYPE_DENIED') {
@@ -2215,8 +2328,13 @@ export default {
     overflow: auto;
   }
 
+  .ApkUpdate-box {
+    @include scrollBar;
+    overflow: auto;
+  }
+
   .el-upload-list-result {
-    padding: 20px;
+    padding: 0 20px;
   }
 
   .apk-list {

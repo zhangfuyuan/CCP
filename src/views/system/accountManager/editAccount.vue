@@ -85,6 +85,8 @@
           :props="defaultProps"
           :default-expanded-keys="[accountForm.officeId]"
           :filter-node-method="filterNode"
+          :default-checked-keys="[accountForm.officeId]"
+          default-expand-all
           ref="officeTree"
           show-checkbox
           highlight-current
@@ -94,7 +96,7 @@
           @node-click="clickOfficeHandle"
           @check="checkOfficeHandle"
           check-strictly
-          style="width: 400px;min-height: 400px;">
+          style="width: 400px;min-height: 400px;height: 400px;overflow: auto">
         </el-tree>
       </el-form-item>
 
@@ -223,10 +225,7 @@
         this.accountForm.name = this.subRoute_curAccountInfo.name;
         this.accountForm.mark = this.subRoute_curAccountInfo.remarks;
         this.accountForm.roleIds = this.curAccountInfo.roleArray[0].id==='1' ? '1' : '2';
-        this.accountForm.officeId = this.subRoute_curAccountInfo.office || 1;
-        console.log(this.accountForm.roleIds)
-
-
+        this.accountForm.officeId = this.subRoute_curAccountInfo.officeId || 1;
 
       } else {  // 若为null，则是刷新此路由页面，因为没数据，所以需回到上一级路由页面
         this.isTriggerBeforeRouteLeave = false;

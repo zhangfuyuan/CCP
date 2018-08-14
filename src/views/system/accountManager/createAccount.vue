@@ -84,6 +84,7 @@
           :data="treeData"
           :props="defaultProps"
           :default-expanded-keys="[officeId]"
+          :default-checked-keys = "[]"
           :filter-node-method="filterNode"
           ref="officeTree"
           show-checkbox
@@ -94,7 +95,7 @@
           @node-click="clickOfficeHandle"
           @check="checkOfficeHandle"
           check-strictly
-          style="width: 400px;min-height: 400px;">
+          style="width: 400px;overflow: auto;">
         </el-tree>
       </el-form-item>
 
@@ -229,7 +230,6 @@
     },
     created(){
       getOfficeList().then(res => {
-        console.log(res);
         if (res.currentOffice.parentId) delete res.currentOffice.parentId; // 不能有parentId
         let arr = [res.currentOffice].concat(res.officeMsg);
         let tree = treeify(arr, 'id', 'parentId', 'children');
@@ -252,20 +252,25 @@
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            saveAccountInfo({
-              name: this.accountForm.name,
-              loginName: this.accountForm.username,
-              password: this.accountForm.password,
-              remarks: this.accountForm.mark,
-              roleIds: this.accountForm.roleId,
-              officeId: this.accountForm.officeId
-            }).then(res => {
-            this.successed()
+            if(this.accountForm.officeId === '1'){
+              this.$message.error(this.$t("accountManager.createdErr"));
+                return
+            }else {
+              saveAccountInfo({
+                name: this.accountForm.name,
+                loginName: this.accountForm.username,
+                password: this.accountForm.password,
+                remarks: this.accountForm.mark,
+                roleIds: this.accountForm.roleId,
+                officeId: this.accountForm.officeId
+              }).then(res => {
+                this.successed()
                 console.log(res)
-            }).catch(err =>{
+              }).catch(err =>{
                 this.errored()
                 console.log(err)
-            })
+              })
+            }
           } else {
             console.log('error submit!!');
             return false;
@@ -313,9 +318,7 @@
       //检查用户名是否存在
       queryUsernameIsExist() {
         return new Promise((resolve, reject) => {
-          console.log(this.accountForm.username)
           checkAccountName(this.accountForm.username).then(res => {
-              console.log(res)
             resolve();
           }).catch(err => {
             reject();
@@ -363,8 +366,22 @@
   @import "src/styles/mixin.scss";
 
   /* reset element-ui css */
+  .accountManager-createAccount-wrapper {
+    .el-tree-node>.el-tree-node__children {
+      overflow: inherit;
+    }
+
+    .filter-tree {
+      @include scrollBar;
+      width: 400px;
+      min-height: 400px;
+      height: 400px;
+      overflow: auto;
+    }
+  }
 </style>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
+
 
 </style>
