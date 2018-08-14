@@ -79,6 +79,9 @@
                      class="tree-container"
                      :style="{ 'height': treeHeight + 'px' }"
                      :empty-text="$t('common.noData')">
+              <span class="el-tree-node__label" slot-scope="{ node, data }">
+                <span v-html="filterKeyLight(node)"></span>
+              </span>
             </el-tree>
           </div>
         </div>
@@ -152,6 +155,12 @@ export default {
     },
     $route($r) {
       this.isSubRoute = $r.name==='deviceManager-screen';
+
+      this.isShowDeselectAllBtn = false;
+      this.checkedOfficeList = [];
+      this.checkedOfficeIdList = [];
+      this.isShowCheckedOfficeList = false;
+      this.curClickOfficeId = -1;
     },
   },
   created() {
@@ -270,7 +279,17 @@ export default {
       this.checkedOfficeList = this.$refs.officeTree.getCheckedNodes()
 
       if (this.checkedOfficeIdList.length === 0) this.isShowCheckedOfficeList = false;
-    }
+    },
+    // 搜索高亮
+    filterKeyLight(node) {
+      if (!this.filterText) return node.label;
+
+      if (node.label.indexOf(this.filterText)!==-1 || node.data.organizationCode.indexOf(this.filterText)!==-1) {
+        return `<span style="color: #409EFF;">${node.label}</span>`;
+      } else {
+        return node.label;
+      }
+    },
   }
 }
 </script>

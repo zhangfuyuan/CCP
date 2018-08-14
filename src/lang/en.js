@@ -22,6 +22,7 @@ export default {
     operationSucceeds: "The operation succeeds",
     operationFailure: "Operation failure",
     returnBtn: "Return",
+    return: "Return",
     skip: "Skip",
     username: "Username",
     name: "Name",
@@ -201,6 +202,9 @@ export default {
     apkNotJikong: "Not centrally controlled APK",
     sureLeaveTips: "Processing, making sure to leave?",
     uploadBtn: "Upload",
+    requestTimeout: "The request timeout",
+    deviceNameOrId: "Device name /ID",
+    noSearchResults: "No search results",
   },
   planManager: {
     associatedApparatus: "Associated apparatus",
@@ -250,7 +254,8 @@ export default {
     associatedEquipmen:"Associated equipment",
     totalSelection:"Total selection",
     addDevice: "Add device",
-    disassociate:"disassociate"
+    disassociate:"disassociate",
+    unassociatePlan: "Unassociate the plan",
   },
   accountManager: {
     total: "Total",

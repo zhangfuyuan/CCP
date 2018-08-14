@@ -12,7 +12,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/prm-web/**': {
-        target: 'http://192.168.1.155:8283',
+        target: 'http://192.168.1.125:8283',
       },
     },
 

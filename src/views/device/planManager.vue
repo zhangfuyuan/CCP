@@ -555,10 +555,10 @@
              width="160"
              v-model="visible2"
              style="position: absolute;right: 10px;z-index: 1200" >
-             <p>是否取消关联该计划</p>
+             <p>{{$t('planManager.unassociatePlan')}}</p>
              <div style="text-align: right; margin: 0">
-               <el-button size="mini" type="text" @click="visible2 = false">取消</el-button>
-               <el-button type="primary" size="mini" @click="visible2 = false;delDevice()">确定</el-button>
+               <el-button size="mini" type="text" @click="visible2 = false">{{$t('common.cancelBtn')}}</el-button>
+               <el-button type="primary" size="mini" @click="visible2 = false;delDevice()">{{$t('common.confirmBtn')}}</el-button>
              </div>
              <el-button slot="reference" v-if="delPlan" type="danger" >{{$t('planManager.disassociate')}}</el-button>
              <el-button slot="reference" v-if="!delPlan" type="info" disabled="disabled">{{$t('planManager.disassociate')}}</el-button>
@@ -615,7 +615,7 @@
           </el-input>
         </div>
         <el-row style="margin-top: 10px;" v-if="isofficeShow">
-          <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">返回</a>{{officeName}}</span>
+          <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">{{$t('common.return')}}</a>{{officeName}}</span>
         </el-row>
         <div class="whiteBox"
              :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '330px','z-index': wIndex +'' }">
@@ -1797,7 +1797,7 @@
             this.officeData.map(item => {
               tmp.push(item.key);
             })
-            arr = arr .filter(item => {
+            arr = arr.filter(item => {
                 return tmp.indexOf(item.key) === -1;
             })
             this.officeData.push(...arr);

@@ -28,7 +28,7 @@
           <span v-if="data.type===1" :title="$t('officeManager.intelligentAllocationPointsMode')">
             <svg-icon icon-class="eglass-tag" style="font-size: 16px;cursor: pointer;" />
           </span>
-          {{ node.label }}
+          <span v-html="filterKeyLight(node)"></span>
         </span>
         <span>
           <i v-if="node.level===1"
@@ -246,7 +246,7 @@
         <div v-if="!isNoAuth && curClickOfficeInfo.type===0"
              style="display: flex;justify-content: space-between;align-items: center;color: #606266;padding-top: 20px;font-size: 16px;">
           <span>
-            {{$t('officeManager.distributablePoints')}}: &nbsp; <span style="color: #409EFF;">{{newInputTotalNumber}}</span>
+            {{$t('officeManager.distributablePoints')}}: &nbsp; <span style="color: #409EFF;">{{newInputTotalNumber-newOfficeForm.inputNumberVal}}</span>
           </span>
 
           <span>
@@ -1135,7 +1135,19 @@
             type: 'warning'
           });
         }
-      }
+      },
+      // 搜索高亮
+      filterKeyLight(node) {
+        if (!this.filterText) return node.label;
+
+        if (node.label.indexOf(this.filterText)!==-1 || node.data.organizationCode.indexOf(this.filterText)!==-1) {
+          return `<span style="color: #409EFF;">${node.label}</span>`;
+        } else {
+          return node.label;
+        }
+//        const result = text.replace(new RegExp(this.filterText, 'g'), `<span style="color: #409EFF;font-size: 14px;">${this.filterText}</span>`);
+//        return result;
+      },
     }
   }
 </script>

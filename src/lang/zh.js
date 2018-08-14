@@ -22,6 +22,7 @@ export default {
     operationSucceeds: "操作成功",
     operationFailure: "操作失败",
     returnBtn: "返 回",
+    return: "返回",
     skip: "跳转",
     username: "用户名",
     name: "名称",
@@ -201,6 +202,9 @@ export default {
     apkNotJikong: "不是集控APK",
     sureLeaveTips: "正在处理，确定离开？",
     uploadBtn: "上 传",
+    requestTimeout: "请求超时",
+    deviceNameOrId: "设备名称/ID",
+    noSearchResults: "无搜索结果",
   },
   planManager: {
     associatedApparatus: "关联设备",
@@ -251,6 +255,7 @@ export default {
     totalSelection:"全选",
     addDevice:"添加设备",
     disassociate:"取消关联",
+    unassociatePlan: "是否取消关联该计划",
   },
   accountManager: {
     total: "共",

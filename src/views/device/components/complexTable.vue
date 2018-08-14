@@ -78,7 +78,8 @@
               v-tabelLoadmore="tableLoadMore"
               :empty-text="$t('common.noData')"
               @filter-change="filterChangeHandle"
-              ref="deviceTable">
+              ref="deviceTable"
+              @select-all="handleSelectAll">
       <el-table-column
         type="selection"
         align="center">
@@ -132,7 +133,7 @@
           </template>
 
           <template v-else>
-            <span>{{$t('deviceManager.atAll')}}</span>
+            <span v-if="finalShowNum>10">{{$t('deviceManager.atAll')}}</span>
           </template>
         </div>
       </template>
@@ -1069,7 +1070,6 @@ export default {
       checkedDeviceList: [],
       isShowCheckedDeviceList: false,
       searchVal: '',
-      hasBeenRequestedAllData: false,
       filterKeys: [],
       dialogKey: '',
       dialogVisible: false,
@@ -1163,7 +1163,7 @@ export default {
 
   },
   methods: {
-    getList(isRequestedAllData) {
+    getList(isRequestedAllData, isSelectAll) {
       if (!this.checkedOfficeIds || this.checkedOfficeIds.length===0) return this.resetData();
 
       this.listLoading = true;
@@ -1184,14 +1184,17 @@ export default {
           console.log(res);
 
           if (this.listQuery.pageNo*this.listQuery.pageSize < res.count) {
-            this.getList(true);
+            this.listTotalCount = res.count;
+            this.list.push(...res.data);
+            this.getList(true, isSelectAll);
           } else {
             this.busy = false;
             this.listLoading = false;
-          }
+            this.listTotalCount = res.count;
+            this.list.push(...res.data);
 
-          this.listTotalCount = res.count;
-          this.list.push(...res.data);
+            if (isSelectAll) this.$refs['deviceTable'].toggleAllSelection();
+          }
         }).catch(err => {
           console.log(err);
           this.$message.error(this.$t('common.getDeviceListError'));
@@ -1217,8 +1220,7 @@ export default {
       this.getList(true);
     },
     handleSelectionChange(val) {
-      this.checkedDeviceList = val
-      console.log(val, this.checkedDeviceList)
+      this.checkedDeviceList = val;
     },
     tableLoadMore() { // this.listQuery.pageNo*this.listQuery.pageSize this.listTotalCount
       if (!this.busy && this.listQuery.pageNo*this.listQuery.pageSize<this.listTotalCount) {
@@ -1436,12 +1438,11 @@ export default {
 
       console.log('筛选条件', this.filterKeys);
       // todo 通过 hasBeenRequestedAllData 判断首次筛选 则请求全部数据（不重复获取已有数据）
-      if (!this.hasBeenRequestedAllData) {
-        console.log('第一次筛选请求全部数据！')
-        this.getList(true);
-        this.hasBeenRequestedAllData = true;
-      }
+      if (this.list.length < this.listTotalCount) {
+        console.log('第一次筛选请求全部数据！');
 
+        this.getList(true);
+      }
     },
     toggleDialog(title, data) {
       switch (title) {
@@ -1643,7 +1644,6 @@ export default {
       this.listQuery.pageNo =  1;
       this.isShowCheckedDeviceList = false;
       this.isShowTotalCount = true;
-      this.hasBeenRequestedAllData = false;
 
       this.$refs['deviceTable'].clearSelection();
       this.$refs['deviceTable'].clearSort();
@@ -1708,7 +1708,7 @@ export default {
           if (tmp['name1']) this.planDialogUniformPlan['name1'] = tmp['name1'];
           if (tmp['id1']) this.planDialogUniformPlan['id1'] = tmp['id1'];
         }
-        
+
         console.log(this.planDialogUniformPlan);
         this.$message({
           message: this.$t('common.operationSucceeds'),
@@ -2017,6 +2017,13 @@ export default {
             reject();
           });
         })
+      }
+    },
+    handleSelectAll(selection) {
+      if (this.list.length < this.listTotalCount) {
+        console.log('第一次筛选请求全部数据！')
+
+        this.getList(true, true);
       }
     },
     /** 以下为 webuploader 监听处理方法
