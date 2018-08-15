@@ -30,7 +30,7 @@
           </span>
           <span v-html="filterKeyLight(node)"></span>
         </span>
-        <span>
+        <span v-if="!isSubRoute">
           <i v-if="node.level===1"
              class="el-icon-circle-plus-outline"
              style="font-size: 16px;"
@@ -50,7 +50,7 @@
     <div class="view" :style="{ 'height': viewHeight + 'px' }">
       <div style="margin-bottom: 30px;" v-if="!isSubRoute">
         <span style="color: #409EFF;font-size: 16px;">
-          <svg-icon icon-class="eglass-tag" style="font-size: 16px;cursor: pointer;" /> {{$t('officeManager.intelligentAllocationPointsMode')}}
+          <svg-icon icon-class="eglass-tag" style="font-size: 16px;" /> {{$t('officeManager.intelligentAllocationPointsMode')}}
         </span>
       </div>
 
@@ -272,7 +272,9 @@
 
       <!--删除机构节点-->
       <template v-if="dialogInfo.key === 'remove'">
-        <span>{{$t('officeManager.afterRemovingMechanism')}}</span>
+        <span>{{$t('officeManager.afterRemovingMechanism1')}}</span>
+        <span style="color: #409EFF;">{{curClickOfficeParentInfo.name}}（{{curClickOfficeParentInfo.organizationCode}}）</span>
+        <span>{{$t('officeManager.afterRemovingMechanism2')}}</span>
 
         <div slot="footer" class="dialog-footer">
           <el-button type="primary" @click="isShowDialog = false">{{$t('common.cancel')}}</el-button>

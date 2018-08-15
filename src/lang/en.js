@@ -56,6 +56,7 @@ export default {
     failTips:"Time or date is empty. Please re-enter!",
     sameTime:"Time is the same!",
     timeInterval:"The interval is less than 5 minutes！",
+    search: "Search",
   },
   login: {
     title: "Integrated machine control management system",
@@ -256,6 +257,12 @@ export default {
     addDevice: "Add device",
     disassociate:"disassociate",
     unassociatePlan: "Unassociate the plan",
+    nextDay: "Next day",
+    nextWeek: "Next week",
+    nextMonth: "Next month",
+    latestWeek: "Latest week",
+    latestMonth: "Latest month",
+    latest3Month: "Latest 3 month",
   },
   accountManager: {
     total: "Total",
@@ -280,7 +287,14 @@ export default {
     searchNameOrUsername: "Search for a name or username",
     createdSuccess:"New success",
     createdError:"New failure",
-    createdErr:"Unable to create system administrator role account for this organization"
+    createdErr:"Unable to create system administrator role account for this organization",
+    del: "Delete",
+    cancle: "Cancle",
+    deletedDeleted: "Deleted deleted",
+    attention: "Attention",
+    logOut:"Account online will be forced to log out",
+    ifDelete:"Whether or not to delete",
+    isDeletePlan:"Do you want to delete the selected plan"
   },
   ipManager: {
     serverIP: "Server IP/domain name",
@@ -336,7 +350,8 @@ export default {
     will: "Will",
     moveTo: "move to",
     organizationNameNotExceed24: "The name of the organization shall not exceed 24 words",
-    afterRemovingMechanism: "The number of points, devices and accounts of the mechanism and its sub-mechanism will be deleted, which cannot be withdrawn",
+    afterRemovingMechanism1: "The account data of the organization and sub-organization is deleted, and the equipment and institutional points are recovered",
+    afterRemovingMechanism2: ", the operation is irreversible",
     totalPoints: "Total distributable points",
     serverNotCertified: "Server not certified",
     certificationImmediately: "Certification immediately",

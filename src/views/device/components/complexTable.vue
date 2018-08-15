@@ -58,6 +58,7 @@
         <el-input @keyup.enter.native="handleSearch"
                   style="width: 250px;margin-left: 10px;"
                   :placeholder="$t('deviceManager.searchNameOrId')"
+                  clearable
                   v-model="searchVal">
           <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleSearch"></i>
         </el-input>
@@ -378,7 +379,7 @@
                  style="min-height: 300px;"
                  v-model="settingsDialogActiveTabsName"
                  :before-leave="leaveSettingsTabs">
-          <el-tab-pane :label="$t('deviceManager.basicSettings')" name="basicSettings">
+          <el-tab-pane :label="$t('deviceManager.basicSettings')" name="basicSettings" style="height: 500px;">
             <template v-if="settingsDialogActiveTabsName === 'basicSettings'">
               <div style="margin-bottom: 20px;border-bottom: 1px solid #DCDFE6;padding-bottom: 20px;">
                 <div style="color: #333;font-size: 16px;margin-bottom: 20px;">{{$t('deviceManager.powerSettings')}}</div>
@@ -657,7 +658,12 @@
       <div class="manager-dialog" v-if="dialogKey === 'plan' && dialogInfo.length>0" style="min-height: 500px;position: relative;">
         <el-tabs v-model="planDialogActiveTabsName" @tab-click="handlePlanDialogClick">
           <el-tab-pane :label="$t('deviceManager.currentPlan')" name="currentPlan">
-            <div class="timingPlan-box" v-if="planDialogUniformPlan">
+            <div  v-if="dialogInfo.length>1 && (!planDialogUniformPlan['1'] && !planDialogUniformPlan['2'])"
+                  style="width: 100%;text-align: center;color: #999;">
+              {{$t('deviceManager.uniformPlanTips')}}
+            </div>
+
+            <div class="timingPlan-box" v-else>
               <div class="timingPlan-power">
                 <div style="white-space: nowrap;font-size: 16px;">
                   <div>{{$t('deviceManager.powerPlan')}}</div>
@@ -741,10 +747,6 @@
                   <span style="color: #999;">{{$t('deviceManager.noPlan')}}</span>
                 </div>
               </div>
-            </div>
-
-            <div v-else style="width: 100%;text-align: center;color: #999;">
-              {{$t('deviceManager.uniformPlanTips')}}
             </div>
           </el-tab-pane>
 
@@ -1096,7 +1098,7 @@ export default {
       curCheckedMoveOfficeId: '',
       isMoveDevicesLoading: false,
       // 定时计划
-      planDialogUniformPlan: null,
+      planDialogUniformPlan: {},
       planListQuery: {
         searchKey: '',
         pageNo: 1,
@@ -1499,6 +1501,7 @@ export default {
           this.dialogWidth = '60%';
           this.isPlanTableDataLoading = true;
           this.planDialogActiveTabsName = 'currentPlan';
+          this.planDialogUniformPlan = {};
           getPlanList(this.planListQuery).then(res => {
             console.log(res)
             this.planTableData = res.data;
@@ -1510,10 +1513,11 @@ export default {
             console.log(err)
           })
           if (this.dialogInfo.length===1) {
+
+
             getPlanOfDevice({ terminalId: this.dialogInfo[0].id }).then(res => {
               console.log('根据设备查计划', res);
 
-              if (res['1'] || res['2']) this.planDialogUniformPlan = {};
               if (res['1']) this.planDialogUniformPlan['1'] = res['1'];
               if (res['2']) this.planDialogUniformPlan['2'] = res['2'];
               if (res['name1']) this.planDialogUniformPlan['name1'] = res['name1'];
@@ -1522,9 +1526,12 @@ export default {
               if (res['id2']) this.planDialogUniformPlan['id2'] = res['id2'];
 
               console.log('根据设备查计划', this.planDialogUniformPlan);
+              this.dialogVisible = true;
             }).catch(err => {
               console.log(err)
             });
+          } else {
+            this.dialogVisible = true;
           }
           break;
         case 'move':
@@ -1574,7 +1581,7 @@ export default {
           break;
       }
 
-      this.dialogVisible = true;
+      if (this.dialogKey !== 'plan') this.dialogVisible = true;
       console.log('当前对话框信息', data)
     },
     handlePlanDialogClick(tab, event) {
@@ -1664,7 +1671,7 @@ export default {
       }).then(res => {
         console.log(res)
 
-        console.log(8126, this.curCheckedPlanInfo)
+        console.log(8126, this.curCheckedPlanInfo);
         if (this.curCheckedPlanInfo.type === '1') {
           this.planDialogUniformPlan['1'] = this.curCheckedPlanInfo.content;
           this.planDialogUniformPlan.name1 = this.curCheckedPlanInfo.name;

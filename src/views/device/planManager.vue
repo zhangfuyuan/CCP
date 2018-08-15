@@ -13,9 +13,24 @@
         <el-button v-if="!deleteEquip" type="info" disabled @click="deletePlan">{{$t('planManager.deleteEquipment')}}</el-button>
       </div>
       <div class="search">
-        <el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('planManager.searchPlanName')" v-model="searchVal">
+        <!--<el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('planManager.searchPlanName')" v-model="searchVal">
           <i slot="suffix" class="el-input__icon el-icon-search" @click="handleSearch"></i>
-        </el-input>
+        </el-input>-->
+
+        <div class="el-input el-input--suffix" style="width: 200px;">
+          <input type="text"
+                 v-model="searchVal"
+                 @input="handleSearch"
+                 :placeholder="$t('planManager.searchPlanName')"
+                 class="el-input__inner" />
+          <span class="el-input__suffix" v-show="!searchVal">
+              <span class="el-input__suffix-inner"><i class="el-input__icon el-icon-search"></i></span>
+            </span>
+          <span class="el-input__suffix" v-show="searchVal" @click="searchVal = '', handleSearch()">
+              <span class="el-input__suffix-inner" style="cursor: pointer;"><i class="el-input__icon el-icon-circle-close"></i></span>
+            </span>
+        </div>
+
       </div>
     </div>
 
@@ -96,7 +111,7 @@
                :visible.sync="dialogVisible"
                :close-on-click-modal="false"
                :close-on-press-escape="false"
-                @close="dialogKey = ''">
+                @close="dialogKey = ''" >
       <!--新建定时计划-->
       <div class="create-dialog" v-if="dialogKey === 'create'">
         <div style="height: 100%;padding-right: 20px;">
@@ -134,6 +149,7 @@
                   <el-time-picker
                     v-model="item.time"
                     value-format="timestamp"
+                    format="HH:mm"
                     :placeholder="$t('planManager.timePickerPlaceholder')"
                     size="mini"
                     style="width: 120px;"
@@ -174,6 +190,7 @@
                   <el-time-picker
                     v-model="item.time"
                     value-format="timestamp"
+                    format="HH:mm"
                     :placeholder="$t('planManager.timePickerPlaceholder')"
                     size="mini"
                     style="width: 120px;">
@@ -223,8 +240,9 @@
                         is-range
                         v-model="option.date"
                         range-separator="-"
-                        start-placeholder="00:00"
-                        end-placeholder="00:00"
+                        start-placeholder=""
+                        end-placeholder=""
+                        format="HH:mm"
                         size="mini"
                         style="width: 30%;margin-right: 15px"
                         @change="changeVolumeTimePicker"
@@ -280,7 +298,7 @@
               <span v-if="week ==='7'">周日</span>
             </span>
             <span v-for="(t,k) in item.date" :key="k" class="span_line" >
-               {{+t | formatDatet}}
+               {{+t | formatDatet}}<span v-if="k === 0">~</span>
             </span>
           </el-col>
           <el-col v-if="funcType ==='2'" v-for="(item,index) in detailData" style="margin-bottom: 10px;margin-top: 10px;" :key="index">
@@ -300,7 +318,6 @@
                {{+t | formatDated}}
             </span>
         </el-col>
-
           <!--<el-table
             :data="tableData"
             height="250"
@@ -356,7 +373,7 @@
           </el-table>-->
         </el-row>
 
-        <el-row style="width: 100%;height: 250px;overflow: auto; margin-top: 30px;">
+        <el-row style="width: 100%;height: 250px; margin-top: 30px;">
           <el-col><div class="grid-content">{{$t('planManager.associatedEquipmen')}}</div></el-col>
           <el-table
             :data="equipData"
@@ -568,12 +585,12 @@
              :data="equipDatad"
              fit
              border
-             height="400px"
+             height="350px"
              size="mini"
              v-loading="listLoading"
              highlight-current-row
              stripe
-             style="width: 100%;margin-top: 25px;" @select-all="selectAllPlanHandle" @select="selectPlanHandle" >
+             style="width: 100%;margin-top: 35px;" @select-all="selectAllPlanHandle" @select="selectPlanHandle" >
 
              <el-table-column
                type="selection"
@@ -618,13 +635,13 @@
           <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">{{$t('common.return')}}</a>{{officeName}}</span>
         </el-row>
         <div class="whiteBox"
-             :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '330px','z-index': wIndex +'' }">
+             :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '340px','z-index': wIndex +'' }">
         </div>
         <div class="whiteSmallBox"
-             :style="{'width': '50px','height': '20px','background':'#f5f7fa','position': 'absolute','top': '110px','left': '270px','z-index': zIndex+1 +'' }"
+             :style="{'width': '50px','height': '20px','background':'#f5f7fa','position': 'absolute','top': '110px','left': '280px','z-index': zIndex+1 +'' }"
         ></div>
         <el-transfer
-          :style="{ 'width': '100%', 'height': '300px','position': 'absolute', 'top': '100px', 'left': '10px', 'z-index': zIndex +'' }"
+          :style="{ 'width': '100%', 'height': '300px','position': 'absolute', 'top': '100px', 'left': '18px', 'z-index': zIndex +'' }"
           v-model="officeVal"
           :left-default-checked="officeVal"
           :data="officeData"
@@ -641,7 +658,7 @@
           :data="data"
           :titles="[$t('planManager.choiceDevice'),$t('planManager.selectedEquipment')]"
           :button-texts="[$t('planManager.deleteEquipment'), $t('planManager.addEquipment')]"></el-transfer>-->
-        <el-form style="width: 320px;height: 310px;overflow:auto;position: absolute;top: 100px;left: 10px;z-index: 1111" v-if="zIndex === 1">
+        <el-form style="width: 320px;height: 310px;overflow:auto;position: absolute;top: 100px;left: 18px;z-index: 1111" v-if="zIndex === 1">
        <!-- <el-form-item>
           <el-input
             :placeholder="$t('common.searchOrganizationName')"
@@ -711,9 +728,9 @@
         <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
         <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;delDevice()" :disabled="!isManagerDel && !delPlan">{{$t('common.confirmBtn')}}</el-button>
       </div>
-      <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'device'" style="margin-top: 320px">
+      <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'device'" style="margin-top: 264px" :class="{marginTop : isMarginTop}">
         <el-button @click="isShowFn" >{{$t('common.cancelBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;addDecial()" :disabled="!isAddDevice">{{$t('common.confirmBtn')}}</el-button>
+        <el-button type="primary" v-if="isChangeContent === 'source'" @click="addDecial()" :disabled="!isAddDevice">{{$t('common.confirmBtn')}}</el-button>
       </div>
     </el-dialog>
   </div>
@@ -748,6 +765,7 @@
         officeVal:[],
         deleteEquip:"",
         delPlan:"",
+        planId:"",
         idArr:[],
         idstr: "",
         funcType: "",
@@ -756,6 +774,7 @@
         detailData:[],
         isManagerDel:false,
         isChangePlan: false,
+        isMarginTop:true,
         filterText: '',
         treeData: null,
         curofficeId:'',
@@ -788,7 +807,7 @@
               {
                 id: Date.now(),
                 isAllCheckedWeek: false,
-                time: '1533871759000',
+                time: '',
                 planType:"1",
                 operation: '1',
                 weeks: [],
@@ -800,7 +819,7 @@
             planList: [
               {
                 id: Date.now(),
-                time: '1533871759000',
+                time: '',
                 planType:"2",
                 operation: '2',
                 date: (function () {
@@ -859,7 +878,7 @@
         ],
         pickerOptions: {
           shortcuts: [{
-            text: '未来一天',
+            text: this.$t('planManager.nextDay'),
             onClick(picker) {
               const end = new Date();
               const start = new Date();
@@ -867,7 +886,7 @@
               picker.$emit('pick', [start, end]);
             }
           }, {
-            text: '未来一周',
+            text: this.$t('planManager.nextWeek'),
             onClick(picker) {
               const end = new Date();
               const start = new Date();
@@ -875,7 +894,7 @@
               picker.$emit('pick', [start, end]);
             }
           }, {
-            text: '未来一个月',
+            text: this.$t('planManager.nextMonth'),
             onClick(picker) {
               const end = new Date();
               const start = new Date();
@@ -989,6 +1008,8 @@
         if(title === 'manager'){
           this.delPlan = ""
           this.equipDatad = []
+          this.planId = ''
+          this.planId = data.id
           strategyTerminal({strategyId :data.id}).then(res => {
             this.equipDatad = res.data
             console.log(res)
@@ -997,84 +1018,89 @@
           })
         }
           if(title === 'modify') {
+            this.createForm.weeklyPlan.planList = []
+            this.createForm.specialPlan.planList = []
+            this.createVol.defaultVol.volList = []
+            this.createVol.timingVol.volList = []
               if(data.type === '1') {
                 this.isChangeContent = 'source'
                 this.createForm.type = data.type
                 this.createForm.name=data.name;
                 this.createForm.id = data.id
-                /*this.createForm.weeklyPlan.planList= [
-                  {
-                    id: Date.now(),
-                    isAllCheckedWeek: false,
-                    time: '1533871759000',
-                    planType:"1",
-                    operation: '1',
-                    weeks: [],
-                  }
-                ]
-                this.createForm.specialPlan.planList= [
-                  {
-                    id: Date.now(),
-                    time: '1533871759000',
-                    planType:"2",
-                    operation: '2',
-                    date: (function () {
-                      const end = new Date();
-                      const start = new Date();
-                      end.setTime(start.getTime() + 3600 * 1000 * 24);
-                      return [start.getTime(), end.getTime()];
-                    })(),
 
+                let choseType = '1'
+                for(let i=0,length=data.content.length;i<length;i++){
+                  for(let j =1,len=data.content.length;j<len;j++){
+                    if(data.content[i].planType != data.content[j].planType){
+                      choseType = '2'
+                    }
                   }
-                ]
-                this.createVol.defaultVol.volList= [
-                  {
-                    id: Date.now(),
-                    planType:"1",
-                    volume: 20,
-                  }
-                ]
-                this.createVol.timingVol.volList= [
-                  {
-                    id: Date.now(),
-                    isAllCheckedWeek: false,
-                    planType:"2",
-                    volume: 20,
-                    weeks: [],
-                    date: (function () {
-                      const end = new Date();
-                      const start = new Date();
-                      end.setTime(start.getTime() + 1000*60*60);
-                      return [start.getTime(), end.getTime()];
-                    })(),
-                  }
-                ]*/
+                }
 
-
-                for(let index in data.content){
+                if(choseType === '1'){
+                  for(let index in data.content){
                     if(data.content[index].planType === '1'){
-                      this.createForm.weeklyPlan.planList = []
+                      //this.createForm.weeklyPlan.planList = []
                       this.createForm.weeklyPlan.isOpen = true
-                        let operation = data.content[index].operation
-                        let planType = data.content[index].planType
-                        let time = data.content[index].time
-                        let weeks = data.content[index].weeks.split(',')
-                        let isAllCheckedWeek = false
-                        if(weeks.length === 7){
-                           isAllCheckedWeek = true;
-                        }else{
-                           isAllCheckedWeek = false;
-                        }
-                        let arr = {}
-                        arr.operation = operation
-                        arr.planType = planType
-                        arr.time = time
-                        arr.weeks = weeks
-                        arr.isAllCheckedWeek = isAllCheckedWeek
-                        this.createForm.weeklyPlan.planList.push(arr)
+                      this.createForm.specialPlan.isOpen = false
+                      let operation = data.content[index].operation
+                      let planType = data.content[index].planType
+                      let time = data.content[index].time
+                      let weeks = data.content[index].weeks.split(',')
+                      let isAllCheckedWeek = false
+                      if(weeks.length === 7){
+                        isAllCheckedWeek = true;
+                      }else{
+                        isAllCheckedWeek = false;
+                      }
+                      let arr = {}
+                      arr.operation = operation
+                      arr.planType = planType
+                      arr.time = time
+                      arr.weeks = weeks
+                      arr.isAllCheckedWeek = isAllCheckedWeek
+                      this.createForm.weeklyPlan.planList.push(arr)
 
                     }else {
-                      this.createForm.specialPlan.planList=[]
+                      //this.createForm.specialPlan.planList=[]
+                      this.createForm.specialPlan.isOpen = true
+                      this.createForm.weeklyPlan.isOpen = false
+                      let operation = data.content[index].operation
+                      let planType = data.content[index].planType
+                      let time = data.content[index].time
+                      let date = data.content[index].date.split(',')
+                      let arr = {}
+                      arr.operation = operation
+                      arr.planType = planType
+                      arr.time = time
+                      arr.date = date
+                      this.createForm.specialPlan.planList.push(arr)
+                      //this.createForm.specialPlan.planList = data.content[index]
+                    }
+                  }
+                }else{
+                  for(let index in data.content){
+                    if(data.content[index].planType === '1'){
+                      this.createForm.weeklyPlan.isOpen = true
+                      let operation = data.content[index].operation
+                      let planType = data.content[index].planType
+                      let time = data.content[index].time
+                      let weeks = data.content[index].weeks.split(',')
+                      let isAllCheckedWeek = false
+                      if(weeks.length === 7){
+                        isAllCheckedWeek = true;
+                      }else{
+                        isAllCheckedWeek = false;
+                      }
+                      let arr = {}
+                      arr.operation = operation
+                      arr.planType = planType
+                      arr.time = time
+                      arr.weeks = weeks
+                      arr.isAllCheckedWeek = isAllCheckedWeek
+                      this.createForm.weeklyPlan.planList.push(arr)
+
+                    }else {
                       this.createForm.specialPlan.isOpen = true
                       let operation = data.content[index].operation
                       let planType = data.content[index].planType
@@ -1088,19 +1114,44 @@
                       this.createForm.specialPlan.planList.push(arr)
                       //this.createForm.specialPlan.planList = data.content[index]
                     }
-                  console.log(this.createForm.weeklyPlan.planList)
-                  console.log(this.createForm.specialPlan.planList)
+                  }
                 }
+
+
+
+
+                if(!this.createForm.weeklyPlan.isOpen){
+                  this.createForm.weeklyPlan.planList.push( {
+                    id: Date.now(),
+                    isAllCheckedWeek: false,
+                    time: '',
+                    planType:"1",
+                    operation: '1',
+                    weeks: [],
+                  })
+                }else if(!this.createForm.specialPlan.isOpen){
+                  this.createForm.specialPlan.planList.push({
+                    id: Date.now(),
+                    isAllCheckedWeek: false,
+                    planType:"2",
+                    volume: 20,
+                    weeks: [],
+                    date: (function () {
+                      const end = new Date();
+                      const start = new Date();
+                      end.setTime(start.getTime() + 1000*60*60);
+                      return [start.getTime(), end.getTime()];
+                    })(),
+                  })
+                }
+
+
+                /* -------------------------------------------------------------------*/
               }else {
                 this.isChangeContent = 'volume'
                 this.createForm.type = data.type
                 this.createForm.name=data.name;
                 this.createForm.id = data.id
-                this.createForm.weeklyPlan.planList= []
-                this.createForm.specialPlan.planList= []
-                this.createVol.defaultVol.volList= []
-                this.createVol.timingVol.volList= []
-                console.log(data.content)
                 let choseType = '1'
                for(let i=0,length=data.content.length;i<length;i++){
                    for(let j =1,len=data.content.length;j<len;j++){
@@ -1112,7 +1163,6 @@
                if(choseType === '1'){
                  for(let index in data.content){
                    if(data.content[index].planType ==='1'){
-                     this.createVol.defaultVol.volList=[]
                      this.createVol.defaultVol.isOpen = true
                      this.createVol.timingVol.isOpen = false
                      let planType = data.content[index].planType
@@ -1123,7 +1173,6 @@
                      this.createVol.defaultVol.volList.push(arr)
                      this.createVol.defaultVol.volList.push()
                    }else {
-                     this.createVol.timingVol.volList=[]
                      this.createVol.timingVol.isOpen = true
                      this.createVol.defaultVol.isOpen = false
                      let planType = data.content[index].planType
@@ -1149,7 +1198,6 @@
                }else{
                  for(let index in data.content){
                    if(data.content[index].planType ==='1'){
-                     this.createVol.defaultVol.volList=[]
                      this.createVol.defaultVol.isOpen = true
                      let planType = data.content[index].planType
                      let volume = data.content[index].volume
@@ -1159,7 +1207,6 @@
                      this.createVol.defaultVol.volList.push(arr)
                      this.createVol.defaultVol.volList.push()
                    }else {
-                     this.createVol.timingVol.volList=[]
                      this.createVol.timingVol.isOpen = true
                      let planType = data.content[index].planType
                      let volume = data.content[index].volume
@@ -1182,17 +1229,13 @@
                    }
                  }
                }
-
-
                 if(!this.createVol.defaultVol.isOpen){
-                    console.log('111')
                   this.createVol.defaultVol.volList.push({
                     id: Date.now(),
                     planType:"1",
                     volume: 20,
                   })
                 }else if(!this.createVol.timingVol.isOpen){
-                    console.log('2222')
                   this.createVol.timingVol.volList.push({
                     id: Date.now(),
                     isAllCheckedWeek: false,
@@ -1207,9 +1250,6 @@
                     })(),
                   })
                 }
-
-                console.log( this.createVol.defaultVol.volList)
-                console.log( this.createVol.timingVol.volList)
               }
           }
           if(title === 'create'){
@@ -1446,10 +1486,8 @@
             this.delPlan += selection[key].id
           }
         }
-        console.log(this.delPlan)
         this.equipDatadCopy = []
         this.equipDatadCopy = this.equipDatad;
-        console.log(this.equipDatadCopy)
 
       },
 
@@ -1505,6 +1543,7 @@
         }
       },
       addWeekPlan() {
+        this.isChangePlan = true
           this.createForm.weeklyPlan.planList.push({
             id: Date.now(),
             isAllCheckedWeek: false,
@@ -1515,9 +1554,11 @@
           })
       },
       delWeekPlan(planId) {
+        this.isChangePlan = true
         this.createForm.weeklyPlan.planList.splice(planId,1)
       },
       addSpecialPlan() {
+        this.isChangePlan = true
         this.createForm.specialPlan.planList.push({
           id: Date.now(),
           time: '',
@@ -1532,9 +1573,11 @@
         })
       },
       delSpecialPlan(planId) {
+        this.isChangePlan = true
           this.createForm.specialPlan.planList.splice(planId,1)
       },
       addTimingVol() {
+        this.isChangePlan = true
         this.createVol.timingVol.volList.push({
           id: Date.now(),
           isAllCheckedWeek: false,
@@ -1550,6 +1593,7 @@
         })
       },
       delTimingVol(planId) {
+        this.isChangePlan = true
         this.createVol.timingVol.volList.splice(planId,1)
       },
       changeVolumeTimePicker(val) {
@@ -1558,6 +1602,10 @@
       addDevice(){
         this.dialogTitle = this.$t('planManager.addDevice');
         this.dialogKey = "device";
+        this.zIndex = 1
+        this.isofficeShow = false
+        this.isMarginTop = true
+        this.wIndex = 1200
       },
       deleteSingleEquipment(){
           this.isManagerDel = true
@@ -1737,16 +1785,32 @@
 
       },
       deletePlan(){
-        delStrategys(this.idstr).then(res => {
+        this.$confirm(this.$t('accountManager.isDeletePlan'),this.$t('accountManager.attention'), {
+          confirmButtonText: this.$t('accountManager.del'),
+          cancelButtonText:this.$t('accountManager.cancle'),
+          type: 'warning'
+        }).then(() => {
+          delStrategys(this.idstr).then(res => {
             this.addSourceSuccess()
-          console.log(res)
-        }).catch(err => {
+            console.log(res)
+          }).catch(err => {
             this.delerrored()
-          console.log(err)
-        })
+            console.log(err)
+          })
+          this.deleteEquip = ""
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: this.$t('accountManager.deletedDeleted')
+          });
+        });
+
+
+
       },
 
       changezIndex(){
+          this.isMarginTop = true
           this.wIndex = 1200
         this.zIndex = 1;
         this.isofficeShow = false
@@ -1773,45 +1837,51 @@
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
           this.zIndex = 1200;
           this.wIndex = 1
+          this.isMarginTop = false
          $('.el-transfer-panel input[type="checkbox"]').attr('disabled','disabled')
           this.isofficeShow = true
           this.$refs['officeTree'].setCurrentKey(data.id);
           this.curofficeId = data.id
           this.officeName = data.name
          // officeData
-          console.log(this.officeVal)
-          terminalPageByOffices({officeIds: this.curofficeId}).then(res => {
+            let _this = this;
+            let pageNo = 1;
+            let pageSize = 17;
+          (function getoffices(){
+            terminalPageByOffices({officeIds: _this.curofficeId,pageNo: pageNo}).then(res => {
 //              this.officeData = []
-            let arr = [], tmp = [];
+              let arr = [], tmp = [];
               for(let key in res.data){
-                  let id = res.data[key].id
-                  let decimalId = res.data[key].decimalId
-                  let decaimalName = res.data[key].name
-                  let obj = {}
-                  obj.key = id
-                  obj.label = decaimalName
-                  obj.officeid = res.data[key].officeId;
+                let id = res.data[key].id
+                let decimalId = res.data[key].decimalId
+                let decaimalName = res.data[key].name
+                let obj = {}
+                obj.key = id
+                obj.label = decaimalName
+                obj.officeid = res.data[key].officeId;
 //                this.officeData.push(obj)
                 arr.push(obj)
               }
-            this.officeData.map(item => {
-              tmp.push(item.key);
-            })
+              _this.officeData.map(item => {
+                tmp.push(item.key);
+              })
             arr = arr.filter(item => {
                 return tmp.indexOf(item.key) === -1;
-            })
-            this.officeData.push(...arr);
-          //  $('.el-transfer').find('.el-transfer-panel').eq(1).find('.el-transfer-panel__body').find('.el-transfer-panel__list').empty().append('<label role="checkbox" class="el-checkbox el-transfer-panel__item"><span aria-checked="mixed" class="el-checkbox__input"><span class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="true" class="el-checkbox__original" value="40b241d52a7d90c0a8194"></span><span class="el-checkbox__label"><span data-v-1451f772="">zfy</span><!----></span></label>');
-              //this.officeData = res.data;
-//            console.log(8126, $('.cjc_isHidden').parents('.el-transfer-panel__item'));
-            $('.cjc_isHidden').parents('.el-transfer-panel__item').hide();
-            $('.cjc_isShow').parents('.el-transfer-panel__item').show();
-            console.log(8126.1, this.officeData)
-            console.log(8126.2, this.officeVal)
+              })
+              _this.officeData.push(...arr);
+              $('.cjc_isHidden').parents('.el-transfer-panel__item').hide();
+              $('.cjc_isShow').parents('.el-transfer-panel__item').show();
               console.log(res)
-          }).catch(err => {
+
+              if (pageNo*pageSize < res.count) {
+                pageNo++;
+                getoffices();
+              }
+            }).catch(err => {
               console.log(err)
-          })
+            })
+          })()
+
         } else { // 已选 -> 去选
           this.$refs['officeTree'].setCheckedKeys([]);
           this.curofficeId = ''
@@ -1841,9 +1911,23 @@
             message: this.$t('common.operationSucceeds'),
             type: 'success'
           })
-         }).catch(err => {
+          this.dialogKey = "manager";
+          this.dialogTitle = this.$t('planManager.deviceManagement');
+
+         }).then(() => {
+          this.delPlan = ""
+          this.equipDatad = []
+          strategyTerminal({strategyId :this.planId}).then(res => {
+            this.equipDatad = res.data
+            console.log(res)
+          }).catch(err => {
+            console.log(err)
+          })
+        }).catch(err => {
          console.log(err)
          })
+        this.officeVal = []
+        this.isAddDevice = false
 
       },
       disassociation() {
@@ -1889,14 +1973,12 @@
          }else {
            this.isAddDevice = false
          }
-
       },
       isShowFn() {
         this.dialogKey = "manager";
         this.dialogTitle = this.$t('planManager.deviceManagement');
 
       },
-
 
    DateAdd(interval, number, date) {
    date = new Date(date)
@@ -1981,25 +2063,27 @@
     .el-dialog .el-dialog__body .el-transfer .el-transfer-panel{
       width: 320px;
     }
-  }
-  .el-dialog{
-    width: 800px;
-    min-height: 450px;
-  }
-  .el-dialog__body{
-    position: relative;
-  }
- .span_line:nth-of-type(1)::after{
-    content: '~';
-    display: inline-block;
-  }
 
+    .el-dialog{
+      width: 800px;
+      min-height: 450px;
+    }
 
+    .el-dialog__body{
+      position: relative;
+    }
+    .span_line:nth-of-type(1)::after{
+      content: '~';
+      display: inline-block;
+    }
+  }
 </style>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
   @import "src/styles/mixin.scss";
-
+.marginTop{
+  margin-top: 330px !important;
+}
 .planManager-wrapper {
   .filter {
     width: 100%;
@@ -2031,6 +2115,5 @@
     max-height: 500px;
     overflow: auto;
   }
-
 }
 </style>

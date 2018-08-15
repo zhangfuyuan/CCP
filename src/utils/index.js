@@ -442,3 +442,33 @@ export function formatDate(date,fmt){
 function padLeftZero(str){
   return ('00'+str).substr(str.length);
 }
+
+/**
+ *  对象数组根据指定元素属性进行分类，返回一个根据此属性区分的对象（默认附带顺排序）
+ * */
+
+export function listClassify(list, key, between) {
+  if (!list || list.length===0) return null;
+
+  let obj = {};
+
+  list.reduce(function (total, item) {
+    if (total.indexOf(Math.floor(item[key]/between)) === -1) {
+      total.push(Math.floor(item[key]/between));
+      obj[Math.floor(item[key]/between)] = [];
+    }
+
+    obj[Math.floor(item[key]/between)].push(item);
+
+    return total;
+  }, []);
+
+  obj = Object.keys(obj).map(item => {
+    obj[item].sort((now, next) => {
+      return now[key] - next[key];
+    });
+    return obj[item];
+  });
+
+  return obj;
+}

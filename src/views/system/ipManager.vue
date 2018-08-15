@@ -21,7 +21,10 @@
           <el-button @click="defaultForm()" style="display: block;margin-bottom: 15px;margin-left: 10px;width: 155px;">{{$t('ipManager.default')}}</el-button>
           <el-button type="primary"
                       @click="submitForm('ruleForm')"
-                      :disabled="ruleForm.serverIP.length===0 || ruleForm.terminalIP.length===0">{{$t('ipManager.confirm')}}
+                      :disabled="ruleForm.serverIP.length===0
+                       || ruleForm.terminalIP.length===0
+                       || ruleForm.serverIP === defServerIP
+                       && ruleForm.terminalIP === defTerminalIP">{{$t('ipManager.confirm')}}
           </el-button>
           <el-button @click="resetForm('ruleForm')">{{$t('ipManager.cancel')}}</el-button>
         </template>

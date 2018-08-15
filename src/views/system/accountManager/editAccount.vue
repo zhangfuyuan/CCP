@@ -12,7 +12,7 @@
       </el-form-item>
 
       <el-form-item :label="$t('common.name') + ' *'" prop="name">
-        <el-input v-model="accountForm.name" :maxlength="24" style="width: 400px;"></el-input>
+        <el-input v-model="accountForm.name" :maxlength="24" style="width: 400px;" @input="isModify = true"></el-input>
         <el-alert
           :title="showErrMsg.name"
           type="error"
@@ -28,7 +28,8 @@
                   v-model="accountForm.password"
                   :maxlength="12"
                   style="width: 400px;"
-                  :disabled="!isEditPassword"></el-input>
+                  :disabled="!isEditPassword"
+                  @input="isModify = true"></el-input>
         <el-button type="text"
                    style="color: #F56C6C;margin-left: 10px;"
                    @click="isEditPassword = true">{{$t('common.modifyPassword')}}</el-button>
@@ -43,7 +44,7 @@
       </el-form-item>
 
       <el-form-item :label="$t('accountManager.mark')" prop="mark">
-        <el-input type="textarea" v-model="accountForm.mark" :maxlength="48" style="width: 400px;" :autosize="{ minRows: 5 }"></el-input>
+        <el-input type="textarea" v-model="accountForm.mark" :maxlength="48" style="width: 400px;" :autosize="{ minRows: 5 }" @input="isModify = true"></el-input>
         <el-alert
           :title="showErrMsg.mark"
           type="error"
@@ -56,8 +57,8 @@
 
       <el-form-item :label="$t('accountManager.accountRole') + ' *'" prop="roleIds">
         <el-radio-group v-model="accountForm.roleIds">
-          <el-radio label="1">{{$t('common.rootRole')}}</el-radio>
-          <el-radio label="2">{{$t('common.userRole')}}</el-radio>
+          <el-radio label="1" @change="isModify = true">{{$t('common.rootRole')}}</el-radio>
+          <el-radio label="2" @change="isModify = true">{{$t('common.userRole')}}</el-radio>
         </el-radio-group>
         <el-popover
           placement="bottom-start"
@@ -95,6 +96,7 @@
           :expand-on-click-node="false"
           @node-click="clickOfficeHandle"
           @check="checkOfficeHandle"
+          @check-change="curChangeFn()"
           check-strictly
           style="width: 400px;min-height: 400px;height: 400px;overflow: auto">
         </el-tree>
@@ -104,8 +106,8 @@
         <el-button type="primary"
                    @click="submitForm('accountForm')"
                    :disabled="!accountForm.name || !accountForm.password || accountForm.password.length<6 ||
-                              !accountForm.roleIds || (accountForm.officeId!==0&&!accountForm.officeId) ||
-                              accountForm.officeId===-1">{{$t('common.confirmBtn')}}
+                               !accountForm.roleIds || (accountForm.officeId!==0 && !accountForm.officeId) ||
+                               accountForm.officeId===-1 || !isModify">{{$t('common.confirmBtn')}}
         </el-button>
         <el-button @click="cancelHandle">{{$t('common.cancelBtn')}}</el-button>
       </el-form-item>
@@ -201,7 +203,8 @@
         },
         isTriggerBeforeRouteLeave: true,
         subRoute_curAccountInfo: null,
-        isEditPassword: false
+        isEditPassword: false,
+        isModify:false,
       }
     },
     computed: {
@@ -216,10 +219,8 @@
       }
     },
     created() {
-      console.log(this.curAccountInfo)
       if (this.curAccountInfo) { // 不为null，则是从上一级路由进入此页面
         this.subRoute_curAccountInfo = JSON.parse(JSON.stringify(this.curAccountInfo)); // 拷贝备份，互不影响
-        console.log( this.subRoute_curAccountInfo.role)
         this.accountForm.id = this.subRoute_curAccountInfo.id;
         this.accountForm.loginName = this.subRoute_curAccountInfo.loginName;
         this.accountForm.name = this.subRoute_curAccountInfo.name;
@@ -248,6 +249,10 @@
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
+            if(this.accountForm.officeId === '1' && this.accountForm.roleIds === '1'){
+              this.$message.error(this.$t("accountManager.createdErr"));
+              return
+            }
             const loading = this.showLoading();
             if(this.isEditPassword){
               saveAccountInfo({
@@ -283,9 +288,6 @@
                 console.log(err)
               })
             }
-
-
-
           } else {
             console.log('error submit!!');
             return false;
@@ -313,7 +315,6 @@
           this.$refs['officeTree'].setCheckedKeys([]);
           this.accountForm.officeId = -1
         }
-
         console.log('选中的机构id', this.accountForm.officeId)
       },
       cancelHandle() {
@@ -341,6 +342,10 @@
             }
           }, 1000)
         })
+      },
+      curChangeFn() {
+          console.log('ismodify')
+        this.isModify = true
       },
       successed() {
         this.$message({

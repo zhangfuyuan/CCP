@@ -6,7 +6,7 @@
       <div class="header">
         <div class="info" style="color: #666;cursor: pointer">
           <span style="margin-right: 10px;">
-            {{$t('deviceManager.total')}} {{totalDeviceList.length}} {{$t('deviceManager.devices')}}
+            {{$t('deviceManager.total')}} {{isFilter ? showDeviceList.length : totalDeviceList.length}} {{$t('deviceManager.devices')}}
           </span>
 
           <span>
@@ -19,6 +19,7 @@
 
           <el-button plain
                      style="margin-left: 15px;"
+                     :disabled="showDeviceList.length===0"
                      :loading="isRefreshing"
                      @click="handleRefresh">{{isRefreshing ? $t('deviceManager.loading') : $t('deviceManager.refresh')}}</el-button>
 
@@ -63,24 +64,26 @@
               <div class="list-container">
                 <div class="list-img" v-loading="item.isLoading">
                   <template v-if="item.screenStatus==='1'">
-                    <img :src="item.captureList[0].path" :alt="$t('deviceManager.screen')" width="100%" height="auto" />
+                    <div style="width: 100%;height: 100%;text-align: center;">
+                      <img :src="item.captureList[0].path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+                    </div>
                   </template>
                   <template v-else-if="item.screenStatus==='2'">
-                    <span style="color: #999;font-size: 20px;">{{$t('deviceManager.standby')}}</span>
+                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.standby')}}</span>
                   </template>
                   <template v-else-if="item.screenStatus==='0'">
-                    <span style="color: #999;font-size: 20px;">{{$t('deviceManager.offline')}}</span>
+                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.offline')}}</span>
                   </template>
                   <template v-else-if="item.screenStatus==='-2'">
-                    <span style="color: #999;font-size: 20px;">{{$t('deviceManager.requestTimeout')}}</span>
+                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.requestTimeout')}}</span>
                   </template>
                   <template v-else>
-                    <span style="color: #999;font-size: 20px;">{{$t('common.unknownError')}}</span>
+                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('common.unknownError')}}</span>
                   </template>
 
                   <div class="list-mask" @click.stop.prevent="handleClickToView(item)">
                     <span style="position: absolute;color: #fff;font-size: 28px;right: 10px;top: 10px;"
-                          @click.stop.prevent="handleCloseSingle">
+                          @click.stop.prevent="handleCloseSingle(item.id, true)">
                       <i class="el-icon-close"></i>
                     </span>
 
@@ -102,7 +105,8 @@
 
                   <el-button type="text"
                              :disabled="item.screenStatus==='-2' || item.screenStatus==='-1'"
-                             style="font-size: 16px;">{{$t('deviceManager.historyScreenshots')}}
+                             style="font-size: 16px;"
+                             @click="showHistory(item)">{{$t('deviceManager.historyScreenshots')}}
                   </el-button>
                 </div>
               </div>
@@ -154,7 +158,7 @@
           <div class="header">
             <div class="header-btns">
               <span>
-              {{$t('deviceManager.deviceNumber')}} {{totalDeviceList.length}}
+              {{$t('deviceManager.deviceNumber')}} {{isFilter ? showDeviceList.length : totalDeviceList.length}}
            </span>
 
               <span>
@@ -177,23 +181,40 @@
 
           <div class="devices-list">
             <ul class="devices-list-ul" :style="{ 'height': (isShowSearchBtn ? devicesListUlHeight : devicesListUlHeight+40) + 'px' }">
-              <li v-for="(item, index) in showDeviceList" class="devices-list-li">
-                <el-button type="text"
-                           style="color: #F56C6C;"
-                           size="mini"
-                           @click="handleCloseSingle()">{{$t('common.delete')}}</el-button>
+              <template v-if="showDeviceList.length>0">
+                <li v-for="(item, index) in showDeviceList"
+                    :class="[ 'devices-list-li', { 'is-cur': item.id === curClickDevice.id } ]"
+                    @click.stop.prevent="toggleCurClickDevice(item)">
+                  <el-button type="text"
+                             style="color: #F56C6C;"
+                             size="mini"
+                             @click.stop.prevent="handleCloseSingle(item.id)">{{$t('common.delete')}}</el-button>
 
-                <div style="padding-left: 10px;display: flex;flex-direction: column;justify-content: flex-start;">
-                  <span style="color: #333;font-size: 14px;margin-bottom: 5px;">{{item.name}}</span>
-                  <span style="color: #909399;font-size: 12px">{{item.officeName}}</span>
-                </div>
-              </li>
+                  <div style="padding-left: 10px;display: flex;flex-direction: column;justify-content: flex-start;">
+                    <span style="color: #333;font-size: 14px;margin-bottom: 5px;">{{item.name}}</span>
+                    <span style="color: #909399;font-size: 12px">{{item.officeName}}</span>
+                  </div>
+                </li>
+              </template>
+
+              <template v-else-if="isFilter">
+                <li class="null-box" style="width: 100%;height: 300px;display: flex;flex-direction: column;align-items: center;justify-content: center;">
+                  <div style="font-size: 20px;margin-bottom: 20px;">{{$t('deviceManager.noSearchResults')}}</div>
+                </li>
+              </template>
+
+              <template v-else>
+                <li class="null-box" style="width: 100%;height: 300px;display: flex;flex-direction: column;align-items: center;justify-content: center;">
+                  <div style="font-size: 20px;margin-bottom: 14px;color: #999;">{{$t('common.noData')}}</div>
+                </li>
+              </template>
             </ul>
 
             <div style="text-align: center;margin-top: 10px;">
               <el-button type="text"
                          style="color: #F56C6C;"
                          size="mini"
+                         :disabled="showDeviceList.length===0"
                          @click="handleClearAll">{{$t('deviceManager.clearAll')}}
               </el-button>
             </div>
@@ -205,7 +226,7 @@
       <div class="right-img" :style="{ 'height': singleHeight + 'px' }">
         <template v-if="curClickDevice">
           <div class="right-img-wrapper">
-            <div class="header" style="display: flex;justify-content: space-between;align-items: flex-start;margin-bottom: 20px;">
+            <div class="header" style="display: flex;justify-content: space-between;align-items: flex-start;margin-bottom: 10px;">
               <div style="display: flex;flex-direction: column;justify-content: flex-start;">
                 <span style="font-size: 20px;color: #333;margin-bottom: 5px;">{{curClickDevice.name}}</span>
                 <span style="font-size: 14px;color: #666;">{{curClickDevice.officeName}}</span>
@@ -214,8 +235,9 @@
               <div style="display: flex;align-items: center;">
                 <el-button plain
                            style="margin-left: 15px;"
-                           :disabled="isRefreshing"
-                           @click="handleRefresh">{{isRefreshing ? $t('deviceManager.loading') : $t('deviceManager.refresh')}}</el-button>
+                           :disabled="showDeviceList.length===0"
+                           :loading="isRefreshing"
+                           @click="handleSingleRefresh">{{isRefreshing ? $t('deviceManager.loading') : $t('deviceManager.refresh')}}</el-button>
 
                 <span :style="{ 'font-size': '30px', 'cursor': 'pointer', 'margin-left': '15px', 'position': 'relative', 'top': '-1px', 'left': '3px' }"
                       @click="toggleModel('single')"
@@ -232,11 +254,27 @@
             </div>
 
             <div class="img">
-              <div class="img-box">
-                <img src="" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+              <div class="img-box" v-loading="curClickDevice.isLoading">
+                <template v-if="curClickDevice.screenStatus==='1'">
+                  <div style="width: 100%;height: 100%;text-align: center;">
+                    <img :src="curClickDevice.captureList[0].path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+                  </div>
+                </template>
+                <template v-else-if="curClickDevice.screenStatus==='2'">
+                  <span style="color: #fff;font-size: 20px;">{{$t('deviceManager.standby')}}</span>
+                </template>
+                <template v-else-if="curClickDevice.screenStatus==='0'">
+                  <span style="color: #fff;font-size: 20px;">{{$t('deviceManager.offline')}}</span>
+                </template>
+                <template v-else-if="curClickDevice.screenStatus==='-2'">
+                  <span style="color: #fff;font-size: 20px;">{{$t('deviceManager.requestTimeout')}}</span>
+                </template>
+                <template v-else>
+                  <span style="color: #fff;font-size: 20px;">{{$t('common.unknownError')}}</span>
+                </template>
               </div>
 
-              <div class="img-info">
+              <div class="img-info" style="font-size: 14px;">
                 <div style="display: flex;justify-content: space-between;align-items: center;">
                   <div>
                     <span style="color: #666">{{$t('deviceManager.screenTime')}}</span> &nbsp;
@@ -257,10 +295,6 @@
                     <el-button type="text" @click="toggleDialog('details')">{{$t('deviceManager.moreInfo')}}</el-button>
                   </div>
                 </div>
-
-                <div style="text-align: right;">
-                  <el-button type="text" @click="toggleDialog('')">{{$t('deviceManager.setting')}}</el-button>
-                </div>
               </div>
             </div>
 
@@ -269,19 +303,32 @@
                 {{$t('deviceManager.historyScreenshots')}}
               </div>
 
-              <ul style="width: 200%;position: relative;display: flex;">
-                <li class="history-list" v-for="i in 20" :key="i">
+              <ul style="width: 400%;position: relative;display: flex;" v-if="curClickDevice && curClickDevice.captureList">
+                <li class="history-list" v-for="(item, index) in curClickDevice.captureList.slice(0, 5)" :key="index">
                   <div class="history-list-img">
-                    <img src="" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+                    <img :src="item.path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
                   </div>
 
-                  <span>{{Date.now() | formatDate}}</span>
+                  <span>{{item.updateDate | formatDate}}</span>
                 </li>
 
-                <span class="seeMore-btn">
+                <span class="seeMore-btn" @click="showHistory(curClickDevice)">
                   {{$t('deviceManager.seeMore')}}
                 </span>
               </ul>
+              <!--<ul style="width: 200%;position: relative;display: flex;">-->
+                <!--<li class="history-list" v-for="index in 5" :key="index">-->
+                  <!--<div class="history-list-img">-->
+                    <!--<img src="" :alt="$t('deviceManager.screen')" width="100%" height="100%" />-->
+                  <!--</div>-->
+
+                  <!--<span>{{Date.now() | formatDate}}</span>-->
+                <!--</li>-->
+
+                <!--<span class="seeMore-btn" @click="showHistory(curClickDevice)">-->
+                  <!--{{$t('deviceManager.seeMore')}}-->
+                <!--</span>-->
+              <!--</ul>-->
             </div>
           </div>
         </template>
@@ -398,88 +445,147 @@
         </span>
       </div>
 
-      <!--删除-->
-      <div class="manager-dialog" v-if="dialogKey === 'delete'">
-        <span>{{$t('officeManager.afterAnti')}}</span>
-
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="isShowDialog = false">{{$t('common.cancel')}}</el-button>
-          <el-button type="danger" plain @click="anti(), isShowDialog = false">{{$t('officeManager.anti')}}</el-button>
-        </div>
-      </div>
-
       <!--添加设备-->
-      <div v-if="dialogKey === 'add'" style="width: 800px">
-        <div class="search" style="display: inline-block;"  v-if="isOfficeShow">
-          <el-input @keyup.enter.native="handleAllDeviceSearch" style="width: 200px;" :placeholder="$t('planManager.searchDeviceName')" v-model="searchOfficeDeviceVal">
-            <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleAllDeviceSearch"></i>
-          </el-input>
-        </div>
-        <el-row style="margin-top: 10px;" v-if="isOfficeShow">
-          <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">{{$t('common.return')}}</a>{{curOfficeName}}</span>
-        </el-row>
-        <div class="whiteBox"
-             :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '330px','z-index': wIndex +'' }">
-        </div>
-        <div class="whiteSmallBox"
-             :style="{'width': '50px','height': '20px','background':'#f5f7fa','position': 'absolute','top': '110px','left': '270px','z-index': zIndex+1 +'' }">
-        </div>
-        <el-transfer
-          :style="{ 'width': '100%', 'height': '300px','position': 'absolute', 'top': '100px', 'left': '10px', 'z-index': zIndex +'' }"
-          v-model="officeDeviceVal"
-          :left-default-checked="officeDeviceVal"
-          :data="officeDeviceData"
-          @change="handleChangeTransfer"
-          :titles="[$t('planManager.deviceName'),$t('planManager.selectedEquipment')]"
-          :button-texts="[$t('planManager.deleteEquipment'), $t('planManager.addEquipment')]">
+      <template v-if="dialogKey === 'add'" >
+        <div style="width: 800px">
+          <div class="search" style="display: inline-block;"  v-if="isOfficeShow">
+            <el-input @keyup.enter.native="handleAllDeviceSearch" style="width: 200px;" :placeholder="$t('planManager.searchDeviceName')" v-model="searchOfficeDeviceVal">
+              <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleAllDeviceSearch"></i>
+            </el-input>
+          </div>
+          <el-row style="margin-top: 10px;" v-if="isOfficeShow">
+            <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">{{$t('common.return')}}</a>{{curOfficeName}}</span>
+          </el-row>
+          <div class="whiteBox"
+               :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '330px','z-index': wIndex +'' }">
+          </div>
+          <div class="whiteSmallBox"
+               :style="{'width': '50px','height': '20px','background':'#f5f7fa','position': 'absolute','top': '110px','left': '270px','z-index': zIndex+1 +'' }">
+          </div>
+          <el-transfer
+            :style="{ 'width': '100%', 'height': '300px','position': 'absolute', 'top': '100px', 'left': '10px', 'z-index': zIndex +'' }"
+            v-model="officeDeviceVal"
+            :left-default-checked="officeDeviceVal"
+            :data="officeDeviceData"
+            :titles="[$t('planManager.deviceName'),$t('planManager.selectedEquipment')]"
+            :button-texts="[$t('planManager.deleteEquipment'), $t('planManager.addEquipment')]">
           <span slot-scope="{ option }"
                 :class="{ 'cjc_isHidden': (option.officeid!==curOfficeId) && (officeDeviceVal.indexOf(option.key)===-1),
                            'cjc_isShow': (option.officeid===curOfficeId) && (officeDeviceVal.indexOf(option.key)===-1) }">{{ option.label }}
           </span>
-        </el-transfer>
-        <el-form style="width: 320px;height: 300px;position: absolute;top: 100px;left: 10px;z-index: 1111" v-if="zIndex === 1">
-          <el-form-item>
-            <el-input
-              :placeholder="$t('common.searchOrganizationName')"
-              v-model="filterText"
-              suffix-icon="el-icon-search"
-              clearable
-              :closable="false">
-            </el-input>
+          </el-transfer>
+          <el-form style="width: 320px;height: 300px;position: absolute;top: 100px;left: 10px;z-index: 1111" v-if="zIndex === 1">
+            <el-form-item>
+              <el-input
+                :placeholder="$t('common.searchOrganizationName')"
+                v-model="filterText"
+                suffix-icon="el-icon-search"
+                clearable
+                :closable="false">
+              </el-input>
 
-            <el-tree
-              class="filter-tree"
-              :data="treeData"
-              :props="defaultProps"
-              :default-expanded-keys="[officeId]"
-              :filter-node-method="filterNode"
-              ref="officeTree"
-              highlight-current
-              node-key="id"
-              check-on-click-node
-              :expand-on-click-node="false"
-              @node-click="clickOfficeHandle"
-              @check="checkOfficeHandle"
-              check-strictly
-              style="border: 1px solid #d3dce6;height: 248px;overflow: auto;">
-            </el-tree>
-          </el-form-item>
-        </el-form>
-      </div>
+              <el-tree
+                class="filter-tree"
+                :data="treeData"
+                :props="defaultProps"
+                :default-expanded-keys="[officeId]"
+                :filter-node-method="filterNode"
+                ref="officeTree"
+                highlight-current
+                node-key="id"
+                check-on-click-node
+                :expand-on-click-node="false"
+                @node-click="clickOfficeHandle"
+                @check="checkOfficeHandle"
+                check-strictly
+                style="border: 1px solid #d3dce6;height: 248px;overflow: auto;">
+              </el-tree>
+            </el-form-item>
+          </el-form>
+        </div>
 
-      <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'add'" :style="{ 'margin-top': isOfficeShow ? '264px' : '330px' }">
-        <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
-        <el-button type="primary"
-                   @click="addDevice(), dialogVisible = false"
-                   :disabled="officeDeviceVal.length===0">{{$t('common.confirmBtn')}}
-        </el-button>
-      </div>
+        <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'add'" :style="{ 'margin-top': isOfficeShow ? '264px' : '330px' }">
+          <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
+          <el-button type="primary"
+                     @click="addDevice(), dialogVisible = false"
+                     :disabled="officeDeviceVal.length===0">{{$t('common.confirmBtn')}}
+          </el-button>
+        </div>
+      </template>
+
+      <template v-if="dialogKey === 'history'">
+        <div class="history-timer" style="height: 40px;text-align: right;margin-bottom: 10px;">
+          <el-date-picker
+            v-model="datePickerVal"
+            type="daterange"
+            align="right"
+            unlink-panels
+            range-separator="-"
+            :start-placeholder="$t('planManager.datePickerStartPlaceholder')"
+            :end-placeholder="$t('planManager.datePickerEndPlaceholder')"
+            :picker-options="datePickerOptions"
+            value-format="yyyy-MM-dd">
+          </el-date-picker>
+
+          <el-button icon="el-icon-search" style="margin-left: 10px;" @click="handleSearchScreen">{{$t('common.search')}}</el-button>
+        </div>
+
+        <div class="history-container">
+          <template v-if="curDeviceCaptureMap && Object.keys(curDeviceCaptureMap).length>0">
+            <div v-for="(item, index) in Object.keys(curDeviceCaptureMap)" :key="index" style="margin-bottom: 20px;">
+              <div><svg-icon icon-class="circle" /> {{curDeviceCaptureMap[item][0].updateDate | formatDateDate}}</div>
+
+              <ul style="padding: 10px;width: 200%;display: flex;position: relative;">
+                <li v-for="(data, i) in curDeviceCaptureMap[item].slice(0, 4)" :key="i" class="history-list">
+                  <div class="history-list-img" style="cursor: pointer;" @click="showBigScreen(data)">
+                    <img :src="data.path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+                  </div>
+
+                  <span>{{+data.updateDate | formatDateTime}}</span>
+                </li>
+
+                <transition name="el-fade-in-linear">
+                  <template v-if="curDeviceCaptureMap[item].length > 1">
+                    <span style="position: absolute;top: 50%;margin-top: -18px;left: 50%;margin-left: -45px;cursor: pointer;text-shadow:4px 4px 7px #000;">
+                     <i class="el-icon-arrow-right" style="color: #fff;font-size: 36px;" @click="nextScreen(item)"></i>
+                    </span>
+                  </template>
+                </transition>
+
+                <transition name="el-fade-in-linear">
+                  <template v-if="curDeviceCaptureMap[item].length < curDeviceCaptureMapCopy[item].length">
+                      <span style="position: absolute;top: 50%;margin-top: -18px;left: 0;margin-left: 20px;cursor: pointer;text-shadow:4px 4px 7px #000;">
+                      <i class="el-icon-arrow-left" style="color: #fff;font-size: 36px;" @click="lastScreen(item)"></i>
+                    </span>
+                  </template>
+                </transition>
+              </ul>
+            </div>
+          </template>
+
+          <template v-else>
+            <div style="text-align: center;color: #999;height: 50px;line-height: 50px;">{{$t('common.noData')}}</div>
+          </template>
+        </div>
+      </template>
+
+      <el-dialog
+        width="864px"
+        :title="$t('deviceManager.screen')"
+        :visible.sync="screenDialogVisible"
+        append-to-body
+        v-if="dialogKey === 'history' && curBigScreenInfo">
+        <div style="height: 463.5px;width: 824px;margin-bottom: 10px;background-color: #666;text-align: center;">
+          <img :src="curBigScreenInfo.path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+        </div>
+        <div style="text-align: center;">{{curBigScreenInfo.name}}</div>
+      </el-dialog>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import { formatDate, treeify } from '@/utils'
+  import { formatDate, treeify, listClassify } from '@/utils'
   import { getScreenShoot, getRltMonitor, findCaptureByTerminalIdAndDate } from '@/api/screen'
   import { mapGetters } from 'vuex'
   import { getOfficeList } from '@/api/office'
@@ -534,6 +640,41 @@
         curOfficeName: '',
         // 搜索
         isFilter: false,
+        // 历史截屏
+        curDeviceCaptureMap: null,
+        curDeviceCaptureMapCopy: null,
+        datePickerVal: '',
+        datePickerOptions: {
+          shortcuts: [{
+            text: this.$t('planManager.latestWeek'),
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+              picker.$emit('pick', [start, end]);
+            }
+          }, {
+            text: this.$t('planManager.latestMonth'),
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+              picker.$emit('pick', [start, end]);
+            }
+          }, {
+            text: this.$t('planManager.latest3Month'),
+            onClick(picker) {
+              const end = new Date();
+              const start = new Date();
+              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+              picker.$emit('pick', [start, end]);
+            }
+          }]
+        },
+        screenDialogVisible: false,
+        curBigScreenInfo: null,
+        curClickHistoryDeviceId: '',
+        timer: null,
       }
     },
     created() {
@@ -549,17 +690,28 @@
           item.isLoading = true;
           return item;
         });
-        this.getScreenList(this.showDeviceList);
+        this.eachGetScreenList(JSON.parse(JSON.stringify(this.showDeviceList)));
 
         console.log(this.showDeviceList);
       } else {
         this.$router.push({ path: '/device/deviceManager' });
       }
     },
+    beforeDestroy() {
+      this.clearTimer();
+    },
     filters: {
       formatDate(time){
         let date = new Date(time);
         return formatDate(date,'yyyy-MM-dd hh:mm');
+      },
+      formatDateTime(time){
+        let date = new Date(time);
+        return formatDate(date,'hh:mm');
+      },
+      formatDateDate(time){
+        let date = new Date(time);
+        return formatDate(date,'yyyy-MM-dd');
       },
       formatDay(time) {
         let day = Math.floor(time/(1000*60*60*24)),
@@ -583,110 +735,201 @@
     mounted() {
     },
     methods: {
-      getScreenList(showDeviceList, option) {
+      eachGetScreenList(showDeviceList) { // todo 参数 showDeviceList 一定要备份!!!
         if (!showDeviceList || showDeviceList.length===0) return;
 
-        let newLen = showDeviceList.length;
-        let oldLen = this.showDeviceList.length;
-        showDeviceList.map((item, index) => {
-          let curIndex = oldLen - newLen + index;
+        const data = showDeviceList.shift();
+        const index = this.showDeviceList.findIndex(item => item.id === data.id);
 
-          console.log('当前索引,排位', index, curIndex);
+        console.log('本轮遍历数据', data, index);
 
-          getScreenShoot({
-            terminalId: item.id
-          }).then(res => {
-            console.log(res);
+        this.busy = true;
+        this.isRefreshing = true;
+        getScreenShoot({
+          terminalId: data.id
+        }).then(res => {
+          console.log(res);
 
-            let tid = item.id;
-            let count = 1;
-            let sId = setInterval(() => {
-              getRltMonitor({ terminalId: tid }).then(r => {
-                console.log(r);
+          let count = 1;
+          if (this.timer) {
+            this.clearTimer();
+          }
+          this.timer = setInterval(() => {
+            getRltMonitor({ terminalId: data.id }).then(r => {
+              console.log(r);
 
-                if (r.status==='1' && r.isHaveRealCapture===false) {
-                  count++;
-                  if(count >= 20) {
-                    clearInterval(sId);
-
-                    this.showDeviceList[curIndex].screenStatus = '-2';
-                    this.showDeviceList[curIndex].isLoading = false;
-                    this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
-                  }
-                } else {
-                  console.log('一次请求截图出结果', r);
-                  clearInterval(sId);
-
-                  this.showDeviceList[curIndex].screenStatus = r.status;
-                  this.showDeviceList[curIndex].isHaveRealCapture = r.isHaveRealCapture;
-                  this.showDeviceList[curIndex].onLineTime = r.onLineTime;
-                  this.showDeviceList[curIndex].captureList = r.captureList;
-                  this.showDeviceList[curIndex].isLoading = false;
-                  this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
-                }
-              }).catch(e => {
-                console.log(e, count);
+              if (r.status==='1' && r.isHaveRealCapture===false) {
                 count++;
                 if(count >= 20) {
-                  clearInterval(sId);
+                  clearInterval(this.timer);
 
-                  this.showDeviceList[curIndex].screenStatus = '-2';
-                  this.showDeviceList[curIndex].isLoading = false;
-                  this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
+                  this.showDeviceList[index].screenStatus = '-2';
+                  this.showDeviceList[index].isLoading = false;
+                  this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+                  if (showDeviceList.length > 0) {
+                    console.log(8126.1, showDeviceList.length, this.showDeviceList.length)
+                    this.eachGetScreenList(showDeviceList);
+                  } else {
+                    this.busy = false;
+                    this.isRefreshing = false;
+                    console.log(8126.2, '所有请求轮完')
+                  }
                 }
-              });
-            }, 3000);
+              } else {
+                console.log('一次请求截图出结果', r);
+                clearInterval(this.timer);
 
-            if (option && option.isBusy) setTimeout(() => { this.busy = false }, 3000);
-            if (option && option.isRefresh) setTimeout(() => { this.isRefreshing = false }, 3000);
-          }).catch(err => {
-            console.log(err, curIndex);
+                this.showDeviceList[index].screenStatus = r.status;
+                this.showDeviceList[index].isHaveRealCapture = r.isHaveRealCapture;
+                this.showDeviceList[index].onLineTime = r.onLineTime;
+                this.showDeviceList[index].captureList = r.captureList;
+                this.showDeviceList[index].isLoading = false;
+                this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+                if (showDeviceList.length > 0) {
+                  console.log(8126.1, showDeviceList.length, this.showDeviceList.length)
+                  this.eachGetScreenList(showDeviceList);
+                } else {
+                  this.busy = false;
+                  this.isRefreshing = false;
+                  console.log(8126.2, '所有请求轮完')
+                }
+              }
+            }).catch(e => {
+              console.log(e);
+              clearInterval(this.timer);
 
-            this.showDeviceList[curIndex].screenStatus = '-1';
-            this.showDeviceList[curIndex].isLoading = false;
-            this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
-            if (option && option.isBusy) setTimeout(() => { this.busy = false }, 3000);
-            if (option && option.isRefresh) setTimeout(() => { this.isRefreshing = false }, 3000);
-          })
-        });
+              this.showDeviceList[index].screenStatus = '-1';
+              this.showDeviceList[index].isLoading = false;
+              this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+              if (showDeviceList.length > 0) {
+                console.log(8126.1, showDeviceList.length, this.showDeviceList.length)
+                this.eachGetScreenList(showDeviceList);
+              } else {
+                this.busy = false;
+                this.isRefreshing = false;
+                console.log(8126.2, '所有请求轮完')
+              }
+            });
+          }, 3000);
+        }).catch(err => {
+          console.log(err, index);
+
+          this.showDeviceList[index].screenStatus = '-1';
+          this.showDeviceList[index].isLoading = false;
+          this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+          if (showDeviceList.length > 0) {
+            console.log(8126, showDeviceList.length, this.showDeviceList.length)
+            this.eachGetScreenList(showDeviceList);
+          } else {
+            this.busy = false;
+            this.isRefreshing = false;
+            console.log(8126.2, '所有请求轮完')
+          }
+        })
+
       },
+//      getScreenList(showDeviceList, option) {
+//        return false;
+//
+//        let newLen = showDeviceList.length;
+//        let oldLen = this.showDeviceList.length;
+//
+//        this.clearTimer();
+//        showDeviceList.map((item, index) => {
+//          let curIndex = oldLen - newLen + index;
+//
+//          console.log('当前索引,排位', index, curIndex);
+//
+//          setTimeout(() => {
+//            getScreenShoot({
+//              terminalId: item.id
+//            }).then(res => {
+//              console.log(res);
+//
+//              let tid = item.id;
+//              let count = 1;
+//              this.timer = setInterval(() => {
+//                getRltMonitor({ terminalId: tid }).then(r => {
+//                  console.log(r);
+//
+//                  if (r.status==='1' && r.isHaveRealCapture===false) {
+//                    count++;
+//                    if(count >= 20) {
+//                      clearInterval(this.timer);
+//
+//                      this.showDeviceList[curIndex].screenStatus = '-2';
+//                      this.showDeviceList[curIndex].isLoading = false;
+//                      this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
+//                    }
+//                  } else {
+//                    console.log('一次请求截图出结果', r);
+//                    clearInterval(this.timer);
+//
+//                    this.showDeviceList[curIndex].screenStatus = r.status;
+//                    this.showDeviceList[curIndex].isHaveRealCapture = r.isHaveRealCapture;
+//                    this.showDeviceList[curIndex].onLineTime = r.onLineTime;
+//                    this.showDeviceList[curIndex].captureList = r.captureList;
+//                    this.showDeviceList[curIndex].isLoading = false;
+//                    this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
+//                  }
+//                }).catch(e => {
+//                  console.log(e, count);
+//                  clearInterval(this.timer);
+//
+//                  this.showDeviceList[curIndex].screenStatus = '-2';
+//                  this.showDeviceList[curIndex].isLoading = false;
+//                  this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
+//                });
+//              }, 3000+500*index);
+//
+//              if (option && option.isBusy) setTimeout(() => { this.busy = false }, 1000);
+//              if (option && option.isRefresh) setTimeout(() => { this.isRefreshing = false }, 1000);
+//            }).catch(err => {
+//              console.log(err, curIndex);
+//
+//              this.showDeviceList[curIndex].screenStatus = '-1';
+//              this.showDeviceList[curIndex].isLoading = false;
+//              this.showDeviceList.splice(curIndex, 1, this.showDeviceList[curIndex]); // todo Vue对数组索引赋值的局限性！！！
+//              if (option && option.isBusy) setTimeout(() => { this.busy = false }, 1000);
+//              if (option && option.isRefresh) setTimeout(() => { this.isRefreshing = false }, 1000);
+//            })
+//          }, 500+500*index);
+//        });
+//      },
       loadMore() {
         if ((this.showDeviceList.length<this.totalDeviceList.length) &&
             (this.totalDeviceList.length>this.pageSize) &&
             !this.busy &&
             !this.isFilter) {
           this.busy = true;
-          let newList = this.totalDeviceList.slice(this.showDeviceList.length, this.showDeviceList.length+this.pageSize);
+          let oldLen = this.showDeviceList.length;
+          let newList = this.totalDeviceList.slice(oldLen, oldLen+this.pageSize);
+          newList = newList.map(item => {
+            item.isLoading = true;
+            return item;
+          });
           this.showDeviceList.push(...newList);
+          this.eachGetScreenList(newList, { isBusy: true });
+
           console.log('懒加载...', this.showDeviceList, newList);
-          this.getScreenList(newList, { isBusy: true });
         }
       },
       handleMultipleDeviceSearch() {
         this.isFilter = true;
         this.showDeviceList = this.totalDeviceList.filter(item => item.name.indexOf(this.searchVal)!==-1 || item.decimalId.indexOf(this.searchVal)!==-1);
-        this.showDeviceList = this.showDeviceList.map(item => {
-          item.isLoading = true;
-          return item;
-        });
-        this.getScreenList(this.showDeviceList);
       },
       handleMultipleCloseSearch() {
         this.showDeviceList = JSON.parse(JSON.stringify(this.totalDeviceList));
-        this.showDeviceList = this.showDeviceList.map(item => {
-          item.isLoading = true;
-          return item;
-        });
-        this.getScreenList(this.showDeviceList);
         this.isShowSearchBtn = true;
-//        this.searchVal = '';
         this.isFilter = false;
       },
       handleSingleCloseSearch() {
         this.showDeviceList = JSON.parse(JSON.stringify(this.totalDeviceList));
+        this.isFilter = false;
       },
       handleSingleDeviceSearch() {
         this.showDeviceList = this.totalDeviceList.filter(item => item.name.indexOf(this.searchVal)!==-1 || item.decimalId.indexOf(this.searchVal)!==-1);
+        this.isFilter = true;
       },
       handleAllDeviceSearch() {
         this.officeDeviceData = this.officeDeviceDataCopy.filter(item => {
@@ -704,20 +947,90 @@
           return item;
         });
         this.isRefreshing = true;
-        this.getScreenList(this.showDeviceList, { isRefresh: true });
+        this.eachGetScreenList(JSON.parse(JSON.stringify(this.showDeviceList)));
+      },
+      handleSingleRefresh() {
+        this.isRefreshing = true;
+        this.curClickDevice.isLoading = true;
+        this.clearTimer();
+
+        getScreenShoot({
+          terminalId: this.curClickDevice.id
+        }).then(res => {
+          console.log(res);
+
+          let count = 1;
+          this.timer = setInterval(() => {
+            getRltMonitor({ terminalId: this.curClickDevice.id }).then(r => {
+              console.log(r);
+
+              if (r.status==='1' && r.isHaveRealCapture===false) {
+                count++;
+                if(count >= 20) {
+                  clearInterval(this.timer);
+
+                  this.curClickDevice.screenStatus = '-2';
+                  this.isRefreshing = false;
+                  this.curClickDevice.isLoading = false;
+                }
+              } else {
+                console.log('一次请求截图出结果', r);
+                clearInterval(this.timer);
+
+                this.curClickDevice.screenStatus = r.status;
+                this.curClickDevice.isHaveRealCapture = r.isHaveRealCapture;
+                this.curClickDevice.onLineTime = r.onLineTime;
+                this.curClickDevice.captureList = r.captureList;
+                this.isRefreshing = false;
+                this.curClickDevice.isLoading = false;
+              }
+            }).catch(e => {
+              console.log(e, count);
+              clearInterval(this.timer);
+
+              this.curClickDevice.screenStatus = '-1';
+              this.isRefreshing = false;
+              this.curClickDevice.isLoading = false;
+            });
+          }, 3000);
+        }).catch(err => {
+          console.log(err);
+
+          this.curClickDevice.screenStatus = '-1';
+          this.isRefreshing = false;
+          this.curClickDevice.isLoading = false;
+        })
       },
       handleClickToView(item) {
         this.toggleModel('single', item);
         console.log('单图详情', item);
       },
-      handleCloseSingle() {
-        alert('close中...')
+      handleCloseSingle(id, isMultiple) {
+        console.log('删除id', id)
+        if (isMultiple && this.showDeviceList.length<this.totalDeviceList.length) {
+          this.showDeviceList = JSON.parse(JSON.stringify(this.totalDeviceList));
+        }
+
+        const index1 = this.showDeviceList.findIndex(item => item.id === id);
+        const index2 = this.totalDeviceList.findIndex(item => item.id === id);
+
+        this.showDeviceList.splice(index1, 1);
+        this.totalDeviceList.splice(index2, 1);
+
+        if (this.curClickDevice && this.curClickDevice.id===id && this.showDeviceList.length>0) {
+          this.curClickDevice = this.showDeviceList[0];
+        } else if (this.curClickDevice && this.curClickDevice.id===id && this.showDeviceList.length===0) {
+          this.curClickDevice = null;
+        }
       },
       toggleModel(model, info) {
         this.showModel = model;
+        this.isFilter = false;
+        this.searchVal = '';
 
         if (info) {
           this.curClickDevice = info;
+          this.curClickDevice.isLoading = false;
         } else {
           this.curClickDevice = this.showDeviceList[0];
         }
@@ -726,15 +1039,12 @@
           this.showDeviceList = JSON.parse(JSON.stringify(this.totalDeviceList));
         }
       },
-      handleDetailsDialogClick() {
-        alert('施工中...')
-      },
       handleClearAll() {
         this.showDeviceList = [];
         this.curClickDevice = null;
         this.totalDeviceList = [];
       },
-      toggleDialog(title) {
+      toggleDialog(title, data) {
         switch (title) {
           case 'details':
             this.dialogKey = 'details';
@@ -766,6 +1076,15 @@
               console.log(err)
             });
             break;
+          case 'history':
+            this.dialogKey = 'history';
+            this.dialogTitle = this.$t('deviceManager.historyScreenshots');
+            this.dialogWidth = '864px';
+            this.curDeviceCaptureMap = listClassify(data.captureList, 'updateDate', 1000*60*60*24);
+            this.curDeviceCaptureMapCopy = JSON.parse(JSON.stringify(this.curDeviceCaptureMap));
+            this.curClickHistoryDeviceId = data.id;
+            console.log('历史截图分类Map', this.curDeviceCaptureMap);
+            break;
           default:
             this.dialogKey = '--';
             this.dialogTitle = '--';
@@ -781,10 +1100,10 @@
         this.isOfficeShow = false;
       },
       clickOfficeHandle(data, node, component) {
-
       },
       checkOfficeHandle(data, checkedMap) {
         let checkedList = this.$refs['officeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
+
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
           this.zIndex = 1200;
           this.wIndex = 1;
@@ -842,8 +1161,8 @@
           })();
         } else { // 已选 -> 去选
           this.$refs['officeTree'].setCheckedKeys([]);
-          this.curofficeId = ''
-          this.curOfficeName = ''
+          this.curofficeId = '';
+          this.curOfficeName = '';
         }
 
       },
@@ -856,16 +1175,31 @@
         addList = this.officeDeviceDataDetail.filter(item => this.officeDeviceVal.indexOf(item.id) > -1 );
         console.log('新增设备id列表', this.officeDeviceVal, addList);
 
-        if (this.showDeviceList.length < this.totalDeviceList.length) {
-          this.totalDeviceList.push(...addList);
-        } else if ((this.totalDeviceList.length+addList.length) <= 8) {
-          this.totalDeviceList.push(...addList);
-          this.busy = true;
-          this.showDeviceList.push(...addList);
-          this.getScreenList(addList);
+        if (this.showModel === 'multiple') {
+          if (this.showDeviceList.length < this.totalDeviceList.length) {
+            this.totalDeviceList.push(...addList);
+          } else if ((this.totalDeviceList.length+addList.length) <= 8) {
+            this.totalDeviceList.push(...addList);
+            this.showDeviceList.push(...addList);
+            this.eachGetScreenList(addList);
+          } else {
+            this.totalDeviceList.push(...addList);
+            this.loadMore();
+          }
+
+          if (this.isFilter) {
+            this.handleMultipleDeviceSearch();
+          }
         } else {
+          if (this.totalDeviceList.length===0) {
+            this.curClickDevice = addList[0];
+          }
           this.totalDeviceList.push(...addList);
-          this.loadMore();
+          this.showDeviceList.push(...addList);
+
+          if (this.isFilter) {
+            this.handleSingleDeviceSearch();
+          }
         }
 
         this.$message({
@@ -873,12 +1207,66 @@
           type: 'success'
         });
       },
-      handleChangeTransfer(val, direction, keys) {
-        console.log(val, direction, keys)
-//        if (direction === 'right') {
-//          this.officeDeviceVal.push(...val.filter(item => item.officeid===this.curOfficeId));
-//        }
-//        console.log(this.officeDeviceVal)
+      showHistory(info) {
+        this.toggleDialog('history', info);
+      },
+      showBigScreen(data) {
+        this.curBigScreenInfo = data;
+        this.screenDialogVisible = true;
+      },
+      nextScreen(key) {
+        if (this.curDeviceCaptureMap[key].length <= 1) return false;
+
+        console.log('下一张', key, this.curDeviceCaptureMap[key].length);
+        let val = this.curDeviceCaptureMap[key].shift();
+        console.log('首去掉', val, this.curDeviceCaptureMap[key].length);
+      },
+      lastScreen(key) {
+        if (this.curDeviceCaptureMap[key].length >= this.curDeviceCaptureMapCopy[key].length) return false;
+
+        console.log('上一张', key, this.curDeviceCaptureMap[key].length);
+        let val = this.curDeviceCaptureMapCopy[key][this.curDeviceCaptureMapCopy[key].length-this.curDeviceCaptureMap[key].length-1];
+        let len = this.curDeviceCaptureMap[key].unshift(val);
+        console.log('首加入', val, this.curDeviceCaptureMap[key].length);
+      },
+      handleSearchScreen() {
+        console.log('历史截图搜索', this.datePickerVal, this.curClickHistoryDeviceId);
+
+        if (this.datePickerVal) {
+          findCaptureByTerminalIdAndDate({
+            terminalId: this.curClickHistoryDeviceId,
+            startTime: this.datePickerVal[0],
+            endTime: this.datePickerVal[1],
+          }).then(res => {
+            console.log(res)
+
+            this.curDeviceCaptureMap = listClassify(res.captureList, 'updateDate', 1000*60*60*24);
+            this.$message({
+              message: this.$t('common.operationSucceeds'),
+              type: 'success'
+            });
+          }).catch(err => {
+            console.log(err)
+
+            this.$message.error(this.$t('common.operationFailure'));
+          })
+        } else {
+          this.curDeviceCaptureMap = JSON.parse(JSON.stringify(this.curDeviceCaptureMapCopy));
+          this.$message({
+            message: this.$t('common.operationSucceeds'),
+            type: 'success'
+          });
+        }
+      },
+      toggleCurClickDevice(data) {
+        console.log('当前设备信息', data);
+
+        this.curClickDevice = data;
+        this.handleSingleRefresh();
+      },
+      clearTimer() {
+        clearInterval(this.timer);
+        this.timer = null;
       }
     }
   }
@@ -929,28 +1317,26 @@
     .list-wrapper {
       width: 100%;
       display: flex;
+      justify-content: space-around;
+      align-items: center;
       flex-wrap: wrap;
     }
 
     .list-box {
-      width: 50%;
+      width: 570px;
       padding-right: 20px;
-      margin-bottom: 20px;
     }
 
     .list-container {
       width: 100%;
-      height: 0;
-      padding-bottom: 56.25%;
-      background-color: #fff;
       margin-bottom: 40px;
     }
 
     .list-img {
       width: 100%;
-      height: 0;
-      padding-bottom: 56.25%;
+      height: 310px;
       position: relative;
+      background-color: #666;
     }
 
     .list-mask {
@@ -1013,6 +1399,10 @@
         align-items: center;
         padding: 10px;
         border-bottom: 1px solid #EBEEF5;
+        cursor: pointer;
+        &.is-cur {
+          background-color: #F0F7FF;
+        }
       }
     }
 
@@ -1029,11 +1419,12 @@
       .img {
         width: 100%;
         border-bottom: 1px solid #DCDFE6;
+        padding-bottom: 10px;
         .img-box {
-          width: 646px;
-          height: 392px;
+          width: 768px;
+          height: 432px;
           margin: 0 auto 10px;
-          background: #999;
+          background: #666;
         }
       }
 
@@ -1050,8 +1441,9 @@
           .history-list-img {
             width: 100%;
             height: 100%;
-            background-color: #999;
+            background-color: #666;
             margin-bottom: 10px;
+            text-align: center;
           }
         }
 
@@ -1060,8 +1452,9 @@
           height: 47px;
           display: flex;
           position: absolute;
-          left: 50%;
+          left: 25%;
           margin-left: -54px;
+          margin-top: -24px;
           top: 50%;
           border-radius: 50%;
           background-color: rgba(0, 0, 0, 0.5);
@@ -1080,6 +1473,26 @@
     max-height: 500px;
     overflow-y: auto;
     overflow-x: hidden;
+  }
+
+  .history-container {
+    @include scrollBar;
+    height: 450px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    .history-list {
+      width: 332px;
+      height: 186.75px;
+      padding-right: 20px;
+      text-align: center;
+      .history-list-img {
+        width: 100%;
+        height: 100%;
+        background-color: #666;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+    }
   }
 }
 </style>

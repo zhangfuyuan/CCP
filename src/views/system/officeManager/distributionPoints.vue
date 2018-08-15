@@ -296,6 +296,8 @@
           item.oldTerminalAssigned = item.terminalAssigned;
           return item;
         });
+      } else {
+        this.$router.push({ path: '/system/officeManager' });
       }
 
       console.log('初始化...', this.confirmForm.curOfficeInfo)

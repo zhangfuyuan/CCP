@@ -56,6 +56,7 @@ export default {
     failTips: "时间或日期为空，请重新输入！",
     sameTime: "时间重复!",
     timeInterval:"时间间隔小于5分钟！",
+    search: "搜索",
   },
   login: {
     title: "一体机集控管理系统",
@@ -256,6 +257,12 @@ export default {
     addDevice:"添加设备",
     disassociate:"取消关联",
     unassociatePlan: "是否取消关联该计划",
+    nextDay: "未来一天",
+    nextWeek: "未来一周",
+    nextMonth: "未来一月",
+    latestWeek: "最近一周",
+    latestMonth: "最近一个月",
+    latest3Month: "最近三个月",
   },
   accountManager: {
     total: "共",
@@ -280,7 +287,14 @@ export default {
     searchNameOrUsername: "搜索名称或用户名",
     createdSuccess:"新建成功！",
     createdError:"新建失败！",
-    createdErr: "无法为该机构创建系统管理员角色账号"
+    createdErr: "无法为该机构创建系统管理员角色账号",
+    del: "删除",
+    cancle: "取消",
+    deletedDeleted: "已取消删除",
+    attention: "注意",
+    logOut: "若账号在线将强制退出登录",
+    ifDelete: "是否删除",
+    isDeletePlan: "是否删除所选计划"
   },
   ipManager: {
     serverIP: "服务器 IP / 域名",
@@ -336,7 +350,8 @@ export default {
     will: "将",
     moveTo: "移动到",
     organizationNameNotExceed24: "机构名称(不超过24个字)",
-    afterRemovingMechanism: "将删除机构以及子机构的点数、设备、账号，该操作不可撤回",
+    afterRemovingMechanism1: "机构以及子机构的账号数据删除，设备与机构点数回收至",
+    afterRemovingMechanism2: "，该操作不可撤回",
     totalPoints: "总可分配点数",
     serverNotCertified: "服务器未认证",
     certificationImmediately: "立即认证",

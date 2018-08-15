@@ -129,7 +129,7 @@
     },
     data() {
       const validateUsername = (rule, value, callback) => {
-        value = value.replace(/[^0-9a-zA-Z\s]/g, '');
+        value = value.replace(/[^0-9a-zA-Z]+/g, '');
         this.accountForm.username = value;
 
         if (!value.trim()) {
@@ -185,7 +185,7 @@
         accountForm: {
           username: '',
           name: '',
-          password: '',
+          password: '888888',
           mark: '',
           roleId: '1',
           officeId: ''
@@ -252,7 +252,7 @@
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
-            if(this.accountForm.officeId === '1'){
+            if(this.accountForm.officeId === '1' && this.accountForm.roleId === '1'){
               this.$message.error(this.$t("accountManager.createdErr"));
                 return
             }else {
@@ -328,7 +328,11 @@
         })
       },
 
-      successed() {
+
+
+
+
+  successed() {
         this.$message({
             message: this.$t('accountManager.createdSuccess'),
             type: 'success'

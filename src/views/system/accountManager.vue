@@ -64,10 +64,10 @@
             <template slot-scope="scope">
               <el-popover trigger="hover" placement="top">
                 <p>{{ scope.row.officeName }}</p>
-                <p style="color: #666;font-size: 12px;">{{scope.row.officePath }}</p>
+                <p style="color: #666;font-size: 12px;">{{scope.row.officePath === '/HQ' ? '' :scope.row.officePath }}</p>
                 <div slot="reference" class="office-wrapper">
                   <p>{{ scope.row.officeName}}</p>
-                  <p style="color: #666;font-size: 12px;">{{ scope.row.officePath }}</p>
+                  <p style="color: #666;font-size: 12px;">{{ scope.row.officePath === '/HQ' ? '' :scope.row.officePath }}</p>
                 </div>
               </el-popover>
             </template>
@@ -86,11 +86,25 @@
             :label="$t('accountManager.handle')">
             <template slot-scope="scope">
               <el-button @click="switchPageToEditAccount(scope.row)" type="text">{{$t('common.edit')}}</el-button>
-              <el-button type="text" style="color: #F56C6C;" @click="delAccount(scope.row.id,scope.row.name)">{{$t('common.delete')}}</el-button>
+              <el-button type="text" style="color: #F56C6C;" @click="dialogVisible = true;scopeName=scope.row.name;scopeID=scope.row.id">{{$t('common.delete')}}</el-button>
             </template>
           </el-table-column>
         </el-table>
+        <el-dialog
+          :title="$t('accountManager.attention')"
+          :visible.sync="dialogVisible"
+          width="400px"
+          height="200px">
+          <span>{{$t('accountManager.logOut')}}</span><br>
+          <span>{{$t('accountManager.ifDelete')}}</span><span style="display:inline-block;margin-left: 10px;margin-top: 10px;">{{scopeName}}</span>
+          <span slot="footer" class="dialog-footer">
+                 <el-button @click="dialogVisible = false">{{$t('accountManager.cancle')}}</el-button>
+                 <el-button type="primary" @click="dialogVisible = false;delAccount(scopeID,scopeName)">{{$t('accountManager.del')}}</el-button>
+                </span>
+        </el-dialog>
       </div>
+
+
 
       <div class="pagination" style="display: flex;align-items: center;justify-content: flex-end;">
         <el-pagination background
@@ -127,6 +141,10 @@
         count: 100,
         searchVal: '',
         listLoading: false,
+        dialogVisible: false,
+        scopeName:'',
+        scopeID:'',
+
         tableData: [],
         listQuery: {
           page: 1,
@@ -278,11 +296,14 @@
         this.$router.push({ path: '/system/accountManager/editAccount' });
       },
       delAccount(userId,username){
-        this.$confirm('确认要删除'+username+'吗？*若账号在线将强制退出登录', '提示', {
-          confirmButtonText: '删除',
-          cancelButtonText: '取消',
+      /*  this.$confirm(this.$t('accountManager.logOut')+'\n'+this.$t('accountManager.ifDelete')+username, this.$t('accountManager.attention'), {
+          confirmButtonText: this.$t('accountManager.del'),
+          cancelButtonText: this.$t('accountManager.cancle'),
           type: 'warning'
-        }).then(() => {
+        }).then(() => {*/
+      console.log(userId)
+      console.log(username)
+
           deleteAccount(userId).then(res => {
             this.delsuccessed()
             console.log(res)
@@ -290,12 +311,12 @@
             this.delerrored()
             console.log(err)
           })
-        }).catch(() => {
+     /*   }).catch(() => {
           this.$message({
             type: 'info',
-            message: '已取消删除'
+            message: this.$t('accountManager.deletedDeleted')
           });
-        });
+        });*/
       },
       searchUser(){
         this.tableData = []
