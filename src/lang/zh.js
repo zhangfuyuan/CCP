@@ -101,6 +101,7 @@ export default {
     online: "在线",
     standby: "待机",
     offline: "离线",
+    noPointsOffline: "因点数不足离线",
     cumulativeRunningTime: "累计运行时长",
     deviceId: "设备ID",
     refreshData: "更新数据",
@@ -206,6 +207,7 @@ export default {
     requestTimeout: "请求超时",
     deviceNameOrId: "设备名称/ID",
     noSearchResults: "无搜索结果",
+    supportOfflineCommands: "支持离线命令",
   },
   planManager: {
     associatedApparatus: "关联设备",
@@ -263,6 +265,13 @@ export default {
     latestWeek: "最近一周",
     latestMonth: "最近一个月",
     latest3Month: "最近三个月",
+    selected: "已选",
+    countPlan: "个计划",
+    cancleTips: "是否取消关联该计划",
+    confirm: "确定",
+    cancel: "取消",
+    back:"返回",
+    timeErrorTips:"同一天时间间隔需大于5分钟",
   },
   accountManager: {
     total: "共",
@@ -373,8 +382,9 @@ export default {
     returnZero: " 归零",
     afterAnti: "反认证后将注销服务器认证，设备无法连接",
     anti: "反认证",
-    organizationNameEmpty: "认证名错误",
-    authenticationCodeIsEmpty: "认证码错误",
+    organizationNameEmpty: "认证名不能为空",
+    authenticationCodeError: "认证码错误",
+    authenticationNameError: "认证名错误",
     parentOfficeIsNull: "父机构为空",
     officeIsNull: "机构不存在",
     pointError: "原点数不正确",
@@ -383,5 +393,10 @@ export default {
     cannotContinueReducePoints: "因机构点数不能小于分配的点数，无法继续减少点数！",
     moveOfficeTips: "关联设备与子机构跟随移动，点数回归上一级机构",
     cannotMoveToThisOffice: "无法移动至本机构",
+  },
+  errorPage: {
+    pageCanNotEnterTips: "网管说这个页面你不能进......",
+    pleaseCheckUrlIsCorrect: "请检查您输入的网址是否正确，请点击以下按钮返回主页或者发送错误报告",
+    returnHome: "返回首页",
   }
 }

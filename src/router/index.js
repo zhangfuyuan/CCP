@@ -66,7 +66,8 @@ export const constantRouterMap = [
   {
     path: '/device',
     component: Layout,
-    redirect: '/device/deviceManager',
+    //redirect: '/device/deviceManager',
+    redirect: 'noredirect',
     name: 'device',
     meta: {
       title: 'deviceManager',
@@ -119,7 +120,8 @@ export const asyncRouterMap = [
   {
     path: '/system',
     component: Layout,
-    redirect: '/system/accountManager',
+    //redirect: '/system/accountManager',
+    redirect: 'noredirect',
     name: 'system',
     meta: {
       title: 'systemManager',

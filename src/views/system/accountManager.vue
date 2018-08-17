@@ -127,7 +127,6 @@
 </template>
 
 <script>
-  import { getAccountManagerTableData } from '@/datas'
   import waves from '@/directive/waves' // 水波纹指令
   import { getAccountList,saveAccountInfo,deleteAccount,checkAccountName,modifyAccountPwd } from '@/api/account'
   import { formatDate } from '@/utils'

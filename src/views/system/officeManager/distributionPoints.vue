@@ -30,11 +30,11 @@
               </ul>
             </div>
 
-            <el-button type="text" slot="reference" style="font-size: 14px;">{{$t('officeManager.superior')}}</el-button>
+            <el-button type="text" slot="reference" style="font-size: 16px;">{{$t('officeManager.superior')}}</el-button>
           </el-popover>
 
-          <span style="color: #666;">{{$t('officeManager.distributablePoints')}}</span> &nbsp;&nbsp;
-          <span v-if="!isSubOpenIntelligentPointAllocation" style="color: #409EFF;font-size: 16px;">
+          <span style="color: #666;font-size: 16px;">{{$t('officeManager.distributablePoints')}}</span> &nbsp;&nbsp;
+          <span v-if="!isSubOpenIntelligentPointAllocation" style="color: #409EFF;font-size: 20px;">
             <span v-if="!isShowAllChildren">{{higherDistributablePoints}}</span>
             <span v-else>{{childrenHigherDistributablePoints}}</span>
           </span>
@@ -107,7 +107,7 @@
             </el-card>
 
             <div class="next-level">
-              <el-button type="info"
+              <el-button plain
                          :disabled="confirmForm.curOfficeChildren.length===0 || confirmForm.curOfficeInfo.type!==0"
                          @click="toggleShowAllChildren(true)">{{$t('officeManager.nextLevelMechanismPoints')}}
               </el-button>
@@ -128,7 +128,7 @@
             <div class="children-box-header" style="margin-bottom: 20px;">
               <span style="font-size: 20px;color: #333;">{{confirmForm.curOfficeInfo.name}}</span>
 
-              <el-button type="info" @click="toggleShowAllChildren(false)" style="width: 100px;">{{$t('common.returnBtn')}}</el-button>
+              <el-button plain @click="toggleShowAllChildren(false)" style="width: 100px;">{{$t('common.returnBtn')}}</el-button>
             </div>
 
             <div class="children-box-list">

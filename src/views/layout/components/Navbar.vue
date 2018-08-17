@@ -35,7 +35,7 @@
             {{item.txt}}
           </el-dropdown-item>
         </template>
-        <el-dropdown-item command="" divided @click.native="$router.push({ path: '/wordSettings' })">
+        <el-dropdown-item command="" divided @click.native="$router.push({ path: '/wordSettings' })" v-if="roles.indexOf('root')>-1">
             <span style="display:block;text-align: center">+</span>
         </el-dropdown-item>
       </el-dropdown-menu>
@@ -74,6 +74,7 @@ export default {
       'avatar',
       'name',
       'localeLanguage',
+      'roles',
     ])
   },
   created() {

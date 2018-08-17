@@ -98,7 +98,6 @@
 
 <script>
 import ComplexTable from './components/complexTable.vue'
-import { getTreeData } from '@/datas'
 import { BFS, treeify } from '@/utils'
 import { mapGetters } from 'vuex'
 import {  } from '@/api/device'

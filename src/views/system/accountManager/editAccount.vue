@@ -116,7 +116,6 @@
 </template>
 
 <script>
- //import { getTreeData } from '@/datas'
   import { myMixin } from '@/assets/js/mixins';
   import { getAccountList,saveAccountInfo,deleteAccount,checkAccountName,modifyAccountPwd } from '@/api/account'
   import { getOfficeList } from '@/api/office'

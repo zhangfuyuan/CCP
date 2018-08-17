@@ -49,7 +49,7 @@
     <!--右侧动态视图-->
     <div class="view" :style="{ 'height': viewHeight + 'px' }">
       <div style="margin-bottom: 30px;" v-if="!isSubRoute">
-        <span style="color: #409EFF;font-size: 16px;">
+        <span style="color: #909399;font-size: 16px;">
           <svg-icon icon-class="eglass-tag" style="font-size: 16px;" /> {{$t('officeManager.intelligentAllocationPointsMode')}}
         </span>
       </div>
@@ -866,7 +866,10 @@
                   msg = ': ' + this.$t('officeManager.organizationNameEmpty');
                   break;
                 case 'verification code error':
-                  msg = ': ' + this.$t('officeManager.authenticationCodeIsEmpty');
+                  msg = ': ' + this.$t('officeManager.authenticationCodeError');
+                  break;
+                case 'user name wrong':
+                  msg = ': ' + this.$t('officeManager.authenticationNameError');
                   break;
                 default:
                   msg = ': ' + this.$t('common.unknownError');

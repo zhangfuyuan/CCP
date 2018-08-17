@@ -59,8 +59,9 @@
                   style="width: 250px;margin-left: 10px;"
                   :placeholder="$t('deviceManager.searchNameOrId')"
                   clearable
-                  v-model="searchVal">
-          <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleSearch"></i>
+                  v-model="searchVal"
+                  suffix-icon="el-icon-search"
+                  @clear="handleSearch">
         </el-input>
       </div>
     </div>
@@ -127,7 +128,7 @@
       </el-table-column>
 
       <template slot="append">
-        <div style="height: 50px;display: flex;justify-content: center;align-items: center;">
+        <div style="height: 50px;display: flex;justify-content: center;align-items: center;color: #999;">
           <template v-if="busy">
             <i class="el-icon-loading" style="margin-right: 10px;"></i>
             <span >{{$t('deviceManager.loading')}}...</span>
@@ -425,20 +426,38 @@
               </div>
 
               <div>
-                <div style="color: #333;font-size: 16px;margin-bottom: 20px;">{{$t('deviceManager.volumeSettings')}}</div>
+                <div style="color: #333;font-size: 16px;margin-bottom: 20px;">{{$t('deviceManager.volumeSettings')}} &nbsp;&nbsp;&nbsp;&nbsp;
+                  <span v-show="dialogInfo[0].status==='0'" style="color: #999;font-size: 12px;">* {{$t('deviceManager.supportOfflineCommands')}}</span>
+                </div>
 
                 <div>
                   <el-checkbox v-model="isSetVolumeChecked" v-if="dialogInfo.length>1">{{$t('deviceManager.unifiedVolume')}}</el-checkbox>
+                  <el-checkbox v-model="isSetVolumeChecked" v-else-if="dialogInfo[0].status==='0'"></el-checkbox>
                   <span v-else>{{$t('deviceManager.currentVolume')}}</span>
 
                   <el-slider
                     v-model="setVolumeSlider"
                     show-input
                     input-size="small"
-                    :disabled="dialogInfo.length>1 && !isSetVolumeChecked"
+                    :disabled="(dialogInfo.length>1 && !isSetVolumeChecked) ||
+                               (dialogInfo.length===1 && dialogInfo[0].status==='0' && !isSetVolumeChecked)"
                     @change="isChangeSetDialog = true">
                   </el-slider>
                 </div>
+              </div>
+
+              <div v-show="isShowBasicSettingsResult" style="padding-top: 10px;">
+                <div style="margin-bottom: 10px;color: #666;">{{basicSettingsResult}}</div>
+
+                <ul class="basicSettings-result">
+                  <li v-for="(item, index) in basicSettingsResultList" :key="index">
+                    <svg-icon icon-class="AIO" /> {{deviceIdTurnName(item.id)}} -
+                    <span v-if="item.status==='0'">{{$t('deviceManager.offline')}}</span>
+                    <span v-else-if="item.status==='1'">{{$t('deviceManager.online')}}</span>
+                    <span v-else-if="item.status==='2'">{{$t('deviceManager.standby')}}</span>
+                    <span v-else-if="item.status==='3'">{{$t('deviceManager.noPointsOffline')}}</span>
+                  </li>
+                </ul>
               </div>
             </template>
           </el-tab-pane>
@@ -460,7 +479,7 @@
                     </el-radio-group>
                   </el-form-item>
 
-                  <el-form-item :label="$t('deviceManager.lockScreenMode')">
+                  <el-form-item :label="$t('deviceManager.lockScreenMode')" v-show="lockScreenRadio && lockScreenRadio!=='0'">
                     <el-radio-group v-model="lockScreenImgRadio" :disabled="!lockScreenRadio || lockScreenRadio==='0'">
                       <el-radio label="0">{{$t('deviceManager.default')}}</el-radio>
                       <el-radio label="1">{{$t('deviceManager.customImage')}}</el-radio>
@@ -518,7 +537,7 @@
                   <li :class="['el-upload-list__item', { 'is-success': item.result===1 }]"
                       v-for="(item, index) in lockScreenResultList" :key="index" style="margin-bottom: 20px;">
                     <a class="el-upload-list__item-name">
-                      <svg-icon icon-class="AIO" /> {{item.id}} &nbsp;&nbsp;&nbsp;&nbsp;
+                      <svg-icon icon-class="AIO" /> {{deviceIdTurnName(item.id)}} &nbsp;&nbsp;&nbsp;&nbsp;
                       {{item.txt}}
                     </a>
 
@@ -611,7 +630,7 @@
                       <li :class="['el-upload-list__item', { 'is-success': item.result===1 }]"
                           v-for="(item, index) in updateAPKResultList" :key="index" style="margin-bottom: 20px;">
                         <a class="el-upload-list__item-name">
-                          <svg-icon icon-class="AIO" /> {{item.id}} &nbsp;&nbsp;&nbsp;&nbsp;
+                          <svg-icon icon-class="AIO" /> {{deviceIdTurnName(item.id)}} &nbsp;&nbsp;&nbsp;&nbsp;
                           {{item.txt}}
                         </a>
 
@@ -632,7 +651,11 @@
         </span>
 
           <div slot="footer" style="text-align: right;">
-            <el-button :disabled="!isChangeSetDialog" type="primary" @click="setBasicDevice">{{$t('common.confirm')}}</el-button>
+            <el-button :disabled="!isChangeSetDialog ||
+                                  (dialogInfo.length>1 && !switchingPowerRadioGroup && !isSetVolumeChecked) ||
+                                  (dialogInfo.length===1 && dialogInfo[0].status==='0' && !isSetVolumeChecked)"
+                       type="primary"
+                       @click="setBasicDevice">{{$t('common.confirm')}}</el-button>
             <el-button plain @click="resetBasicSettings">{{$t('common.resetBtn')}}</el-button>
           </div>
         </template>
@@ -640,7 +663,7 @@
           <div slot="footer" style="text-align: right;">
             <el-button :disabled="(!uploadFileInfo && lockScreenRadio!=='0' && lockScreenImgRadio==='1') || !lockScreenRadio || !!timer"
                        type="primary"
-                       @click="setLockScreenDevice">{{$t('deviceManager.uploadBtn')}}</el-button>
+                       @click="setLockScreenDevice">{{$t('common.confirmBtn')}}</el-button>
             <el-button plain @click="resetLockScreenSettings">{{$t('common.resetBtn')}}</el-button>
           </div>
         </template>
@@ -946,7 +969,6 @@
 </template>
 
 <script>
-import { getTableData } from '@/datas'
 import { formatDate, treeify } from '@/utils'
 import Multiselect from 'vue-multiselect'
 import { mapGetters } from 'vuex'
@@ -1122,6 +1144,11 @@ export default {
       updateApkversion: '',
       // 定时器
       timer: null,
+      searching: false,
+      // 基础设置
+      isShowBasicSettingsResult: false,
+      basicSettingsResult: '',
+      basicSettingsResultList: [],
     }
   },
   filters: {
@@ -1194,12 +1221,15 @@ export default {
             this.listLoading = false;
             this.listTotalCount = res.count;
             this.list.push(...res.data);
+            this.searching = false;
 
             if (isSelectAll) this.$refs['deviceTable'].toggleAllSelection();
           }
         }).catch(err => {
           console.log(err);
+
           this.$message.error(this.$t('common.getDeviceListError'));
+          this.searching = false;
         });
       } else {  // 只请求一页数据（会新增数据）
         getDeviceList(params).then(res => {
@@ -1211,14 +1241,17 @@ export default {
           this.listLoading = false;
         }).catch(err => {
           console.log(err);
+
           this.$message.error(this.$t('common.getDeviceListError'));
         });
       }
     },
     handleSearch() {
+      if (this.searching) return false;
+
       this.resetData();
       this.listQuery.pageNo =  0;
-
+      this.searching = true;
       this.getList(true);
     },
     handleSelectionChange(val) {
@@ -1361,47 +1394,69 @@ export default {
       this.dialogInfo.map(item => {
         setDeviceIds.push(item.id)
       });
+      this.basicSettingsResult = '';
+      this.basicSettingsResultList = [];
 
       if (this.switchingPowerRadioGroup) {
         let fun = { setDevice_powerOff, setDevice_standby, setDevice_awake, setDevice_restart };
         fun['setDevice_' + this.switchingPowerRadioGroup]({ terminalIds: setDeviceIds }).then(res => {
+          console.log(res);
 
-          console.log(res)
+          this.isShowBasicSettingsResult = true;
+          this.basicSettingsResult += '  |  ' + (() => {
+              return '(' + this.$t('deviceManager.powerSettings') + ')' +
+                this.$t('common.operatingResult') + ': ' +
+                this.$t('common.success') + res.pass + '  ' +
+                this.$t('common.error') + res.fail + ' ';
+            })();
+          let result = Object.keys(res.teResultJson).map(item => {
+            return {
+              id: item,
+              status: res.teResultJson[item]
+            }
+          });
+          this.basicSettingsResultList.push(...result);
+          console.log('电源设置结果列表', result);
+
           this.$message({
-            message: (() => {
-                return '(' + this.$t('deviceManager.powerSettings') + ')' +
-                        this.$t('common.operatingResult') + ': ' +
-                        this.$t('common.success') + res.pass + '  ' +
-                        this.$t('common.error') + res.fail + ' ';
-            })(),
-            type: 'success',
-            duration: 0,
-            showClose: true
+            message: this.$t('common.operationSucceeds'),
+            type: 'success'
           });
         }).catch(err => {
           console.log(err)
+
           this.$message.error(this.$t('common.operationFailure'));
         })
       }
 
-      if (!this.isSetVolumeChecked&&this.dialogInfo.length>1) return false;
+      if (!this.isSetVolumeChecked && this.dialogInfo.length>1) return false;
 
       setDeviceVolume({ terminalIds: setDeviceIds, volume: this.setVolumeSlider }).then(res => {
-
         console.log(res)
-        this.$message({
-          message: (() => {
+
+        this.isShowBasicSettingsResult = true;
+        this.basicSettingsResult += '  |  ' + (() => {
             return '(' + this.$t('deviceManager.volumeSettings') + ')' +
               this.$t('common.operatingResult') + ': ' +
               this.$t('common.success') + res.pass + '  ' +
               this.$t('common.error') + res.fail + ' ';
-          })(),
-          type: 'success',
-          duration: 0,
-          showClose: true
+          })();
+        let result = Object.keys(res.teResultJson).map(item => {
+          return {
+            id: item,
+            status: res.teResultJson[item]
+          }
+        });
+        this.basicSettingsResultList.push(...result);
+        console.log('音量设置结果列表', result);
+
+        this.$message({
+          message: this.$t('common.operationSucceeds'),
+          type: 'success'
         });
       }).catch(err => {
-        console.log(err)
+        console.log(err);
+
         this.$message.error(this.$t('common.operationFailure'));
       })
     },
@@ -1483,7 +1538,7 @@ export default {
           this.settingsDialogActiveTabsName = 'basicSettings';
           this.isSetVolumeChecked = false;
           this.isChangeSetDialog = false;
-          this.setVolumeSlider = +this.dialogInfo[0].volume;
+          this.setVolumeSlider = this.dialogInfo.length===1 ? +this.dialogInfo[0].volume : 20;
           this.lockScreenRadio = '';
           this.lockScreenImgRadio = '';
           this.uploadFileInfo = null;
@@ -1493,6 +1548,10 @@ export default {
           this.uploadAPKInfo = null;
           this.updateAPKResultList = [];
           this.updateApkversion = '';
+          this.isShowBasicSettingsResult = false;
+          this.basicSettingsResult = '';
+          this.basicSettingsResultList = [];
+          this.switchingPowerRadioGroup = '';
           break;
         case 'plan':
           this.dialogKey = 'plan';
@@ -1774,6 +1833,9 @@ export default {
       this.setVolumeSlider = +this.dialogInfo[0].volume;
       this.isSetVolumeChecked = false;
       this.isChangeSetDialog = false;
+      this.isShowBasicSettingsResult = false;
+      this.basicSettingsResult = '';
+      this.basicSettingsResultList = [];
     },
     resetLockScreenSettings() {
       this.lockScreenRadio = '';
@@ -2000,11 +2062,16 @@ export default {
       this.getList();
     },
     handleCloseDialog() {
-      this.dialogKey = '';
       if (this.timer) {
         clearInterval(this.timer);
         this.timer = null;
       }
+
+      if (this.dialogKey === 'settings' && (this.basicSettingsResultList.length>0 || this.updateAPKResultList.length>0 || this.lockScreenResultList.length>0)) {
+        this.updateDevicesTableData();
+      }
+
+      this.dialogKey = '';
     },
     leaveSettingsTabs() {
       if (this.timer) {
@@ -2032,6 +2099,11 @@ export default {
 
         this.getList(true, true);
       }
+    },
+    deviceIdTurnName(id) {
+      const index = this.list.findIndex(item => item.id === id);
+
+      return  this.list[index].name;
     },
     /** 以下为 webuploader 监听处理方法
      *
@@ -2142,7 +2214,7 @@ export default {
       } else {
         this.$message.error(this.$t('common.unknownError'));
       }
-    }
+    },
   }
 }
 </script>
@@ -2362,6 +2434,17 @@ export default {
     border: 1px solid #DCDFE6;
     z-index: 2;
     background-color: #fff;
+  }
+
+  .basicSettings-result {
+    @include scrollBar;
+    width: 100%;
+    height: 200px;
+    overflow: auto;
+    color: #696969;
+    li {
+      margin-bottom: 5px;
+    }
   }
 }
 

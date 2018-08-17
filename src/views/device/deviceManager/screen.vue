@@ -4,7 +4,7 @@
     <div class="multiple-model" v-if="showModel === 'multiple'">
       <!--顶部信息和操作按钮-->
       <div class="header">
-        <div class="info" style="color: #666;cursor: pointer">
+        <div class="info" style="color: #666;">
           <span style="margin-right: 10px;">
             {{$t('deviceManager.total')}} {{isFilter ? showDeviceList.length : totalDeviceList.length}} {{$t('deviceManager.devices')}}
           </span>
@@ -62,10 +62,13 @@
           <ul class="list-wrapper">
             <li v-for="(item, index) in showDeviceList" :key="index" class="list-box">
               <div class="list-container">
-                <div class="list-img" v-loading="item.isLoading">
+                <div class="list-img" v-loading="item.isLoading" style="width: 550px;height: 309.37px;background-color:#666;">
                   <template v-if="item.screenStatus==='1'">
-                    <div style="width: 100%;height: 100%;text-align: center;">
-                      <img :src="item.captureList[0].path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+                    <!-- todo 多图 550*309.37 ------------------------------------------------------------>
+                    <div class="adaptive-img-box" style="width: 100%;height: 100%">
+                      <img :class="[ 'adaptive-img', 'adaptive-img-'+item.id ]"
+                           :src="item.captureList[0].path"
+                           :alt="$t('deviceManager.screen')"/>
                     </div>
                   </template>
                   <template v-else-if="item.screenStatus==='2'">
@@ -77,8 +80,11 @@
                   <template v-else-if="item.screenStatus==='-2'">
                     <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.requestTimeout')}}</span>
                   </template>
+                  <template v-else-if="item.screenStatus==='-1'">
+                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.unknownError')}}</span>
+                  </template>
                   <template v-else>
-                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('common.unknownError')}}</span>
+                    <span style="color: #f8f8f8;font-size: 20px;">...</span>
                   </template>
 
                   <div class="list-mask" @click.stop.prevent="handleClickToView(item)">
@@ -104,7 +110,7 @@
                   <span style="color: #666;">{{item.name}}</span>
 
                   <el-button type="text"
-                             :disabled="item.screenStatus==='-2' || item.screenStatus==='-1'"
+                             :disabled="!item.screenStatus ||item.screenStatus==='-2' || item.screenStatus==='-1'"
                              style="font-size: 16px;"
                              @click="showHistory(item)">{{$t('deviceManager.historyScreenshots')}}
                   </el-button>
@@ -167,7 +173,7 @@
            </span>
             </div>
 
-            <div class="header-search" v-show="isShowSearchBtn">
+            <div class="header-search" v-show="!isShowSearchBtn">
               <el-input @keyup.enter.native="handleSingleDeviceSearch"
                         style="width: 100%;"
                         :placeholder="$t('deviceManager.deviceNameOrId')"
@@ -179,8 +185,8 @@
             </div>
           </div>
 
-          <div class="devices-list">
-            <ul class="devices-list-ul" :style="{ 'height': (isShowSearchBtn ? devicesListUlHeight : devicesListUlHeight+40) + 'px' }">
+          <div class="devices-list" v-loading="(curClickDevice&&curClickDevice.isLoading) || isMultipleLoading">
+            <ul class="devices-list-ul" :style="{ 'height': (!isShowSearchBtn ? devicesListUlHeight : devicesListUlHeight+40) + 'px' }">
               <template v-if="showDeviceList.length>0">
                 <li v-for="(item, index) in showDeviceList"
                     :class="[ 'devices-list-li', { 'is-cur': item.id === curClickDevice.id } ]"
@@ -254,10 +260,13 @@
             </div>
 
             <div class="img">
-              <div class="img-box" v-loading="curClickDevice.isLoading">
+              <div class="img-box" v-loading="(curClickDevice&&curClickDevice.isLoading)" style="width: 768px;height: 432px;background-color:#666;">
                 <template v-if="curClickDevice.screenStatus==='1'">
-                  <div style="width: 100%;height: 100%;text-align: center;">
-                    <img :src="curClickDevice.captureList[0].path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+                  <!-- todo 单图 768*432 ------------------------------------------------------------>
+                  <div class="adaptive-img-box" style="width: 100%;height: 100%;">
+                    <img :class="[ 'adaptive-img', 'adaptive-img-'+curClickDevice.id ]"
+                         :src="curClickDevice.captureList[0].path"
+                         :alt="$t('deviceManager.screen')"/>
                   </div>
                 </template>
                 <template v-else-if="curClickDevice.screenStatus==='2'">
@@ -269,8 +278,11 @@
                 <template v-else-if="curClickDevice.screenStatus==='-2'">
                   <span style="color: #fff;font-size: 20px;">{{$t('deviceManager.requestTimeout')}}</span>
                 </template>
+                <template v-else-if="curClickDevice.screenStatus==='-1'">
+                  <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.unknownError')}}</span>
+                </template>
                 <template v-else>
-                  <span style="color: #fff;font-size: 20px;">{{$t('common.unknownError')}}</span>
+                  <span style="color: #f8f8f8;font-size: 20px;">...</span>
                 </template>
               </div>
 
@@ -278,7 +290,8 @@
                 <div style="display: flex;justify-content: space-between;align-items: center;">
                   <div>
                     <span style="color: #666">{{$t('deviceManager.screenTime')}}</span> &nbsp;
-                    <span>{{Date.now() | formatDate}}</span>
+                    <span v-if="curClickDevice.screenStatus==='1'">{{curClickDevice.captureList[0].updateDate | formatDate}}</span>
+                    <span v-else>--</span>
                   </div>
 
                   <div>
@@ -303,32 +316,31 @@
                 {{$t('deviceManager.historyScreenshots')}}
               </div>
 
-              <ul style="width: 400%;position: relative;display: flex;" v-if="curClickDevice && curClickDevice.captureList">
-                <li class="history-list" v-for="(item, index) in curClickDevice.captureList.slice(0, 5)" :key="index">
-                  <div class="history-list-img">
-                    <img :src="item.path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
-                  </div>
+              <template v-if="curClickDevice && curClickDevice.captureList && curClickDevice.captureList[0]">
+                <ul style="width: 400%;position: relative;display: flex;" v-if="curClickDevice && curClickDevice.captureList">
+                  <li class="history-list" v-for="(item, index) in curClickDevice.captureList.slice(0, 6)" :key="index">
+                    <div class="history-list-img">
+                      <!-- todo 历史 332*186.75 ------------------------------------------------------------>
+                      <div class="adaptive-img-box" style="width: 332px;height: 186.75px;">
+                        <img class="adaptive-img adaptive-img-history"
+                             :src="item.path"
+                             :alt="$t('deviceManager.screen')"/>
+                      </div>
+                    </div>
 
-                  <span>{{item.updateDate | formatDate}}</span>
-                </li>
+                    <span style="font-size: 14px;color: #999;">{{item.updateDate | formatDate}}</span>
+                  </li>
 
-                <span class="seeMore-btn" @click="showHistory(curClickDevice)">
+                  <span class="seeMore-btn" @click="showHistory(curClickDevice)">
                   {{$t('deviceManager.seeMore')}}
                 </span>
-              </ul>
-              <!--<ul style="width: 200%;position: relative;display: flex;">-->
-                <!--<li class="history-list" v-for="index in 5" :key="index">-->
-                  <!--<div class="history-list-img">-->
-                    <!--<img src="" :alt="$t('deviceManager.screen')" width="100%" height="100%" />-->
-                  <!--</div>-->
-
-                  <!--<span>{{Date.now() | formatDate}}</span>-->
-                <!--</li>-->
-
-                <!--<span class="seeMore-btn" @click="showHistory(curClickDevice)">-->
-                  <!--{{$t('deviceManager.seeMore')}}-->
-                <!--</span>-->
-              <!--</ul>-->
+                </ul>
+              </template>
+              <template v-else>
+                <div style="width: 100%;height: 50px;line-height: 50px;text-align: center;color: #999;font-size: 14px;">
+                  {{$t('common.noData')}}
+                </div>
+              </template>
             </div>
           </div>
         </template>
@@ -532,34 +544,29 @@
 
         <div class="history-container">
           <template v-if="curDeviceCaptureMap && Object.keys(curDeviceCaptureMap).length>0">
-            <div v-for="(item, index) in Object.keys(curDeviceCaptureMap)" :key="index" style="margin-bottom: 20px;">
-              <div><svg-icon icon-class="circle" /> {{curDeviceCaptureMap[item][0].updateDate | formatDateDate}}</div>
+            <div v-for="(item, index) in Object.keys(curDeviceCaptureMap).reverse()" :key="index" style="margin-bottom: 30px;">
+              <div><svg-icon icon-class="circle" /> &nbsp; {{curDeviceCaptureMap[item][0].updateDate | formatDateDate}}</div>
 
-              <ul style="padding: 10px;width: 200%;display: flex;position: relative;">
-                <li v-for="(data, i) in curDeviceCaptureMap[item].slice(0, 4)" :key="i" class="history-list">
-                  <div class="history-list-img" style="cursor: pointer;" @click="showBigScreen(data)">
-                    <img :src="data.path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
-                  </div>
+              <div style="padding: 10px;position: relative;">
+                <swiper :options="swiperOption" >
+                  <swiper-slide v-for="(data, i) in curDeviceCaptureMap[item]" :key="i" class="history-more-list">
+                    <div class="history-more-list-img" style="cursor: pointer;" @click="showBigScreen(data)">
+                      <!-- todo 更多 332*186.75 ------------------------------------------------------------>
+                      <div class="adaptive-img-box" style="width: 332px;height: 186.75px;">
+                        <img class="adaptive-img adaptive-img-more"
+                             :src="data.path"
+                             :alt="$t('deviceManager.screen')"/>
+                      </div>
+                    </div>
 
-                  <span>{{+data.updateDate | formatDateTime}}</span>
-                </li>
+                    <span style="font-size: 14px;color: #999;">{{+data.updateDate | formatDateTime}}</span>
+                  </swiper-slide>
 
-                <transition name="el-fade-in-linear">
-                  <template v-if="curDeviceCaptureMap[item].length > 1">
-                    <span style="position: absolute;top: 50%;margin-top: -18px;left: 50%;margin-left: -45px;cursor: pointer;text-shadow:4px 4px 7px #000;">
-                     <i class="el-icon-arrow-right" style="color: #fff;font-size: 36px;" @click="nextScreen(item)"></i>
-                    </span>
-                  </template>
-                </transition>
-
-                <transition name="el-fade-in-linear">
-                  <template v-if="curDeviceCaptureMap[item].length < curDeviceCaptureMapCopy[item].length">
-                      <span style="position: absolute;top: 50%;margin-top: -18px;left: 0;margin-left: 20px;cursor: pointer;text-shadow:4px 4px 7px #000;">
-                      <i class="el-icon-arrow-left" style="color: #fff;font-size: 36px;" @click="lastScreen(item)"></i>
-                    </span>
-                  </template>
-                </transition>
-              </ul>
+                  <swiper-slide class="history-more-list"></swiper-slide> <!--解决最后一张无法显示全的问题-->
+                  <div class="swiper-button-prev" slot="button-prev"></div>
+                  <div class="swiper-button-next" slot="button-next"></div>
+                </swiper>
+              </div>
             </div>
           </template>
 
@@ -575,8 +582,11 @@
         :visible.sync="screenDialogVisible"
         append-to-body
         v-if="dialogKey === 'history' && curBigScreenInfo">
-        <div style="height: 463.5px;width: 824px;margin-bottom: 10px;background-color: #666;text-align: center;">
-          <img :src="curBigScreenInfo.path" :alt="$t('deviceManager.screen')" width="100%" height="100%" />
+        <!-- todo 放大 824*463.5 ------------------------------------------------------------>
+        <div class="adaptive-img-box" style="width: 824px;height: 463.5px;margin-bottom: 10px;">
+          <img class="adaptive-img adaptive-img-big"
+               :src="curBigScreenInfo.path"
+               :alt="$t('deviceManager.screen')"/>
         </div>
         <div style="text-align: center;">{{curBigScreenInfo.name}}</div>
       </el-dialog>
@@ -585,16 +595,18 @@
 </template>
 
 <script>
-  import { formatDate, treeify, listClassify } from '@/utils'
+  import { formatDate, treeify, listClassify, imgHistoryScreenCapture } from '@/utils'
   import { getScreenShoot, getRltMonitor, findCaptureByTerminalIdAndDate } from '@/api/screen'
   import { mapGetters } from 'vuex'
   import { getOfficeList } from '@/api/office'
   import { getPlanList,saveStrategy,delStrategys,strategyTerminal,terminalPageByOffices,strategyRelatedTerminal,delStrategyterminal } from '@/api/plan'
   import { getDeviceList } from '@/api/device'
+  import 'swiper/dist/css/swiper.css'
+  import { swiper, swiperSlide } from 'vue-awesome-swiper'
 
   export default {
     name: 'deviceManager-screen',
-    components: {  },
+    components: { swiper, swiperSlide },
     props: {
       curCheckedDeviceList: {
         type: Array,
@@ -675,6 +687,17 @@
         curBigScreenInfo: null,
         curClickHistoryDeviceId: '',
         timer: null,
+        // 更多历史轮播图
+        swiperOption: {
+          slidesPerView: 3,
+          spaceBetween: 20,
+          width: 1036,
+          setWrapperSize: true,
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev'
+          }
+        }
       }
     },
     created() {
@@ -726,6 +749,9 @@
         'language',
         'officeId'
       ]),
+      isMultipleLoading() {
+        return this.showDeviceList.some(item => item.isLoading === true)
+      }
     },
     watch: {
       filterText(val) {
@@ -758,7 +784,7 @@
             getRltMonitor({ terminalId: data.id }).then(r => {
               console.log(r);
 
-              if (r.status==='1' && r.isHaveRealCapture===false) {
+              if (r.status==='1' && r.isHaveRealCapture===false) { // 在线但请求不到实时截图
                 count++;
                 if(count >= 20) {
                   clearInterval(this.timer);
@@ -766,12 +792,16 @@
                   this.showDeviceList[index].screenStatus = '-2';
                   this.showDeviceList[index].isLoading = false;
                   this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+                  this.syncDataFormShowToTotalById(data.id);
+
                   if (showDeviceList.length > 0) {
                     console.log(8126.1, showDeviceList.length, this.showDeviceList.length)
                     this.eachGetScreenList(showDeviceList);
                   } else {
                     this.busy = false;
                     this.isRefreshing = false;
+                    if (!this.curClickDevice) this.curClickDevice = this.showDeviceList[0];
+
                     console.log(8126.2, '所有请求轮完')
                   }
                 }
@@ -782,15 +812,27 @@
                 this.showDeviceList[index].screenStatus = r.status;
                 this.showDeviceList[index].isHaveRealCapture = r.isHaveRealCapture;
                 this.showDeviceList[index].onLineTime = r.onLineTime;
-                this.showDeviceList[index].captureList = r.captureList;
+                this.showDeviceList[index].captureList = r.captureList.sort((a,b) => b.updateDate - a.updateDate);
                 this.showDeviceList[index].isLoading = false;
                 this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+                this.syncDataFormShowToTotalById(data.id);
+
+                if (r.status==='1' && r.isHaveRealCapture===true) { // 在线且有实时截图
+                  this.$nextTick(() => {
+                    let _$adaptiveImg = $('.adaptive-img-'+data.id);
+                    imgHistoryScreenCapture(_$adaptiveImg.attr('src'), _$adaptiveImg);
+                    console.log('++实时截图++', _$adaptiveImg.attr('src'), _$adaptiveImg);
+                  })
+                }
+
                 if (showDeviceList.length > 0) {
                   console.log(8126.1, showDeviceList.length, this.showDeviceList.length)
                   this.eachGetScreenList(showDeviceList);
                 } else {
                   this.busy = false;
                   this.isRefreshing = false;
+                  if (!this.curClickDevice) this.curClickDevice = this.showDeviceList[0];
+
                   console.log(8126.2, '所有请求轮完')
                 }
               }
@@ -801,12 +843,16 @@
               this.showDeviceList[index].screenStatus = '-1';
               this.showDeviceList[index].isLoading = false;
               this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+              this.syncDataFormShowToTotalById(data.id);
+
               if (showDeviceList.length > 0) {
                 console.log(8126.1, showDeviceList.length, this.showDeviceList.length)
                 this.eachGetScreenList(showDeviceList);
               } else {
                 this.busy = false;
                 this.isRefreshing = false;
+                if (!this.curClickDevice) this.curClickDevice = this.showDeviceList[0];
+
                 console.log(8126.2, '所有请求轮完')
               }
             });
@@ -817,12 +863,16 @@
           this.showDeviceList[index].screenStatus = '-1';
           this.showDeviceList[index].isLoading = false;
           this.showDeviceList.splice(index, 1, this.showDeviceList[index]); // todo Vue对数组索引赋值的局限性！！！
+          this.syncDataFormShowToTotalById(data.id);
+
           if (showDeviceList.length > 0) {
             console.log(8126, showDeviceList.length, this.showDeviceList.length)
             this.eachGetScreenList(showDeviceList);
           } else {
             this.busy = false;
             this.isRefreshing = false;
+            if (!this.curClickDevice) this.curClickDevice = this.showDeviceList[0];
+
             console.log(8126.2, '所有请求轮完')
           }
         })
@@ -952,6 +1002,7 @@
       handleSingleRefresh() {
         this.isRefreshing = true;
         this.curClickDevice.isLoading = true;
+        this.syncDataFormCurToShowAndTotalById();
         this.clearTimer();
 
         getScreenShoot({
@@ -972,6 +1023,7 @@
                   this.curClickDevice.screenStatus = '-2';
                   this.isRefreshing = false;
                   this.curClickDevice.isLoading = false;
+                  this.syncDataFormCurToShowAndTotalById();
                 }
               } else {
                 console.log('一次请求截图出结果', r);
@@ -980,9 +1032,26 @@
                 this.curClickDevice.screenStatus = r.status;
                 this.curClickDevice.isHaveRealCapture = r.isHaveRealCapture;
                 this.curClickDevice.onLineTime = r.onLineTime;
-                this.curClickDevice.captureList = r.captureList;
+                this.curClickDevice.captureList = r.captureList.sort((a,b) => b.updateDate - a.updateDate);;
                 this.isRefreshing = false;
                 this.curClickDevice.isLoading = false;
+                this.syncDataFormCurToShowAndTotalById();
+
+                if (r.status==='1' && r.isHaveRealCapture===true) { // 在线且有实时截图
+                  this.$nextTick(() => {
+                    let _$adaptiveImg = $('.adaptive-img-'+this.curClickDevice.id);
+                    imgHistoryScreenCapture(_$adaptiveImg.attr('src'), _$adaptiveImg);
+                    console.log('++实时截图++', _$adaptiveImg.attr('src'), _$adaptiveImg);
+                  })
+                }
+
+                this.$nextTick(() => {
+                  console.log('轮播图', $('.adaptive-img-history'));
+
+                  $('.adaptive-img-history').each(function(){
+                    imgHistoryScreenCapture($(this).attr('src'), $(this));
+                  });
+                })
               }
             }).catch(e => {
               console.log(e, count);
@@ -991,6 +1060,7 @@
               this.curClickDevice.screenStatus = '-1';
               this.isRefreshing = false;
               this.curClickDevice.isLoading = false;
+              this.syncDataFormCurToShowAndTotalById();
             });
           }, 3000);
         }).catch(err => {
@@ -999,11 +1069,13 @@
           this.curClickDevice.screenStatus = '-1';
           this.isRefreshing = false;
           this.curClickDevice.isLoading = false;
+          this.syncDataFormCurToShowAndTotalById();
         })
       },
       handleClickToView(item) {
-        this.toggleModel('single', item);
         console.log('单图详情', item);
+
+        this.toggleModel('single', item);
       },
       handleCloseSingle(id, isMultiple) {
         console.log('删除id', id)
@@ -1024,25 +1096,40 @@
         }
       },
       toggleModel(model, info) {
-        this.showModel = model;
-        this.isFilter = false;
-        this.searchVal = '';
+        if (this.showModel === model) return false;
 
         if (info) {
           this.curClickDevice = info;
-          this.curClickDevice.isLoading = false;
-        } else {
+        } else if (!this.curClickDevice) {
           this.curClickDevice = this.showDeviceList[0];
         }
 
         if (model === 'single') {
           this.showDeviceList = JSON.parse(JSON.stringify(this.totalDeviceList));
+          this.$nextTick(() => {
+            console.log('轮播图', $('.adaptive-img-history'));
+
+            $('.adaptive-img-history').each(function(){
+              imgHistoryScreenCapture($(this).attr('src'), $(this));
+            });
+          })
         }
+
+        this.isFilter = false;
+        this.searchVal = '';
+        this.busy = false;
+//        this.isRefreshing = false;
+//        this.showDeviceList = this.showDeviceList.map(item => {
+//          item.isLoading = false;
+//          return item;
+//        });
+        this.showModel = model;
       },
       handleClearAll() {
         this.showDeviceList = [];
-        this.curClickDevice = null;
+        this.curClickDevice = null; // curClickDevice.isL
         this.totalDeviceList = [];
+        this.clearTimer();
       },
       toggleDialog(title, data) {
         switch (title) {
@@ -1080,10 +1167,18 @@
             this.dialogKey = 'history';
             this.dialogTitle = this.$t('deviceManager.historyScreenshots');
             this.dialogWidth = '864px';
-            this.curDeviceCaptureMap = listClassify(data.captureList, 'updateDate', 1000*60*60*24);
+            this.curDeviceCaptureMap = listClassify(data.captureList.sort((a,b) => b.updateDate - a.updateDate), 'updateDate', 1000*60*60*24);
             this.curDeviceCaptureMapCopy = JSON.parse(JSON.stringify(this.curDeviceCaptureMap));
             this.curClickHistoryDeviceId = data.id;
             console.log('历史截图分类Map', this.curDeviceCaptureMap);
+
+            this.$nextTick(() => {
+              console.log('轮播图', $('.adaptive-img-more'));
+
+              $('.adaptive-img-more').each(function(){
+                imgHistoryScreenCapture($(this).attr('src'), $(this));
+              });
+            });
             break;
           default:
             this.dialogKey = '--';
@@ -1213,22 +1308,28 @@
       showBigScreen(data) {
         this.curBigScreenInfo = data;
         this.screenDialogVisible = true;
-      },
-      nextScreen(key) {
-        if (this.curDeviceCaptureMap[key].length <= 1) return false;
+        this.$nextTick(() => { //
+          let $_adaptiveImg = $('.adaptive-img-big');
 
-        console.log('下一张', key, this.curDeviceCaptureMap[key].length);
-        let val = this.curDeviceCaptureMap[key].shift();
-        console.log('首去掉', val, this.curDeviceCaptureMap[key].length);
+          imgHistoryScreenCapture($_adaptiveImg.attr('src'), $_adaptiveImg);
+          console.log('轮播图', $_adaptiveImg);
+        })
       },
-      lastScreen(key) {
-        if (this.curDeviceCaptureMap[key].length >= this.curDeviceCaptureMapCopy[key].length) return false;
-
-        console.log('上一张', key, this.curDeviceCaptureMap[key].length);
-        let val = this.curDeviceCaptureMapCopy[key][this.curDeviceCaptureMapCopy[key].length-this.curDeviceCaptureMap[key].length-1];
-        let len = this.curDeviceCaptureMap[key].unshift(val);
-        console.log('首加入', val, this.curDeviceCaptureMap[key].length);
-      },
+//      nextScreen(key) {
+//        if (this.curDeviceCaptureMap[key].length <= 1) return false;
+//
+//        console.log('下一张', key, this.curDeviceCaptureMap[key].length);
+//        let val = this.curDeviceCaptureMap[key].shift();
+//        console.log('首去掉', val, this.curDeviceCaptureMap[key].length);
+//      },
+//      lastScreen(key) {
+//        if (this.curDeviceCaptureMap[key].length >= this.curDeviceCaptureMapCopy[key].length) return false;
+//
+//        console.log('上一张', key, this.curDeviceCaptureMap[key].length);
+//        let val = this.curDeviceCaptureMapCopy[key][this.curDeviceCaptureMapCopy[key].length-this.curDeviceCaptureMap[key].length-1];
+//        let len = this.curDeviceCaptureMap[key].unshift(val);
+//        console.log('首加入', val, this.curDeviceCaptureMap[key].length);
+//      },
       handleSearchScreen() {
         console.log('历史截图搜索', this.datePickerVal, this.curClickHistoryDeviceId);
 
@@ -1240,7 +1341,14 @@
           }).then(res => {
             console.log(res)
 
-            this.curDeviceCaptureMap = listClassify(res.captureList, 'updateDate', 1000*60*60*24);
+            this.curDeviceCaptureMap = listClassify(res.captureList.sort((a,b) => b.updateDate - a.updateDate), 'updateDate', 1000*60*60*24);
+            this.$nextTick(() => {
+              console.log('轮播图', $('.adaptive-img-more'));
+
+              $('.adaptive-img-more').each(function(){
+                imgHistoryScreenCapture($(this).attr('src'), $(this));
+              });
+            })
             this.$message({
               message: this.$t('common.operationSucceeds'),
               type: 'success'
@@ -1252,6 +1360,14 @@
           })
         } else {
           this.curDeviceCaptureMap = JSON.parse(JSON.stringify(this.curDeviceCaptureMapCopy));
+          this.$nextTick(() => {
+            console.log('轮播图', $('.adaptive-img-more'));
+
+            $('.adaptive-img-more').each(function(){
+              imgHistoryScreenCapture($(this).attr('src'), $(this));
+            });
+          })
+
           this.$message({
             message: this.$t('common.operationSucceeds'),
             type: 'success'
@@ -1263,11 +1379,37 @@
 
         this.curClickDevice = data;
         this.handleSingleRefresh();
+        if (this.curClickDevice && this.curClickDevice.captureList) {
+          this.$nextTick(() => {
+            console.log('轮播图', $('.adaptive-img-history'));
+
+            $('.adaptive-img-history').each(function(){
+              imgHistoryScreenCapture($(this).attr('src'), $(this));
+            });
+          })
+        }
       },
       clearTimer() {
         clearInterval(this.timer);
         this.timer = null;
-      }
+      },
+      syncDataFormShowToTotalById(showId) {
+        const showIndex = this.showDeviceList.findIndex(item => item.id === showId);
+        const totalIndex = this.totalDeviceList.findIndex(item => item.id === showId);
+
+        Object.assign(this.totalDeviceList[totalIndex], this.showDeviceList[showIndex]);
+
+        console.log('同步数据', this.totalDeviceList[totalIndex], this.showDeviceList[showIndex])
+      },
+      syncDataFormCurToShowAndTotalById() {
+        const showIndex = this.showDeviceList.findIndex(item => item.id === this.curClickDevice.id);
+        const totalIndex = this.totalDeviceList.findIndex(item => item.id === this.curClickDevice.id);
+
+        Object.assign(this.showDeviceList[showIndex], this.curClickDevice);
+        Object.assign(this.totalDeviceList[totalIndex], this.curClickDevice);
+
+        console.log('同步数据', this.showDeviceList[showIndex], this.totalDeviceList[totalIndex], this.curClickDevice);
+      },
     }
   }
 </script>
@@ -1278,17 +1420,10 @@
     .el-dialog .el-dialog__body .el-transfer .el-transfer-panel{
       width: 320px;
     }
-  }
-  .el-dialog{
-    width: 800px;
-    min-height: 450px;
-  }
-  .el-dialog__body{
-    position: relative;
-  }
-  .span_line:nth-of-type(1)::after{
-    content: '~';
-    display: inline-block;
+
+    .swiper-container {
+      overflow: initial;
+    }
   }
 </style>
 
@@ -1334,9 +1469,7 @@
 
     .list-img {
       width: 100%;
-      height: 310px;
       position: relative;
-      background-color: #666;
     }
 
     .list-mask {
@@ -1424,7 +1557,6 @@
           width: 768px;
           height: 432px;
           margin: 0 auto 10px;
-          background: #666;
         }
       }
 
@@ -1436,14 +1568,11 @@
         .history-list {
           width: 332px;
           height: 186.75px;
-          padding-right: 20px;
           text-align: center;
           .history-list-img {
             width: 100%;
             height: 100%;
-            background-color: #666;
             margin-bottom: 10px;
-            text-align: center;
           }
         }
 
@@ -1480,18 +1609,28 @@
     height: 450px;
     overflow-y: auto;
     overflow-x: hidden;
-    .history-list {
+    .history-more-list {
       width: 332px;
       height: 186.75px;
-      padding-right: 20px;
       text-align: center;
-      .history-list-img {
+      .history-more-list-img {
         width: 100%;
         height: 100%;
-        background-color: #666;
         margin-bottom: 10px;
-        text-align: center;
       }
+    }
+  }
+
+  .adaptive-img-box {
+    position: relative;
+    overflow: hidden;
+    transition: all .35s ease;
+    -webkit-transition: all .35s ease;
+    .adaptive-img {
+      display: block;
+      position: absolute;
+      border: 0;
+      vertical-align: middle;
     }
   }
 }

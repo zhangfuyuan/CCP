@@ -444,7 +444,7 @@ function padLeftZero(str){
 }
 
 /**
- *  对象数组根据指定元素属性进行分类，返回一个根据此属性区分的对象（默认附带顺排序）
+ *  对象数组根据指定元素属性进行分类，返回一个根据此属性区分的对象（默认附带倒排序）
  * */
 
 export function listClassify(list, key, between) {
@@ -465,10 +465,62 @@ export function listClassify(list, key, between) {
 
   obj = Object.keys(obj).map(item => {
     obj[item].sort((now, next) => {
-      return now[key] - next[key];
+      return next[key] - now[key];
     });
     return obj[item];
   });
 
   return obj;
+}
+
+/**
+ *  图片自适应处理函数（基于JQ的DOM操作）
+ *
+ * */
+export function imgHistoryScreenCapture(src,o){
+  updateImgRatio(src,function(imgWidth,imgHeight,o){
+    //对象
+    var obj =  o;
+    var p = obj.parent();
+    //父宽高
+    var pw = p.width();
+    var ph = p.height();
+    //img对父比例
+    var pws = pw/imgWidth;
+    var phs = ph/imgHeight;
+    var tw,th,tt,tl;
+
+    if(pws > phs){
+      //横
+      tw = imgWidth*phs;
+      th = imgHeight*phs;
+      tt = 0;
+      tl = (pw - tw)/2;
+
+    }else{
+      //竖
+      tw = imgWidth*pws;
+      th = imgHeight*pws;
+      tl = 0;
+      tt = (ph - th)/2;
+    }
+    obj.css("margin-top",tt+'px');
+    obj.css("margin-left",tl+'px');
+    obj.animate({width:tw+'px',height:th+'px'});
+  },o);
+}
+
+/**
+ * 更新图片分辨率(异步、公用)
+ * @param src 图片路径
+ * @param func 参数为自定义方法，参数1是是图片宽，参数2是图片高,参数3是传入的str
+ * @param str func方法第3个参数（如果自定义方法没用到，可以不传该参数）
+ */
+export function updateImgRatio(src,func,str){
+  //更新图片分辨率
+  var img = new Image();
+  img.src = src;
+  img.onload = function(){
+    func(img.width,img.height,str);
+  };
 }

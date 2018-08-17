@@ -1,18 +1,22 @@
 <template>
   <div class="planManager-wrapper">
     <div class="filter">
-      <div class="total">
+      <div class="total" v-if="!selectedCount">
         {{$t('planManager.total')}} <span>{{count}}</span> {{$t('planManager.plans')}}
+      </div>
+      <div class="selected" v-if="selectedCount">
+        {{ language ==='zh' ?  $t('planManager.selected') : ''}} <span>{{selectedCount}}</span> {{$t('planManager.countPlan')}}
       </div>
 
       <div class="newBtn">
-        <el-button type="primary" @click="toggleDialog('create')">{{$t('planManager.newPlan')}}</el-button>
+        <el-button type="primary" @click="toggleDialog('create');isborderColor = false;isBorderColor = false">{{$t('planManager.newPlan')}}</el-button>
       </div>
       <div class="delBtn" style="margin-left: 20px;">
         <el-button v-if="deleteEquip" type="danger">{{$t('planManager.deleteEquipment')}}</el-button>
         <el-button v-if="!deleteEquip" type="info" disabled @click="deletePlan">{{$t('planManager.deleteEquipment')}}</el-button>
       </div>
       <div class="search">
+
         <!--<el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('planManager.searchPlanName')" v-model="searchVal">
           <i slot="suffix" class="el-input__icon el-icon-search" @click="handleSearch"></i>
         </el-input>-->
@@ -49,10 +53,10 @@
         </el-table-column>
 
         <el-table-column
-          sortable
-          prop="name"
-          :label="$t('planManager.planName')">
-        </el-table-column>
+        sortable
+        prop="name"
+        :label="$t('planManager.planName')">
+      </el-table-column>
 
         <el-table-column
           prop="type"
@@ -85,7 +89,7 @@
           :label="$t('common.handle')">
           <template slot-scope="scope">
             <el-button @click="toggleDialog('details', scope.row)" type="text">{{$t('planManager.details')}}</el-button>
-            <el-button @click="toggleDialog('modify', scope.row)" type="text">{{$t('common.modify')}}</el-button>
+            <el-button @click="toggleDialog('modify', scope.row);isborderColor = false;isBorderColor = false" type="text">{{$t('common.modify')}}</el-button>
             <el-button @click="toggleDialog('manager', scope.row)" type="text">{{$t('planManager.deviceManagementBtn')}}</el-button>
           </template>
         </el-table-column>
@@ -136,7 +140,7 @@
                 <div class="shade" v-if="!createForm.weeklyPlan.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
                 <li v-for="(item, index) in createForm.weeklyPlan.planList"
                     :key="index"
-                    style="display: flex;align-items: center;justify-content: space-between;">
+                    style="position:relative;display: flex;align-items: center;justify-content: space-between;margin-top: 10px;" >
                   <el-select v-model="item.operation" size="mini" style="width: 100px;">
                     <el-option
                       v-for="(o, i) in actionOptions"
@@ -146,6 +150,8 @@
                     </el-option>
                   </el-select>
 
+                  <!--<span style="display: inline-block;width: 130px;height: 20px;border: 1px solid #000;position: absolute;top: -15px;left: 110px">{{errorTips}}</span>-->
+
                   <el-time-picker
                     v-model="item.time"
                     value-format="timestamp"
@@ -153,10 +159,13 @@
                     :placeholder="$t('planManager.timePickerPlaceholder')"
                     size="mini"
                     style="width: 120px;"
-                    default-value="">
+                    default-value=""
+                     @change="changeFn"
+                    :class="{'borderColor':isborderColor}"
+                    :focus="timeFocusFn()">
                   </el-time-picker>
 
-                  <el-checkbox v-model="item.isAllCheckedWeek" @change="changeAllWeeksHandle(arguments, index)">{{$t('planManager.totalSelection')}}</el-checkbox>
+                  <el-checkbox v-model="item.isAllCheckedWeek" @change="changeAllWeeksHandle(arguments, index);">{{$t('planManager.totalSelection')}}</el-checkbox>
                   <el-checkbox-group v-model="item.weeks" size="mini" @change="changeWeeksHandle(arguments, index)">
                     <el-checkbox-button label="1" name="weeks" >{{$t('planManager.monday')}}</el-checkbox-button>
                     <el-checkbox-button label="2" name="weeks">{{$t('planManager.tuesday')}}</el-checkbox-button>
@@ -177,7 +186,7 @@
               <el-checkbox v-model="createForm.specialPlan.isOpen">{{$t('planManager.specialPlan')}}</el-checkbox>
               <ul style="position: relative">
                 <div class="shade1" v-if="!createForm.specialPlan.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
-                <li v-for="(item, index) in createForm.specialPlan.planList" :key="index">
+                <li v-for="(item, index) in createForm.specialPlan.planList" :key="index" style="margin-top: 10px;">
                   <el-select v-model="item.operation" size="mini" style="width: 100px;">
                     <el-option
                       v-for="(o, i) in actionOptions"
@@ -193,7 +202,9 @@
                     format="HH:mm"
                     :placeholder="$t('planManager.timePickerPlaceholder')"
                     size="mini"
-                    style="width: 120px;">
+                    style="width: 120px;"
+                    :class="{'borderColor':isBorderColor}"
+                    :focus="timeFocusFn()">
                   </el-time-picker>
 
 
@@ -207,7 +218,8 @@
                     :end-placeholder="$t('planManager.datePickerEndPlaceholder')"
                     :picker-options="pickerOptions"
                     value-format="timestamp"
-                    size="mini">
+                    size="mini"
+                  @change="specialPlanChange">
                   </el-date-picker>
 
                   <el-button type="text" v-if="index===0" @click="addSpecialPlan"><i class="el-icon-plus"></i></el-button>
@@ -233,7 +245,7 @@
               <el-checkbox v-model="createVol.timingVol.isOpen">{{$t('planManager.timingVol')}}</el-checkbox>
               <ul style="position: relative">
                 <div class="shade1" v-if="!createVol.timingVol.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
-                <li v-for="(option, index) in createVol.timingVol.volList" :key="index" style="position: relative">
+                <li v-for="(option, index) in createVol.timingVol.volList" :key="index" style="position: relative;margin-top: 10px;">
                   <el-row>
                     <el-row style="display: flex;justify-content: center;align-items: center">
                       <el-time-picker
@@ -283,19 +295,19 @@
         <el-dialog title="$t('planManager.planDetails')"></el-dialog>
         <el-row style="width: 100%;height: 250px;overflow: auto; padding: 0;">
           <el-col style="margin-bottom: 10px;margin-top: 5px;"><div class="grid-content">{{funcName}}</div></el-col>
-          <el-col style="margin-bottom: 10px;"><span>{{$t('planManager.functionTypes')}}</span><span style="margin-left: 20px;">{{funcType === '1' ? "电源" : "音量"}}</span></el-col>
+          <el-col style="margin-bottom: 10px;"><span>{{$t('planManager.functionTypes')}}</span><span style="margin-left: 20px;">{{funcType === '1' ? $t('planManager.powerSource') : $t('planManager.volume')}}</span></el-col>
           <el-col v-if="funcType ==='1'" v-for="(item,index) in detailData" :key="index" style="margin-bottom: 10px;margin-top: 10px;" >
-            <span style="margin-right: 10px;">{{item.planType === '1' ? "周计划" : "特殊计划"}}</span>
-            <span style="margin-right: 10px;">{{item.operation === '1' ? "开机" : item.operation === '2' ? "待机" : "关机"}}</span>
+            <span style="margin-right: 10px;">{{item.planType === '1' ? $t('planManager.weeklyPlan') : $t('planManager.specialPlan')}}</span>
+            <span style="margin-right: 10px;">{{item.operation === '1' ? $t('planManager.startingUp') : item.operation === '2' ? $t('planManager.standBy') : $t('planManager.powerOff')}}</span>
             <span style="margin-right: 10px;">{{item.time | formatDated}}</span>
             <span  v-for="(week,k) in item.weeks" :key="k">
-              <span v-if="week ==='1'">周一</span>
-              <span v-if="week ==='2'">周二</span>
-              <span v-if="week ==='3'">周三</span>
-              <span v-if="week ==='4'">周四</span>
-              <span v-if="week ==='5'">周五</span>
-              <span v-if="week ==='6'">周六</span>
-              <span v-if="week ==='7'">周日</span>
+              <span v-if="week ==='1'"> {{language === 'zh' ? '周一' : $t('planManager.monday')}}   </span>
+              <span v-if="week ==='2'"> {{language === 'zh' ? '周二' : $t('planManager.tuesday')}}  </span>
+              <span v-if="week ==='3'"> {{language === 'zh' ? '周三' : $t('planManager.wednesday')}}</span>
+              <span v-if="week ==='4'"> {{language === 'zh' ? '周四' : $t('planManager.thursday')}} </span>
+              <span v-if="week ==='5'"> {{language === 'zh' ? '周五' : $t('planManager.friday')}}   </span>
+              <span v-if="week ==='6'"> {{language === 'zh' ? '周六' : $t('planManager.saturday')}} </span>
+              <span v-if="week ==='7'"> {{language === 'zh' ? '周日' : $t('planManager.sunday')}}   </span>
             </span>
             <span v-for="(t,k) in item.date" :key="k" class="span_line" >
                {{+t | formatDatet}}<span v-if="k === 0">~</span>
@@ -303,16 +315,16 @@
           </el-col>
           <el-col v-if="funcType ==='2'" v-for="(item,index) in detailData" style="margin-bottom: 10px;margin-top: 10px;" :key="index">
 
-          <span style="margin-right: 10px;">{{item.planType === '1' ? "默认音量" : "定时音量"}}</span>
+          <span style="margin-right: 10px;">{{item.planType === '1' ? $t('planManager.defaultVol') : $t('planManager.timingVol')}}</span>
           <span style="margin-right: 10px;">{{item.volume}}</span>
           <span  v-for="week in item.weeks">
-              <span v-if="week ==='1'">周一</span>
-              <span v-if="week ==='2'">周二</span>
-              <span v-if="week ==='3'">周三</span>
-              <span v-if="week ==='4'">周四</span>
-              <span v-if="week ==='5'">周五</span>
-              <span v-if="week ==='6'">周六</span>
-              <span v-if="week ==='7'">周日</span>
+              <span v-if="week ==='1'">{{language === 'zh' ? '周一' : $t('planManager.monday')}}   </span>
+              <span v-if="week ==='2'">{{language === 'zh' ? '周二' : $t('planManager.tuesday')}}  </span>
+              <span v-if="week ==='3'">{{language === 'zh' ? '周三' : $t('planManager.wednesday')}}</span>
+              <span v-if="week ==='4'">{{language === 'zh' ? '周四' : $t('planManager.thursday')}} </span>
+              <span v-if="week ==='5'">{{language === 'zh' ? '周五' : $t('planManager.friday')}}   </span>
+              <span v-if="week ==='6'">{{language === 'zh' ? '周六' : $t('planManager.saturday')}} </span>
+              <span v-if="week ==='7'">{{language === 'zh' ? '周日' : $t('planManager.sunday')}}   </span>
             </span>
           <span v-for="(t,ind) in item.date" class="span_line" :key="ind">
                {{+t | formatDated}}
@@ -403,7 +415,7 @@
                  :label-width="language==='zh' ? '80px' : '136px'"
                  style="width: 100%;" label-position="left">
           <el-form-item :label="$t('planManager.functionTypes') + ' *'">
-            <span>{{createForm.type === '1' ? "电源" : "音量"}}</span>
+            <span>{{createForm.type === '1' ? $t('planManager.powerSource') : $t('planManager.volume')}}</span>
             <!--<el-radio-group v-model="createForm.type">
               <span>{{createForm.type}}</span>
               el-radio label="1" @change = "isChangeContents('source')">{{$t('planManager.powerSource')}}</el-radio>
@@ -422,7 +434,7 @@
               <div class="shade" v-if="!createForm.weeklyPlan.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
               <li v-for="(item, index) in createForm.weeklyPlan.planList"
                   :key="index"
-                  style="display: flex;align-items: center;justify-content: space-between;">
+                  style="display: flex;align-items: center;justify-content: space-between;margin-top: 15px;">
                 <el-select v-model="item.operation" size="mini" style="width: 100px;" @change="clickInput">
                   <el-option
                     v-for="(o, i) in actionOptions"
@@ -435,10 +447,13 @@
                 <el-time-picker
                   v-model="item.time"
                   value-format="timestamp"
+                  format="HH:mm"
                   :placeholder="$t('planManager.timePickerPlaceholder')"
                   size="mini"
                   style="width: 120px;"
-                  @change="clickInput">
+                  @change="clickInput"
+                  :class="{'borderColor':isborderColor}"
+                  :focus="timeFocusFn()">
                 </el-time-picker>
 
                 <el-checkbox v-model="item.isAllCheckedWeek" @change="changeAllWeeksHandle(arguments, index)">{{$t('planManager.totalSelection')}}</el-checkbox>
@@ -462,7 +477,7 @@
             <el-checkbox v-model="createForm.specialPlan.isOpen" @change="clickInput">{{$t('planManager.specialPlan')}}</el-checkbox>
             <ul style="position: relative">
               <div class="shade1" v-if="!createForm.specialPlan.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
-              <li v-for="(item, index) in createForm.specialPlan.planList" :key="index">
+              <li v-for="(item, index) in createForm.specialPlan.planList" :key="index" style="margin-top: 15px;">
                 <el-select v-model="item.operation" size="mini" style="width: 100px;" @change="clickInput">
                   <el-option
                     v-for="(o, i) in actionOptions"
@@ -475,10 +490,13 @@
                 <el-time-picker
                   v-model="item.time"
                   value-format="timestamp"
+                  format="HH:mm"
                   :placeholder="$t('planManager.timePickerPlaceholder')"
                   size="mini"
                   style="width: 120px;"
-                  @change="clickInput">
+                  @change="clickInput"
+                  :class="{'borderColor':isBorderColor}"
+                  :focus="timeFocusFn()">
                 </el-time-picker>
 
                 <el-date-picker
@@ -518,7 +536,7 @@
             <el-checkbox v-model="createVol.timingVol.isOpen" @change="clickInput">{{$t('planManager.timingVol')}}</el-checkbox>
             <ul style="position: relative">
               <div class="shade1" v-if="!createVol.timingVol.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
-              <li v-for="(option, index) in createVol.timingVol.volList" :key="index" style="position: relative">
+              <li v-for="(option, index) in createVol.timingVol.volList" :key="index" style="position: relative;margin-top: 10px;">
                 <el-row>
                   <el-row style="display: flex;justify-content: center;align-items: center">
                     <el-time-picker
@@ -530,7 +548,8 @@
                       size="mini"
                       style="width: 30%;margin-right: 15px"
                       @change="changeVolumeTimePicker"
-                      value-format="timestamp">
+                      value-format="timestamp"
+                      format="HH:mm" >
                     </el-time-picker>
                     <el-checkbox v-model="option.isAllCheckedWeek" @change="changeAllVolHandle(arguments, index)" style="margin-right: 5px">{{$t('planManager.totalSelection')}}</el-checkbox>
                     <el-checkbox-group v-model="option.weeks" size="mini" @change="changeVolHandle(arguments, index)">
@@ -564,7 +583,7 @@
       <div class="manager-dialog" v-if="dialogKey === 'manager'">
          <el-row style="position: relative">
            <div class="grid-content" style="display: inline-block">{{$t('planManager.associatedEquipmen')}}</div>
-           <el-button style="position: absolute;right: 130px" @click="addDevice">{{$t('planManager.addDevice')}}</el-button>
+           <el-button style="position: absolute;right: 140px" @click="addDevice">{{$t('planManager.addDevice')}}</el-button>
           <!-- <el-button v-if="delPlan" type="danger" style="position: absolute;right: 10px" @click="disassociation">{{$t('planManager.disassociate')}}</el-button>-->
            <!--<el-button v-if="!delPlan" type="info"  style="position: absolute;right: 10px" disabled>{{$t('planManager.disassociate')}}</el-button>-->
            <el-popover
@@ -572,10 +591,10 @@
              width="160"
              v-model="visible2"
              style="position: absolute;right: 10px;z-index: 1200" >
-             <p>{{$t('planManager.unassociatePlan')}}</p>
+             <p>{{$t('planManager.cancleTips')}}</p>
              <div style="text-align: right; margin: 0">
-               <el-button size="mini" type="text" @click="visible2 = false">{{$t('common.cancelBtn')}}</el-button>
-               <el-button type="primary" size="mini" @click="visible2 = false;delDevice()">{{$t('common.confirmBtn')}}</el-button>
+               <el-button size="mini" type="text" @click="visible2 = false">{{$t('planManager.cancel')}}</el-button>
+               <el-button type="primary" size="mini" @click="visible2 = false;delDevice()">{{$t('planManager.confirm')}}</el-button>
              </div>
              <el-button slot="reference" v-if="delPlan" type="danger" >{{$t('planManager.disassociate')}}</el-button>
              <el-button slot="reference" v-if="!delPlan" type="info" disabled="disabled">{{$t('planManager.disassociate')}}</el-button>
@@ -632,7 +651,7 @@
           </el-input>
         </div>
         <el-row style="margin-top: 10px;" v-if="isofficeShow">
-          <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">{{$t('common.return')}}</a>{{officeName}}</span>
+          <span><a style="color:#409EFF;margin-right: 10px;" @click="changezIndex">{{$t('planManager.back')}}</a>{{officeName}}</span>
         </el-row>
         <div class="whiteBox"
              :style="{'width': '120px','height': '120px','background':'#fff','position': 'absolute','top': '200px','left': '340px','z-index': wIndex +'' }">
@@ -714,13 +733,27 @@
         </el-form>
       </div>
       <!--底部按钮-->
-      <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'create'">
-        <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;addSource()" :disabled="!createForm.name || !createForm.specialPlan.isOpen && !createForm.weeklyPlan.isOpen ">{{$t('common.confirmBtn')}}</el-button>
+      <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'create'" style="position: relative">
+        <el-alert
+          :title="$t('planManager.timeErrorTips')"
+          type="error"
+          show-icon
+          v-if="isborderColor"
+        style="width: 300px;position: absolute;top: 0;right: 200px">
+        </el-alert>
+        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
+        <el-button type="primary" v-if="isChangeContent === 'source'" @click="addSource()" :disabled="!createForm.name || !createForm.specialPlan.isOpen && !createForm.weeklyPlan.isOpen ">{{$t('common.confirmBtn')}}</el-button>
         <el-button type="primary" v-if="isChangeContent === 'volume'" @click="dialogVisible = false;addVolume()" :disabled="!createForm.name ||  !createVol.defaultVol.isOpen && !createVol.timingVol.isOpen">{{$t('common.confirmBtn')}}</el-button>
       </div>
-      <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'modify'">
-        <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
+      <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'modify'" style="position: relative">
+        <el-alert
+          :title="$t('planManager.timeErrorTips')"
+          type="error"
+          show-icon
+          v-if="isborderColor"
+          style="width: 300px;position: absolute;top: 0;right: 200px">
+        </el-alert>
+        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
         <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;addSource('true')" :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
         <el-button type="primary" v-if="isChangeContent === 'volume'" @click="dialogVisible = false;addVolume('true')" :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
       </div>
@@ -737,7 +770,6 @@
 </template>
 
 <script>
-  import { getPlanManagerTableData } from '@/datas'
   import { mapGetters } from 'vuex'
   import ElRow from "element-ui/packages/row/src/row"
   import { getPlanList,saveStrategy,delStrategys,strategyTerminal,terminalPageByOffices,strategyRelatedTerminal,delStrategyterminal } from '@/api/plan'
@@ -762,7 +794,9 @@
         equipDatadCopy: [],
         officeData:[],
         officeDataCopy:[],
+        totalOfficeDataList:[],
         officeVal:[],
+        selectedCount:"",
         deleteEquip:"",
         delPlan:"",
         planId:"",
@@ -770,6 +804,7 @@
         idstr: "",
         funcType: "",
         funcName: "",
+        errorTips: "",
         visible2: false,
         detailData:[],
         isManagerDel:false,
@@ -780,6 +815,8 @@
         curofficeId:'',
         officeName: '',
         isofficeShow: false,
+        isborderColor: false,
+        isBorderColor: false,
         defaultProps: {
           children: 'children',
           label: 'name'
@@ -807,7 +844,7 @@
               {
                 id: Date.now(),
                 isAllCheckedWeek: false,
-                time: '',
+                time: new Date(1534262400000),
                 planType:"1",
                 operation: '1',
                 weeks: [],
@@ -901,7 +938,10 @@
               end.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
               picker.$emit('pick', [start, end]);
             }
-          }]
+          }],
+          disabledDate(time) {
+            return time.getTime() < Date.now() - 8.64e7;
+          }
         },
         isChangeContent: "source"
       }
@@ -916,9 +956,7 @@
       filterText(val) {
         this.$refs.officeTree.filter(val);
       },
-      officeData() {
 
-      }
     },
     filters:{
       formatDate(time){
@@ -995,6 +1033,7 @@
         this.curAccountInfo = info;
       },
       toggleDialog(title, data) {
+
           this.isChangePlan = false
           if(title === 'details'){
             this.equipData = []
@@ -1006,6 +1045,7 @@
             })
           }
         if(title === 'manager'){
+              this.isChangeContent = 'source'
           this.delPlan = ""
           this.equipDatad = []
           this.planId = ''
@@ -1013,6 +1053,7 @@
           strategyTerminal({strategyId :data.id}).then(res => {
             this.equipDatad = res.data
             console.log(res)
+            this.dialogVisible = true;
           }).catch(err => {
             console.log(err)
           })
@@ -1117,9 +1158,6 @@
                   }
                 }
 
-
-
-
                 if(!this.createForm.weeklyPlan.isOpen){
                   this.createForm.weeklyPlan.planList.push( {
                     id: Date.now(),
@@ -1144,7 +1182,6 @@
                     })(),
                   })
                 }
-
 
                 /* -------------------------------------------------------------------*/
               }else {
@@ -1397,7 +1434,7 @@
             this.dialogPlanInfo = null;
             break;
         }
-        this.dialogVisible = true;
+        if (title !== 'manager') this.dialogVisible = true;
 
       },
       isChangeContents(type) {
@@ -1455,6 +1492,7 @@
 
       },
       selectAllHandle(selection) {
+          this.selectedCount = selection.length;
           if(selection.length ===0){
             this.deleteEquip = ""
           }else {
@@ -1468,6 +1506,7 @@
           }
       },
       selectHandle(s) {
+        this.selectedCount = s.length
         this.idArr = []
         this.deleteEquip = ""
         for (let key in s) {
@@ -1611,6 +1650,43 @@
           this.isManagerDel = true
       },
       addSource(type){
+          //1534262402000 00:00
+        const gthat = this
+        let trueOrFalse = '1';
+        console.log(this.createForm.weeklyPlan.planList)
+        if(this.createForm.weeklyPlan.planList.length > 1){
+          for(let i = 0,length = this.createForm.weeklyPlan.planList.length;i<length;i++){
+            for(let j = i+1,len = this.createForm.weeklyPlan.planList.length;j<len;j++){
+              $.each(gthat.createForm.weeklyPlan.planList[i].weeks,function () {
+                let that = this
+                $.each(gthat.createForm.weeklyPlan.planList[j].weeks,function () {
+                  if(that === this){
+                    if(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time) > gthat.createForm.weeklyPlan.planList[j].time){
+                      console.log(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time))
+                      trueOrFalse = '2'
+                      gthat.dialogVisible = true
+                      gthat.isborderColor = true
+                    }
+                  }
+                })
+              })
+            }
+          }
+        }
+        if(this.createForm.specialPlan.planList.length > 1){
+          for(let i = 0,length = this.createForm.specialPlan.planList.length;i<length;i++){
+            for(let j = i+1,len = this.createForm.specialPlan.planList.length;j<len;j++){
+              if(gthat.DateAdd('m',5,gthat.createForm.specialPlan.planList[i].time) > gthat.createForm.specialPlan.planList[j].time){
+                console.log(gthat.DateAdd('m',5,gthat.createForm.specialPlan.planList[i].time))
+                console.log('时间重复了')
+                trueOrFalse = '2'
+                gthat.dialogVisible = true
+                gthat.isBorderColor = true
+              }
+            }
+          }
+        }
+if(trueOrFalse === '1'){
         var content = [];
         if (this.createForm.weeklyPlan.isOpen){
         for(let key in this.createForm.weeklyPlan.planList){
@@ -1623,16 +1699,6 @@
                this.$message.error(this.$t("common.failTips"));
                return
              }
-             /*if(this.createForm.weeklyPlan.planList.length > 1){
-               if(this.createForm.weeklyPlan.planList[k].time === this.createForm.weeklyPlan.planList[key].time){
-                 this.$message.error(this.$t("common.sameTime"));
-                 return
-               }
-             }*/
-            /* if (this.DateAdd('m',5,this.createForm.weeklyPlan.planList[key].time) < this.DateAdd('m',5,this.createForm.weeklyPlan.planList[k].time)){
-               this.$message.error(this.$t("common.timeInterval"));
-               return
-             }*/
           }
           let time = this.createForm.weeklyPlan.planList[key].time;
           let planType = this.createForm.weeklyPlan.planList[key].planType;
@@ -1644,23 +1710,7 @@
           obj.operation = operation;
           obj.weeks = weeksStr;
           content.push(obj)
-         // content.push(this.createForm.weeklyPlan.planList[key])
         }
-         /* if(this.createForm.weeklyPlan.planList.length > 1){
-            for(let i = 0,length = this.createForm.weeklyPlan.planList.length;i<length;i++){
-              for(let j = i+1,len = this.createForm.weeklyPlan.planList.length;i<length;j++){
-                if(this.createForm.weeklyPlan.planList[i].time === this.createForm.weeklyPlan.planList[j].time){
-                  alert('jjij')
-                  return
-                }
-                if (this.DateAdd('m',5,this.createForm.weeklyPlan.planList[i].time) < this.DateAdd('m',5,this.createForm.weeklyPlan.planList[j].time)){
-                  this.$message.error(this.$t("common.timeInterval"));
-                  return
-                }
-              }
-            }
-           }*/
-
         }
         if (this.createForm.specialPlan.isOpen){
         for(let key in this.createForm.specialPlan.planList){
@@ -1673,14 +1723,6 @@
               this.$message.error(this.$t("common.failTips"));
               return
             }
-            /*if(this.createForm.specialPlan.planList[k].time === this.createForm.specialPlan.planList[key].time){
-              this.$message.error(this.$t("common.sameTime"));
-              return
-            }*/
-           /* if (this.DateAdd('m',5,this.createForm.specialPlan.planList[key].time) < this.DateAdd('m',5,this.createForm.specialPlan.planList[k].time)){
-              this.$message.error(this.$t("common.timeInterval"));
-              return
-            }*/
           }
           let planType = this.createForm.specialPlan.planList[key].planType;
           let operation = this.createForm.specialPlan.planList[key].operation;
@@ -1700,6 +1742,8 @@
             content:JSON.stringify(content),
             type: this.createForm.type
           }).then(res => {
+            this.isborderColor = false
+            this.isBorderColor = false
             this.addSourceSuccess()
             console.log(res)
           }).catch(err => {
@@ -1712,6 +1756,8 @@
             content:JSON.stringify(content),
             type: this.createForm.type
           }).then(res => {
+            this.isborderColor = false
+            this.isBorderColor = false
             this.addSourceSuccess()
             console.log(res)
           }).catch(err => {
@@ -1719,8 +1765,31 @@
             console.log(err)
           })
         }
-      },
+        this.dialogVisible = false
+      }},
       addVolume(type) {
+        const gthat = this
+        let trueOrFalse = '1';
+        for(let i = 0,length = this.createVol.timingVol.volList.length;i<length;i++){
+          for(let j = i+1,len = this.createVol.timingVol.volList.length;j<len;j++){
+
+            $.each(gthat.createVol.timingVol.volList[i].weeks,function () {
+              let that = this
+              $.each(gthat.createVol.timingVol.volList[j].weeks,function () {
+                if(that === this){
+                    console.log(gthat.createVol.timingVol.volList[i].date)
+                  console.log(gthat.DateAdd('m',5,gthat.createVol.timingVol.volList[i].date[1]),gthat.createVol.timingVol.volList[j].date[0])
+                  if(gthat.DateAdd('m',5,Number(gthat.createVol.timingVol.volList[i].date[1])) > gthat.createVol.timingVol.volList[j].date[0]){
+                    trueOrFalse = '2'
+                    gthat.dialogVisible = true
+                    gthat.isborderColor = true
+                  }
+                }
+              })
+            })
+          }
+        }
+        if(trueOrFalse === '1'){
         var content = []
         if(this.createVol.defaultVol.isOpen){
          for (let i in this.createVol.defaultVol.volList){
@@ -1760,8 +1829,8 @@
             type: this.createForm.type,
             content:JSON.stringify(content)
           }).then(res => {
-              console.log(this.createForm.id)
-            console.log(content)
+            this.isborderColor = false
+            this.isBorderColor = false
             this.addSourceSuccess()
             console.log(res)
           }).catch(err => {
@@ -1774,7 +1843,9 @@
             type: this.createForm.type,
             content:JSON.stringify(content)
           }).then(res => {
-            console.log(content)
+            this.isborderColor = false
+            this.isBorderColor = false
+
             this.addSourceSuccess()
             console.log(res)
           }).catch(err => {
@@ -1783,7 +1854,8 @@
           })
         }
 
-      },
+
+      }},
       deletePlan(){
         this.$confirm(this.$t('accountManager.isDeletePlan'),this.$t('accountManager.attention'), {
           confirmButtonText: this.$t('accountManager.del'),
@@ -1833,6 +1905,7 @@
 
       },
       checkOfficeHandle(data, checkedMap) {
+        console.log(8126, this.equipDatad, this.officeData)
         let checkedList = this.$refs['officeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
           this.zIndex = 1200;
@@ -1843,13 +1916,13 @@
           this.$refs['officeTree'].setCurrentKey(data.id);
           this.curofficeId = data.id
           this.officeName = data.name
-         // officeData
             let _this = this;
             let pageNo = 1;
             let pageSize = 17;
+         //this.officeDataCopy = []
+            //自调用，获取机构下所有的设备
           (function getoffices(){
             terminalPageByOffices({officeIds: _this.curofficeId,pageNo: pageNo}).then(res => {
-//              this.officeData = []
               let arr = [], tmp = [];
               for(let key in res.data){
                 let id = res.data[key].id
@@ -1859,23 +1932,32 @@
                 obj.key = id
                 obj.label = decaimalName
                 obj.officeid = res.data[key].officeId;
-//                this.officeData.push(obj)
                 arr.push(obj)
               }
+
+              //totalOfficeDataList 所有已选的设备
+              _this.equipDatad.map(item => tmp.push(item.id) );
               _this.officeData.map(item => {
                 tmp.push(item.key);
               })
-            arr = arr.filter(item => {
+              arr = arr.filter(item => {
                 return tmp.indexOf(item.key) === -1;
               })
               _this.officeData.push(...arr);
+
               $('.cjc_isHidden').parents('.el-transfer-panel__item').hide();
               $('.cjc_isShow').parents('.el-transfer-panel__item').show();
-              console.log(res)
 
               if (pageNo*pageSize < res.count) {
                 pageNo++;
                 getoffices();
+              }else {
+                  //过滤掉本机构的和右侧已存在的设备
+                _this.officeData = _this.officeData.map(item => {
+                  item.disabled = (item.officeid!==_this.curofficeId) && (_this.officeVal.indexOf(item.key)===-1);
+                  return item
+                });
+
               }
             }).catch(err => {
               console.log(err)
@@ -1887,7 +1969,13 @@
           this.curofficeId = ''
           this.officeName = ''
         }
-
+      },
+      specialPlanChange(date){
+        console.log(date)
+        if(date[0]<Date.now()){
+            console.log('jfdlf')
+          this.createForm.specialPlan.planList.date=[Date.now(),Date.now()]
+        }
       },
       delDevice(){
         if(this.equipDatadCopy) {
@@ -1904,6 +1992,7 @@
         }
       },
       addDecial() {
+        //this.totalOfficeDataList = this.officeVal;
         let officeV = this.officeVal.join();
         strategyRelatedTerminal({strategyId:this.createForm.id,terminalIds:officeV}).then(res => {
          console.log(res)
@@ -1927,7 +2016,13 @@
          console.log(err)
          })
         this.officeVal = []
+        this.officeData = []
         this.isAddDevice = false
+
+      },
+      timeFocusFn() {
+        /*this.isborderColor = false
+         this.isBorderColor = false*/
 
       },
       disassociation() {
@@ -1944,9 +2039,10 @@
               }
           }*/
       },
+      //获取机构下的设备列表
       handleSearchDev() {
         this.officeDataCopy = JSON.parse(JSON.stringify(this.officeData))
-       terminalPageByOffices({officeIds:this.curofficeId,searchKey:this.searchV}).then(res => {
+        terminalPageByOffices({officeIds:this.curofficeId,searchKey:this.searchV}).then(res => {
          this.officeData = []
          for(let key in res.data){
            let id = res.data[key].id
@@ -1961,9 +2057,47 @@
         }).catch(err => {
          console.log(err)
         })
+
         if(!this.searchV){
           this.officeData = this.officeDataCopy
         }
+
+      },
+      changeFn(data) {
+          /*const gthat = this
+          console.log(data)
+          console.log(this.createForm.weeklyPlan.planList)
+        if(this.createForm.weeklyPlan.planList.length > 1){
+          for(let i = 0,length = this.createForm.weeklyPlan.planList.length;i<length;i++){
+            for(let j = i+1,len = this.createForm.weeklyPlan.planList.length;j<len;j++){
+              /!*if(this.createForm.weeklyPlan.planList[i].weeks === this.createForm.weeklyPlan.planList[j].weeks){
+                  console.log('重复了')
+              }*!/
+
+             /!* this.createForm.weeklyPlan.planList[i].weeks.forEach(function(val,index,arr){
+                this.createForm.weeklyPlan.planList[j].weeks.forEach(function(v,i,a){
+                    console.log(val,v)
+                })
+              })*!/
+            $.each(gthat.createForm.weeklyPlan.planList[i].weeks,function () {
+                let that = this
+              $.each(gthat.createForm.weeklyPlan.planList[j].weeks,function () {
+                if(that === this){
+                    console.log('日期重复了')
+                  if(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time) > gthat.createForm.weeklyPlan.planList[j].time){
+                        console.log(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time))
+                        console.log('时间重复了')
+
+                  }
+
+                }
+              })
+
+            })
+            }
+          }
+        }*/
+
 
       },
 
@@ -1978,6 +2112,10 @@
         this.dialogKey = "manager";
         this.dialogTitle = this.$t('planManager.deviceManagement');
 
+      },
+      timePickFn(){
+          console.log('123456789')
+          this.isborderColor = false
       },
 
    DateAdd(interval, number, date) {
@@ -2031,7 +2169,6 @@
       }
     }
   },
-
      addSourceSuccess() {
         this.$message({
             message: this.$t('common.operationSucceeds'),
@@ -2068,7 +2205,6 @@
       width: 800px;
       min-height: 450px;
     }
-
     .el-dialog__body{
       position: relative;
     }
@@ -2077,6 +2213,7 @@
       display: inline-block;
     }
   }
+
 </style>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
@@ -2092,6 +2229,9 @@
     margin-bottom: 20px;
     .total {
       flex: 1;
+    }
+    .selected{
+      flex:1;
     }
     .search {
       margin-left: 30px;
@@ -2109,8 +2249,17 @@
   .pagination {
     margin-top: 20px;
   }
+  .borderColor{
+    border-radius: 5px;
+    border: 1px solid #f00;
+  }
 
   .create-dialog {
+    @include scrollBar;
+    max-height: 500px;
+    overflow: auto;
+  }
+  .modify-dialog {
     @include scrollBar;
     max-height: 500px;
     overflow: auto;

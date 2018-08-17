@@ -23,6 +23,7 @@
 
 <script>
   import { modifyAccountPwd } from '@/api/account'
+
   export default {
     name: 'accountSettings-modifyPswd',
     data() {
@@ -69,7 +70,7 @@
            console.log(this.pswdForm.old,this.pswdForm.checkPass)
             modifyAccountPwd(this.pswdForm.old,this.pswdForm.checkPass).then(res =>{
                 this.$store.dispatch('FedLogOut').then(() => {
-                  location.reload() // ÎªÁËÖØÐÂÊµÀý»¯vue-router¶ÔÏó ±ÜÃâbug
+                  location.reload() // Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½vue-routerï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½bug
                 })
             }).catch(err => {
               this.$message.error(this.$t('common.operationFailure'));
