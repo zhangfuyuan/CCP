@@ -112,8 +112,6 @@
               this.successed()
               this.defServerIP = this.ruleForm.serverIP
               this.defTerminalIP = this.ruleForm.terminalIP
-              console.log(res)
-
             }).catch(err => {
               this.errored()
               console.log(err)
@@ -131,8 +129,18 @@
         this.isEdit = false
       },
       defaultForm() {
-        this.ruleForm.serverIP = this.defServerIP
-        this.ruleForm.terminalIP = this.defTerminalIP
+       /* this.ruleForm.serverIP = this.defServerIP
+        this.ruleForm.terminalIP = this.defTerminalIP*/
+        saveIpSetting({
+          isDefault: true
+        }).then(res => {
+          this.ruleForm.serverIP = res.serverIp
+          this.ruleForm.terminalIP = res.teIp
+          console.log(res)
+        }).catch(err => {
+          this.errored()
+          console.log(err)
+        })
       },
       successed() {
         this.$message({

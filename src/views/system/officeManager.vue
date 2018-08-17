@@ -1009,7 +1009,7 @@
       checkMoveOfficeHandle(data, checkedMap) {
         let checkedList = this.$refs['moveOfficeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
 
-        if (checkedList.indexOf(this.curClickOfficeId) > -1) {
+        if (checkedList.indexOf(this.curClickOfficeId)>-1 || checkedList.indexOf(this.curClickOfficeParentInfo.id)>-1) {
           this.$message({
             message: this.$t('officeManager.cannotMoveToThisOffice'),
             type: 'warning'
@@ -1037,11 +1037,16 @@
             this.$refs['moveOfficeTree'].setCheckedKeys([]);
             this.$refs['moveOfficeTree'].setCurrentKey(this.curClickOfficeId);
             this.updateMoveOfficeCurCheckedOffice('');
+
             try {
               setBFS(resetTree, 'disabled', true, 'children', 'id')
             } catch (err) {
               console.log('openDialogHandle', err)
             }
+
+            // 无法移动至原机构
+            let pNode = this.$refs['moveOfficeTree'].getNode(this.curClickOfficeParentInfo.id).data; // 此处不能用 curClickOfficeInfo
+            pNode['disabled'] = true;
           })
         } else if (this.dialogInfo.key === 'edit') {
           let node = this.$refs['officeTree'].getNode(this.editNameOfficeId);

@@ -35,7 +35,10 @@
             {{item.txt}}
           </el-dropdown-item>
         </template>
-        <el-dropdown-item command="" divided @click.native="$router.push({ path: '/wordSettings' })" v-if="roles.indexOf('root')>-1">
+        <el-dropdown-item command=""
+                          divided
+                          @click.native="$router.push({ path: '/wordSettings' })"
+                          v-if="roles.indexOf('root')>-1 && officeId==='1'">
             <span style="display:block;text-align: center">+</span>
         </el-dropdown-item>
       </el-dropdown-menu>
@@ -75,6 +78,7 @@ export default {
       'name',
       'localeLanguage',
       'roles',
+      'officeId',
     ])
   },
   created() {
@@ -115,6 +119,8 @@ export default {
       }
 
     });
+
+    console.log('当前所属机构id', this.officeId)
   },
   beforeDestroy() {
     this.$bus.off('change-language');

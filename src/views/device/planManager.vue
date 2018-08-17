@@ -9,7 +9,7 @@
       </div>
 
       <div class="newBtn">
-        <el-button type="primary" @click="toggleDialog('create');isborderColor = false;isBorderColor = false">{{$t('planManager.newPlan')}}</el-button>
+        <el-button type="primary" @click="toggleDialog('create');isborderColor = false;isBorderColor = false;isVolumeBorderColor = false;createForm.type = '1';isChangeContent = 'source'">{{$t('planManager.newPlan')}}</el-button>
       </div>
       <div class="delBtn" style="margin-left: 20px;">
         <el-button v-if="deleteEquip" type="danger">{{$t('planManager.deleteEquipment')}}</el-button>
@@ -17,14 +17,10 @@
       </div>
       <div class="search">
 
-        <!--<el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('planManager.searchPlanName')" v-model="searchVal">
-          <i slot="suffix" class="el-input__icon el-icon-search" @click="handleSearch"></i>
-        </el-input>-->
-
-        <div class="el-input el-input--suffix" style="width: 200px;">
+       <!-- <div class="el-input el-input&#45;&#45;suffix" style="width: 200px;">
           <input type="text"
                  v-model="searchVal"
-                 @input="handleSearch"
+                 @keyup.enter.native="handleSearch"
                  :placeholder="$t('planManager.searchPlanName')"
                  class="el-input__inner" />
           <span class="el-input__suffix" v-show="!searchVal">
@@ -33,7 +29,17 @@
           <span class="el-input__suffix" v-show="searchVal" @click="searchVal = '', handleSearch()">
               <span class="el-input__suffix-inner" style="cursor: pointer;"><i class="el-input__icon el-icon-circle-close"></i></span>
             </span>
-        </div>
+        </div>-->
+
+        <el-input
+                  @keyup.enter.native="handleSearch"
+                  style="width: 250px;margin-left: 15px;"
+                  :placeholder="$t('planManager.searchPlanName')"
+                  v-model="searchVal"
+                  clearable
+                  @clear="handleSearch">
+          <i slot="suffix" style="cursor: pointer;" class="el-input__icon el-icon-search" @click="handleSearch"></i>
+        </el-input>
 
       </div>
     </div>
@@ -117,7 +123,7 @@
                :close-on-press-escape="false"
                 @close="dialogKey = ''" >
       <!--新建定时计划-->
-      <div class="create-dialog" v-if="dialogKey === 'create'">
+      <div class="create-dialog" v-if = "dialogKey === 'create'">
         <div style="height: 100%;padding-right: 20px;">
           <el-form ref="form" :model="createForm"
                    :label-width="language==='zh' ? '80px' : '136px'"
@@ -153,17 +159,17 @@
                   <!--<span style="display: inline-block;width: 130px;height: 20px;border: 1px solid #000;position: absolute;top: -15px;left: 110px">{{errorTips}}</span>-->
 
                   <el-time-picker
-                    v-model="item.time"
-                    value-format="timestamp"
-                    format="HH:mm"
-                    :placeholder="$t('planManager.timePickerPlaceholder')"
-                    size="mini"
-                    style="width: 120px;"
-                    default-value=""
-                     @change="changeFn"
-                    :class="{'borderColor':isborderColor}"
-                    :focus="timeFocusFn()">
-                  </el-time-picker>
+                  v-model="item.time"
+                  value-format="timestamp"
+                  format="HH:mm"
+                  :placeholder="$t('planManager.timePickerPlaceholder')"
+                  size="mini"
+                  style="width: 120px;"
+                  default-value=""
+                  @change="changeFn"
+                  @blur="changeFn"
+                  :class="{'borderColor':isborderColor}">
+                </el-time-picker>
 
                   <el-checkbox v-model="item.isAllCheckedWeek" @change="changeAllWeeksHandle(arguments, index);">{{$t('planManager.totalSelection')}}</el-checkbox>
                   <el-checkbox-group v-model="item.weeks" size="mini" @change="changeWeeksHandle(arguments, index)">
@@ -204,7 +210,8 @@
                     size="mini"
                     style="width: 120px;"
                     :class="{'borderColor':isBorderColor}"
-                    :focus="timeFocusFn()">
+                    @change="changeSpecialFn"
+                    @blur="changeSpecialFn">
                   </el-time-picker>
 
 
@@ -219,7 +226,7 @@
                     :picker-options="pickerOptions"
                     value-format="timestamp"
                     size="mini"
-                  @change="specialPlanChange">
+                   @change="specialPlanChange">
                   </el-date-picker>
 
                   <el-button type="text" v-if="index===0" @click="addSpecialPlan"><i class="el-icon-plus"></i></el-button>
@@ -235,12 +242,11 @@
                 <svg-icon v-if="key.volume !== 0" icon-class="volume2" style="width: 20px;height: 41px;line-height: 41px"/>
                 <svg-icon v-if="key.volume === 0" icon-class="volume-off" style="width: 20px;height: 41px;line-height: 41px"/>
                 <div class="block" style="width: 80%; margin-left: 10px;margin-right: 10px">
-                  <el-slider v-model="key.volume"></el-slider>
+                  <el-slider v-model="key.volume" showInput></el-slider>
                 </div>
-                <el-input v-model="key.volume" style="width: 55px;padding: 0;" size="mini"  min="0" max="100"></el-input>
+                <!--<el-input v-model="key.volume" style="width: 55px;padding: 0;" size="mini"  maxlength="3"></el-input>-->
               </el-row>
             </div>
-
             <div class="timingVol-plan-box" v-if="isChangeContent === 'volume'">
               <el-checkbox v-model="createVol.timingVol.isOpen">{{$t('planManager.timingVol')}}</el-checkbox>
               <ul style="position: relative">
@@ -258,7 +264,8 @@
                         size="mini"
                         style="width: 30%;margin-right: 15px"
                         @change="changeVolumeTimePicker"
-                        value-format="timestamp">
+                        value-format="timestamp"
+                        :class="{'borderColor':isVolumeBorderColor}">
                       </el-time-picker>
                       <el-checkbox v-model="option.isAllCheckedWeek" @change="changeAllVolHandle(arguments, index)" style="margin-right: 5px">{{$t('planManager.totalSelection')}}</el-checkbox>
                       <el-checkbox-group v-model="option.weeks" size="mini" @change="changeVolHandle(arguments, index)">
@@ -275,9 +282,9 @@
                       <svg-icon v-if="option.volume !== 0" icon-class="volume2" style="width: 20px;height: 41px;line-height: 41px"/>
                       <svg-icon v-if="option.volume === 0" icon-class="volume-off" style="width: 20px;height: 41px;line-height: 41px"/>
                       <div class="block" style="width: 80%; margin-left: 10px;margin-right: 10px">
-                        <el-slider v-model="option.volume" ></el-slider>
+                        <el-slider v-model="option.volume" showInput></el-slider>
                       </div>
-                      <el-input v-model="option.volume" style="width: 55px;padding: 0;" size="mini"  min="0" max="100"></el-input>
+                      <!--<el-input v-model="option.volume" style="width: 55px;padding: 0;" size="mini"  min="0" max="100"></el-input>-->
                     </el-row>
                   </el-row>
 
@@ -327,7 +334,7 @@
               <span v-if="week ==='7'">{{language === 'zh' ? '周日' : $t('planManager.sunday')}}   </span>
             </span>
           <span v-for="(t,ind) in item.date" class="span_line" :key="ind">
-               {{+t | formatDated}}
+               {{+t | formatDated}}<span v-if="ind === 0">~</span>
             </span>
         </el-col>
           <!--<el-table
@@ -429,7 +436,7 @@
           </el-form-item>
 
           <div class="weekly-plan-box" v-if="isChangeContent === 'source'">
-            <el-checkbox v-model="createForm.weeklyPlan.isOpen" @change="clickInput">{{$t('planManager.weeklyPlan')}}</el-checkbox>
+            <el-checkbox v-model="createForm.weeklyPlan.isOpen" @change="changeChoiseWeekly">{{$t('planManager.weeklyPlan')}}</el-checkbox>
             <ul style="position: relative">
               <div class="shade" v-if="!createForm.weeklyPlan.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
               <li v-for="(item, index) in createForm.weeklyPlan.planList"
@@ -451,9 +458,9 @@
                   :placeholder="$t('planManager.timePickerPlaceholder')"
                   size="mini"
                   style="width: 120px;"
-                  @change="clickInput"
-                  :class="{'borderColor':isborderColor}"
-                  :focus="timeFocusFn()">
+                  @change="changeModifySourceWeeklyTimes"
+                  @blur="changeModifySourceWeeklyTimes"
+                  :class="{'borderColor':isborderColor}" >
                 </el-time-picker>
 
                 <el-checkbox v-model="item.isAllCheckedWeek" @change="changeAllWeeksHandle(arguments, index)">{{$t('planManager.totalSelection')}}</el-checkbox>
@@ -474,7 +481,7 @@
           </div>
 
           <div class="special-plan-box" v-if="isChangeContent === 'source'">
-            <el-checkbox v-model="createForm.specialPlan.isOpen" @change="clickInput">{{$t('planManager.specialPlan')}}</el-checkbox>
+            <el-checkbox v-model="createForm.specialPlan.isOpen" @change="changeChoiseSpecial">{{$t('planManager.specialPlan')}}</el-checkbox>
             <ul style="position: relative">
               <div class="shade1" v-if="!createForm.specialPlan.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
               <li v-for="(item, index) in createForm.specialPlan.planList" :key="index" style="margin-top: 15px;">
@@ -494,9 +501,9 @@
                   :placeholder="$t('planManager.timePickerPlaceholder')"
                   size="mini"
                   style="width: 120px;"
-                  @change="clickInput"
-                  :class="{'borderColor':isBorderColor}"
-                  :focus="timeFocusFn()">
+                  @change="changeSpecialTime"
+                  @blur="changeSpecialTime"
+                  :class="{'borderColor':isBorderColor}">
                 </el-time-picker>
 
                 <el-date-picker
@@ -510,7 +517,8 @@
                   :picker-options="pickerOptions"
                   value-format="timestamp"
                   size="mini"
-                  @change="clickInput">
+                  @change="changeSpecialDay"
+                  @blue="changeSpecialDay" >
                 </el-date-picker>
 
                 <el-button type="text" v-if="index===0" @click="addSpecialPlan"><i class="el-icon-plus"></i></el-button>
@@ -520,7 +528,7 @@
           </div>
 
           <div class="defaultVol-plan-box" v-if="isChangeContent === 'volume'" v-for="(key,index) in createVol.defaultVol.volList" :key="index">
-            <el-checkbox v-model="createVol.defaultVol.isOpen" @change="clickInput">{{$t('planManager.defaultVol')}}</el-checkbox>
+            <el-checkbox v-model="createVol.defaultVol.isOpen" @change="changeChoiseDefaultVolume">{{$t('planManager.defaultVol')}}</el-checkbox>
             <el-row style="display: flex;justify-content: center;align-items: center">
               <div class="shade1" v-if="!createVol.defaultVol.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
               <svg-icon v-if="key.volume !== 0" icon-class="volume2" style="width: 20px;height: 41px;line-height: 41px"/>
@@ -533,7 +541,7 @@
           </div>
 
           <div class="timingVol-plan-box" v-if="isChangeContent === 'volume'">
-            <el-checkbox v-model="createVol.timingVol.isOpen" @change="clickInput">{{$t('planManager.timingVol')}}</el-checkbox>
+            <el-checkbox v-model="createVol.timingVol.isOpen" @change="changeChoiseTimingVolume">{{$t('planManager.timingVol')}}</el-checkbox>
             <ul style="position: relative">
               <div class="shade1" v-if="!createVol.timingVol.isOpen" style="width: 100%;height: 100%; background: #fff;opacity: 0.5;z-index: 9999;position: absolute;top: 0;left: 0;"></div>
               <li v-for="(option, index) in createVol.timingVol.volList" :key="index" style="position: relative;margin-top: 10px;">
@@ -549,7 +557,8 @@
                       style="width: 30%;margin-right: 15px"
                       @change="changeVolumeTimePicker"
                       value-format="timestamp"
-                      format="HH:mm" >
+                      format="HH:mm"
+                     :class="{'borderColor':isVolumeBorderColor}">
                     </el-time-picker>
                     <el-checkbox v-model="option.isAllCheckedWeek" @change="changeAllVolHandle(arguments, index)" style="margin-right: 5px">{{$t('planManager.totalSelection')}}</el-checkbox>
                     <el-checkbox-group v-model="option.weeks" size="mini" @change="changeVolHandle(arguments, index)">
@@ -645,6 +654,7 @@
       </div>
       <!--添加设备-->
       <div class="" v-if="dialogKey === 'device'" style="width: 800px">
+
         <div class="search" style="display: inline-block;"  v-if="isofficeShow">
           <el-input @keyup.enter.native="handleSearchDev" style="width: 200px;" :placeholder="$t('planManager.searchDeviceName')" v-model="searchV">
             <i slot="suffix" class="el-input__icon el-icon-search" @click="handleSearchDev"></i>
@@ -660,7 +670,7 @@
              :style="{'width': '50px','height': '20px','background':'#f5f7fa','position': 'absolute','top': '110px','left': '280px','z-index': zIndex+1 +'' }"
         ></div>
         <el-transfer
-          :style="{ 'width': '100%', 'height': '300px','position': 'absolute', 'top': '100px', 'left': '18px', 'z-index': zIndex +'' }"
+          :style="{ 'width': '100%', 'height': '300px','overflow':'auto','position': 'absolute', 'top': '100px', 'left': '18px', 'z-index': zIndex +'' }"
           v-model="officeVal"
           :left-default-checked="officeVal"
           :data="officeData"
@@ -669,7 +679,8 @@
           :button-texts="[$t('planManager.deleteEquipment'), $t('planManager.addEquipment')]">
           <span slot-scope="{ option }"
                 :class="{ 'cjc_isHidden': (option.officeid!==curofficeId) && (officeVal.indexOf(option.key)===-1),
-                           'cjc_isShow': (option.officeid===curofficeId) && (officeVal.indexOf(option.key)===-1) }">{{ option.label }}</span>
+                           'cjc_isShow': (option.officeid===curofficeId) && (officeVal.indexOf(option.key)===-1) }"
+                :title="option.label">{{ option.label }}</span>
         </el-transfer>
        <!-- <el-transfer
           style="width: 100%;position: absolute;top: 100px;left: 10px;"
@@ -728,6 +739,9 @@
               @check="checkOfficeHandle"
               check-strictly
               style="border: 1px solid #d3dce6;min-height: 248px;">
+              <span class="custom-tree-node"
+                    slot-scope="{ node, data }"
+                    :title="node.label">{{ node.label }}</span>
             </el-tree>
           </el-form-item>
         </el-form>
@@ -738,24 +752,55 @@
           :title="$t('planManager.timeErrorTips')"
           type="error"
           show-icon
-          v-if="isborderColor"
+          :closable="false"
+          v-if="isborderColor || isBorderColor"
         style="width: 300px;position: absolute;top: 0;right: 200px">
         </el-alert>
-        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'source'" @click="addSource()" :disabled="!createForm.name || !createForm.specialPlan.isOpen && !createForm.weeklyPlan.isOpen ">{{$t('common.confirmBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'volume'" @click="dialogVisible = false;addVolume()" :disabled="!createForm.name ||  !createVol.defaultVol.isOpen && !createVol.timingVol.isOpen">{{$t('common.confirmBtn')}}</el-button>
+        <el-alert
+          :title="$t('planManager.timeCopySameDay')"
+          type="error"
+          show-icon
+          :closable="false"
+          v-if="isVolumeBorderColor"
+          style="width: 300px;position: absolute;top: 0;right: 200px">
+        </el-alert>
+        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false;isVolumeBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
+        <el-button type="primary"
+                   v-if="isChangeContent === 'source'"
+                   @click="addSource()"
+                   :disabled="!createForm.name ||
+                              (!createForm.weeklyPlan.isOpen && !createForm.specialPlan.isOpen) ||
+                              ((createForm.weeklyPlan.isOpen && !isChoiseWeeklyFn) ||
+                              (createForm.weeklyPlan.isOpen && !isSourceTimes) ||
+                               (createForm.specialPlan.isOpen && !isSourceSpcialTimes) ||
+                              (createForm.specialPlan.isOpen && !isSpecialDate ))">{{$t('common.confirmBtn')}}
+        </el-button>
+        <el-button type="primary"
+                   v-if="isChangeContent === 'volume'"
+                   @click="dialogVisible = false;addVolume()"
+                   :disabled="!createForm.name ||
+                    (!createVol.defaultVol.isOpen) && (!createVol.timingVol.isOpen) ||
+                    (createVol.timingVol.isOpen && !isChoiseVolumeWeekFn) ||
+                     (createVol.timingVol.isOpen && !isVolTimes)">{{$t('common.confirmBtn')}}</el-button>
       </div>
       <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'modify'" style="position: relative">
         <el-alert
           :title="$t('planManager.timeErrorTips')"
           type="error"
           show-icon
+          :closable="false"
           v-if="isborderColor"
           style="width: 300px;position: absolute;top: 0;right: 200px">
         </el-alert>
-        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'source'" @click="dialogVisible = false;addSource('true')" :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
-        <el-button type="primary" v-if="isChangeContent === 'volume'" @click="dialogVisible = false;addVolume('true')" :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
+        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false;isVolumeBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
+        <el-button type="primary"
+                   v-if="isChangeContent === 'source'"
+                   @click="dialogVisible = false;addSource('true')"
+                     :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
+        <el-button type="primary"
+                   v-if="isChangeContent === 'volume'"
+                   @click="dialogVisible = false;addVolume('true')"
+                   :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
       </div>
       <div slot="footer" class="dialog-footer" v-if="false">  <!--v-if="dialogKey === 'manager'"-->
         <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
@@ -809,7 +854,21 @@
         detailData:[],
         isManagerDel:false,
         isChangePlan: false,
+        isSourceTimes: true,
+        isSourceSpcialTimes:true,
+        isVolTimes: true,
+        isSpecialDate: true,
         isMarginTop:true,
+        isChoiseWeekly: true,
+        isChoiseSpecial: true,
+        isChoiseDefault: true,
+        isChoiseTiming: true,
+        isModifySourceWeeklyTime: true,
+        isModifySourceWeeklyDay: true,
+        isModifySourceSpecialTime: true,
+        isModifySourceSpecialDay: true,
+        isModifyVolumeTimingTime: true,
+        isModifyVolumeTimingDay: true,
         filterText: '',
         treeData: null,
         curofficeId:'',
@@ -817,6 +876,7 @@
         isofficeShow: false,
         isborderColor: false,
         isBorderColor: false,
+        isVolumeBorderColor: false,
         defaultProps: {
           children: 'children',
           label: 'name'
@@ -856,7 +916,7 @@
             planList: [
               {
                 id: Date.now(),
-                time: '',
+                time: new Date(1534262400000),
                 planType:"2",
                 operation: '2',
                 date: (function () {
@@ -951,6 +1011,36 @@
         'language',
         'officeId'
       ]),
+      isChoiseWeeklyFn() {
+          let isChoiseWeek = false
+          this.createForm.weeklyPlan.planList.filter(item => {
+              if(item.weeks.length >0){
+                isChoiseWeek = true
+              }else {
+                isChoiseWeek = false
+              }
+          })
+        if (isChoiseWeek === true){
+              return true
+        }else{
+            return false
+        }
+      },
+      isChoiseVolumeWeekFn(){
+        let isChoiseWeek = false
+        this.createVol.timingVol.volList.filter(item => {
+          if(item.weeks.length >0){
+            isChoiseWeek = true
+          }else {
+            isChoiseWeek = false
+          }
+        })
+        if (isChoiseWeek === true){
+          return true
+        }else{
+          return false
+        }
+      }
     },
     watch: {
       filterText(val) {
@@ -975,7 +1065,6 @@
     created() {
       this.listLoading = true
       getOfficeList().then(res => {
-        console.log(res);
         if (res.currentOffice.parentId) delete res.currentOffice.parentId; // 不能有parentId
         let arr = [res.currentOffice].concat(res.officeMsg);
         let tree = treeify(arr, 'id', 'parentId', 'children');
@@ -985,7 +1074,6 @@
         console.log(err)
       })
       getPlanList({pageSize: this.listQuery.limit}).then(res => {
-          console.log(res)
         this.count = res.count
         this.tableData = res.data
         this.listLoading = false
@@ -1001,7 +1089,6 @@
       handleSearch() {
         getPlanList({searchKey:this.searchVal}).then(res => {
           this.tableData = res.data
-          console.log(res)
         }).catch(err => {
           console.log(err)
         })
@@ -1010,17 +1097,14 @@
         this.listQuery.limit = val
         getPlanList({pageSize: this.listQuery.limit}).then(res => {
           this.tableData = res.data
-          console.log(res)
         }).catch(err => {
           console.log(err)
         })
       },
       handleCurrentChange(val) {
         this.listQuery.page = val
-        console.log(this.listQuery.page)
         getPlanList({pageNo: this.listQuery.page,pageSize: this.listQuery.limit}).then(res => {
           this.tableData = res.data
-          console.log(res)
         }).catch(err => {
           console.log(err)
         })
@@ -1033,267 +1117,21 @@
         this.curAccountInfo = info;
       },
       toggleDialog(title, data) {
-
-          this.isChangePlan = false
-          if(title === 'details'){
-            this.equipData = []
-            strategyTerminal({strategyId :data.id}).then(res => {
-              this.equipData = res.data
-              console.log(res)
-            }).catch(err => {
-              console.log(err)
-            })
-          }
-        if(title === 'manager'){
-              this.isChangeContent = 'source'
-          this.delPlan = ""
-          this.equipDatad = []
-          this.planId = ''
-          this.planId = data.id
-          strategyTerminal({strategyId :data.id}).then(res => {
-            this.equipDatad = res.data
-            console.log(res)
-            this.dialogVisible = true;
-          }).catch(err => {
-            console.log(err)
-          })
-        }
-          if(title === 'modify') {
-            this.createForm.weeklyPlan.planList = []
-            this.createForm.specialPlan.planList = []
-            this.createVol.defaultVol.volList = []
-            this.createVol.timingVol.volList = []
-              if(data.type === '1') {
-                this.isChangeContent = 'source'
-                this.createForm.type = data.type
-                this.createForm.name=data.name;
-                this.createForm.id = data.id
-
-                let choseType = '1'
-                for(let i=0,length=data.content.length;i<length;i++){
-                  for(let j =1,len=data.content.length;j<len;j++){
-                    if(data.content[i].planType != data.content[j].planType){
-                      choseType = '2'
-                    }
-                  }
-                }
-
-                if(choseType === '1'){
-                  for(let index in data.content){
-                    if(data.content[index].planType === '1'){
-                      //this.createForm.weeklyPlan.planList = []
-                      this.createForm.weeklyPlan.isOpen = true
-                      this.createForm.specialPlan.isOpen = false
-                      let operation = data.content[index].operation
-                      let planType = data.content[index].planType
-                      let time = data.content[index].time
-                      let weeks = data.content[index].weeks.split(',')
-                      let isAllCheckedWeek = false
-                      if(weeks.length === 7){
-                        isAllCheckedWeek = true;
-                      }else{
-                        isAllCheckedWeek = false;
-                      }
-                      let arr = {}
-                      arr.operation = operation
-                      arr.planType = planType
-                      arr.time = time
-                      arr.weeks = weeks
-                      arr.isAllCheckedWeek = isAllCheckedWeek
-                      this.createForm.weeklyPlan.planList.push(arr)
-
-                    }else {
-                      //this.createForm.specialPlan.planList=[]
-                      this.createForm.specialPlan.isOpen = true
-                      this.createForm.weeklyPlan.isOpen = false
-                      let operation = data.content[index].operation
-                      let planType = data.content[index].planType
-                      let time = data.content[index].time
-                      let date = data.content[index].date.split(',')
-                      let arr = {}
-                      arr.operation = operation
-                      arr.planType = planType
-                      arr.time = time
-                      arr.date = date
-                      this.createForm.specialPlan.planList.push(arr)
-                      //this.createForm.specialPlan.planList = data.content[index]
-                    }
-                  }
-                }else{
-                  for(let index in data.content){
-                    if(data.content[index].planType === '1'){
-                      this.createForm.weeklyPlan.isOpen = true
-                      let operation = data.content[index].operation
-                      let planType = data.content[index].planType
-                      let time = data.content[index].time
-                      let weeks = data.content[index].weeks.split(',')
-                      let isAllCheckedWeek = false
-                      if(weeks.length === 7){
-                        isAllCheckedWeek = true;
-                      }else{
-                        isAllCheckedWeek = false;
-                      }
-                      let arr = {}
-                      arr.operation = operation
-                      arr.planType = planType
-                      arr.time = time
-                      arr.weeks = weeks
-                      arr.isAllCheckedWeek = isAllCheckedWeek
-                      this.createForm.weeklyPlan.planList.push(arr)
-
-                    }else {
-                      this.createForm.specialPlan.isOpen = true
-                      let operation = data.content[index].operation
-                      let planType = data.content[index].planType
-                      let time = data.content[index].time
-                      let date = data.content[index].date.split(',')
-                      let arr = {}
-                      arr.operation = operation
-                      arr.planType = planType
-                      arr.time = time
-                      arr.date = date
-                      this.createForm.specialPlan.planList.push(arr)
-                      //this.createForm.specialPlan.planList = data.content[index]
-                    }
-                  }
-                }
-
-                if(!this.createForm.weeklyPlan.isOpen){
-                  this.createForm.weeklyPlan.planList.push( {
-                    id: Date.now(),
-                    isAllCheckedWeek: false,
-                    time: '',
-                    planType:"1",
-                    operation: '1',
-                    weeks: [],
-                  })
-                }else if(!this.createForm.specialPlan.isOpen){
-                  this.createForm.specialPlan.planList.push({
-                    id: Date.now(),
-                    isAllCheckedWeek: false,
-                    planType:"2",
-                    volume: 20,
-                    weeks: [],
-                    date: (function () {
-                      const end = new Date();
-                      const start = new Date();
-                      end.setTime(start.getTime() + 1000*60*60);
-                      return [start.getTime(), end.getTime()];
-                    })(),
-                  })
-                }
-
-                /* -------------------------------------------------------------------*/
-              }else {
-                this.isChangeContent = 'volume'
-                this.createForm.type = data.type
-                this.createForm.name=data.name;
-                this.createForm.id = data.id
-                let choseType = '1'
-               for(let i=0,length=data.content.length;i<length;i++){
-                   for(let j =1,len=data.content.length;j<len;j++){
-                       if(data.content[i].planType != data.content[j].planType){
-                           choseType = '2'
-                       }
-                   }
-               }
-               if(choseType === '1'){
-                 for(let index in data.content){
-                   if(data.content[index].planType ==='1'){
-                     this.createVol.defaultVol.isOpen = true
-                     this.createVol.timingVol.isOpen = false
-                     let planType = data.content[index].planType
-                     let volume = data.content[index].volume
-                     let arr = {}
-                     arr.planType = planType
-                     arr.volume = volume
-                     this.createVol.defaultVol.volList.push(arr)
-                     this.createVol.defaultVol.volList.push()
-                   }else {
-                     this.createVol.timingVol.isOpen = true
-                     this.createVol.defaultVol.isOpen = false
-                     let planType = data.content[index].planType
-                     let volume = data.content[index].volume
-                     let dated = data.content[index].date
-                     let date = dated.split(',')
-                     let weeks = data.content[index].weeks.split(',')
-                     let isAllCheckedWeek = false
-                     if(weeks.length === 7){
-                       isAllCheckedWeek = true;
-                     }else{
-                       isAllCheckedWeek = false;
-                     }
-                     let arr = {}
-                     arr.planType = planType
-                     arr.volume = volume
-                     arr.date = date
-                     arr.weeks = weeks
-                     arr.isAllCheckedWeek = isAllCheckedWeek
-                     this.createVol.timingVol.volList.push(arr)
-                   }
-                 }
-               }else{
-                 for(let index in data.content){
-                   if(data.content[index].planType ==='1'){
-                     this.createVol.defaultVol.isOpen = true
-                     let planType = data.content[index].planType
-                     let volume = data.content[index].volume
-                     let arr = {}
-                     arr.planType = planType
-                     arr.volume = volume
-                     this.createVol.defaultVol.volList.push(arr)
-                     this.createVol.defaultVol.volList.push()
-                   }else {
-                     this.createVol.timingVol.isOpen = true
-                     let planType = data.content[index].planType
-                     let volume = data.content[index].volume
-                     let dated = data.content[index].date
-                     let date = dated.split(',')
-                     let weeks = data.content[index].weeks.split(',')
-                     let isAllCheckedWeek = false
-                     if(weeks.length === 7){
-                       isAllCheckedWeek = true;
-                     }else{
-                       isAllCheckedWeek = false;
-                     }
-                     let arr = {}
-                     arr.planType = planType
-                     arr.volume = volume
-                     arr.date = date
-                     arr.weeks = weeks
-                     arr.isAllCheckedWeek = isAllCheckedWeek
-                     this.createVol.timingVol.volList.push(arr)
-                   }
-                 }
-               }
-                if(!this.createVol.defaultVol.isOpen){
-                  this.createVol.defaultVol.volList.push({
-                    id: Date.now(),
-                    planType:"1",
-                    volume: 20,
-                  })
-                }else if(!this.createVol.timingVol.isOpen){
-                  this.createVol.timingVol.volList.push({
-                    id: Date.now(),
-                    isAllCheckedWeek: false,
-                    planType:"2",
-                    volume: 20,
-                    weeks: [],
-                    date: (function () {
-                      const end = new Date();
-                      const start = new Date();
-                      end.setTime(start.getTime() + 1000*60*60);
-                      return [start.getTime(), end.getTime()];
-                    })(),
-                  })
-                }
-              }
-          }
-          if(title === 'create'){
+        this.isChangePlan = false
+        switch (title) {
+          case 'create':
+            this.createForm.name = ''
+            this.createForm.weeklyPlan.isOpen = false
+            this.createForm.specialPlan.isOpen = false
+            this.createVol.defaultVol.isOpen = false
+            this.createVol.timingVol.isOpen = false
+            this.dialogKey = 'create';
+            this.dialogTitle = this.$t('planManager.newTimingPlan');
+            this.dialogPlanInfo = null;
             this.createForm.specialPlan.planList = [
               {
                 id: Date.now(),
-                time: '',
+                time: new Date(1534262400000),
                 planType:"2",
                 operation: '2',
                 date: (function () {
@@ -1309,18 +1147,18 @@
               {
                 id: Date.now(),
                 isAllCheckedWeek: false,
-                time: '',
+                time: new Date(1534262400000),
                 planType:"1",
                 operation: '1',
                 weeks: [],
               }
             ]
             this.createVol.defaultVol.volList = [
-                {
-              id: Date.now(),
-              planType:"1",
-              volume: 20,
-            }]
+              {
+                id: Date.now(),
+                planType:"1",
+                volume: 20,
+              }]
             this.createVol.timingVol.volList = [
               {
                 id: Date.now(),
@@ -1336,18 +1174,6 @@
                 })(),
               }
             ]
-          }
-
-        switch (title) {
-          case 'create':
-            this.createForm.name = ''
-            this.createForm.weeklyPlan.isOpen = false
-            this.createForm.specialPlan.isOpen = false
-            this.createVol.defaultVol.isOpen = false
-            this.createVol.timingVol.isOpen = false
-            this.dialogKey = 'create';
-            this.dialogTitle = this.$t('planManager.newTimingPlan');
-            this.dialogPlanInfo = null;
             break;
           case 'details':
             this.dialogKey = 'details';
@@ -1355,6 +1181,12 @@
             this.dialogPlanInfo = JSON.parse(JSON.stringify(data));
             this.funcType = data.type;
             this.funcName = data.name;
+            this.equipData = []
+            strategyTerminal({strategyId :data.id}).then(res => {
+              this.equipData = res.data
+            }).catch(err => {
+              console.log(err)
+            })
 
             if(data.type === '2'){
               this.detailData = []
@@ -1410,23 +1242,255 @@
               }
             }
 
-
-           /* let date = data.content.date
-            console.log('kddlk')
-            console.log(data.content)
-            this.detailData = data.content;*/
-
             break;
           case 'modify':
             this.dialogKey = 'modify';
             this.dialogTitle = this.$t('planManager.modifyTimingPlan');
             this.dialogPlanInfo = JSON.parse(JSON.stringify(data));
+            this.createForm.weeklyPlan.planList = []
+            this.createForm.specialPlan.planList = []
+            this.createVol.defaultVol.volList = []
+            this.createVol.timingVol.volList = []
+            if(data.type === '1') {
+              this.isChangeContent = 'source'
+              this.createForm.type = data.type
+              this.createForm.name=data.name;
+              this.createForm.id = data.id
+              let choseType = '1'
+              for(let i=0,length=data.content.length;i<length;i++){
+                for(let j =1,len=data.content.length;j<len;j++){
+                  if(data.content[i].planType != data.content[j].planType){
+                    choseType = '2'
+                  }
+                }
+              }
+              if(choseType === '1'){
+                for(let index in data.content){
+                  if(data.content[index].planType === '1'){
+                    //this.createForm.weeklyPlan.planList = []
+                    this.createForm.weeklyPlan.isOpen = true
+                    this.createForm.specialPlan.isOpen = false
+                    let operation = data.content[index].operation
+                    let planType = data.content[index].planType
+                    let time = new Date(data.content[index].time)
+                    let weeks = data.content[index].weeks.split(',')
+                    let isAllCheckedWeek = false
+                    if(weeks.length === 7){
+                      isAllCheckedWeek = true;
+                    }else{
+                      isAllCheckedWeek = false;
+                    }
+                    let arr = {}
+                    arr.operation = operation
+                    arr.planType = planType
+                    arr.time = time
+                    arr.weeks = weeks
+                    arr.isAllCheckedWeek = isAllCheckedWeek
+                    this.createForm.weeklyPlan.planList.push(arr)
+
+                  }else {
+                    //this.createForm.specialPlan.planList=[]
+                    this.createForm.specialPlan.isOpen = true
+                    this.createForm.weeklyPlan.isOpen = false
+                    let operation = data.content[index].operation
+                    let planType = data.content[index].planType
+                    let time = new Date(data.content[index].time)
+                    let date = data.content[index].date.split(',')
+                    let arr = {}
+                    arr.operation = operation
+                    arr.planType = planType
+                    arr.time = time
+                    arr.date = date
+                    this.createForm.specialPlan.planList.push(arr)
+                    //this.createForm.specialPlan.planList = data.content[index]
+                  }
+                }
+              }else{
+                for(let index in data.content){
+                  if(data.content[index].planType === '1'){
+                    this.createForm.weeklyPlan.isOpen = true
+                    let operation = data.content[index].operation
+                    let planType = data.content[index].planType
+                    let time = new Date(data.content[index].time)
+                    let weeks = data.content[index].weeks.split(',')
+                    let isAllCheckedWeek = false
+                    if(weeks.length === 7){
+                      isAllCheckedWeek = true;
+                    }else{
+                      isAllCheckedWeek = false;
+                    }
+                    let arr = {}
+                    arr.operation = operation
+                    arr.planType = planType
+                    arr.time = time
+                    arr.weeks = weeks
+                    arr.isAllCheckedWeek = isAllCheckedWeek
+                    this.createForm.weeklyPlan.planList.push(arr)
+
+                  }else {
+                    this.createForm.specialPlan.isOpen = true
+                    let operation = data.content[index].operation
+                    let planType = data.content[index].planType
+                    let time = new Date(data.content[index].time)
+                    let date = data.content[index].date.split(',')
+                    let arr = {}
+                    arr.operation = operation
+                    arr.planType = planType
+                    arr.time = time
+                    arr.date = date
+                    this.createForm.specialPlan.planList.push(arr)
+                    //this.createForm.specialPlan.planList = data.content[index]
+                  }
+                }
+              }
+
+              if(!this.createForm.weeklyPlan.isOpen){
+                this.createForm.weeklyPlan.planList.push( {
+                  id: Date.now(),
+                  isAllCheckedWeek: false,
+                  time: new Date(1534262400000),
+                  planType:"1",
+                  operation: '1',
+                  weeks: [],
+                })
+              }else if(!this.createForm.specialPlan.isOpen){
+                this.createForm.specialPlan.planList.push( {
+                  id: Date.now(),
+                  time: new Date(1534262400000),
+                  planType:"2",
+                  operation: '2',
+                  date: (function () {
+                    const end = new Date();
+                    const start = new Date();
+                    end.setTime(start.getTime() + 3600 * 1000 * 24);
+                    return [start.getTime(), end.getTime()];
+                  })(),
+
+                })
+              }
+
+              /* -------------------------------------------------------------------*/
+            }else {
+              this.isChangeContent = 'volume'
+              this.createForm.type = data.type
+              this.createForm.name=data.name;
+              this.createForm.id = data.id
+              let choseType = '1'
+              for(let i=0,length=data.content.length;i<length;i++){
+                for(let j =1,len=data.content.length;j<len;j++){
+                  if(data.content[i].planType != data.content[j].planType){
+                    choseType = '2'
+                  }
+                }
+              }
+              if(choseType === '1'){
+                for(let index in data.content){
+                  if(data.content[index].planType ==='1'){
+                    this.createVol.defaultVol.isOpen = true
+                    this.createVol.timingVol.isOpen = false
+                    let planType = data.content[index].planType
+                    let volume = data.content[index].volume
+                    let arr = {}
+                    arr.planType = planType
+                    arr.volume = volume
+                    this.createVol.defaultVol.volList.push(arr)
+                    this.createVol.defaultVol.volList.push()
+                  }else {
+                    this.createVol.timingVol.isOpen = true
+                    this.createVol.defaultVol.isOpen = false
+                    let planType = data.content[index].planType
+                    let volume = data.content[index].volume
+                    let dated = data.content[index].date
+                    let date = dated.split(',')
+                    let weeks = data.content[index].weeks.split(',')
+                    let isAllCheckedWeek = false
+                    if(weeks.length === 7){
+                      isAllCheckedWeek = true;
+                    }else{
+                      isAllCheckedWeek = false;
+                    }
+                    let arr = {}
+                    arr.planType = planType
+                    arr.volume = volume
+                    arr.date = date
+                    arr.weeks = weeks
+                    arr.isAllCheckedWeek = isAllCheckedWeek
+                    this.createVol.timingVol.volList.push(arr)
+                  }
+                }
+              }else{
+                for(let index in data.content){
+                  if(data.content[index].planType ==='1'){
+                    this.createVol.defaultVol.isOpen = true
+                    let planType = data.content[index].planType
+                    let volume = data.content[index].volume
+                    let arr = {}
+                    arr.planType = planType
+                    arr.volume = volume
+                    this.createVol.defaultVol.volList.push(arr)
+                    this.createVol.defaultVol.volList.push()
+                  }else {
+                    this.createVol.timingVol.isOpen = true
+                    let planType = data.content[index].planType
+                    let volume = data.content[index].volume
+                    let dated = data.content[index].date
+                    let date = dated.split(',')
+                    let weeks = data.content[index].weeks.split(',')
+                    let isAllCheckedWeek = false
+                    if(weeks.length === 7){
+                      isAllCheckedWeek = true;
+                    }else{
+                      isAllCheckedWeek = false;
+                    }
+                    let arr = {}
+                    arr.planType = planType
+                    arr.volume = volume
+                    arr.date = date
+                    arr.weeks = weeks
+                    arr.isAllCheckedWeek = isAllCheckedWeek
+                    this.createVol.timingVol.volList.push(arr)
+                  }
+                }
+              }
+              if(!this.createVol.defaultVol.isOpen){
+                this.createVol.defaultVol.volList.push({
+                  id: Date.now(),
+                  planType:"1",
+                  volume: 20,
+                })
+              }else if(!this.createVol.timingVol.isOpen){
+                this.createVol.timingVol.volList.push({
+                  id: Date.now(),
+                  isAllCheckedWeek: false,
+                  planType:"2",
+                  volume: 20,
+                  weeks: [],
+                  date: (function () {
+                    const end = new Date();
+                    const start = new Date();
+                    end.setTime(start.getTime() + 1000*60*60);
+                    return [start.getTime(), end.getTime()];
+                  })(),
+                })
+              }
+            }
             break;
           case 'manager':
             this.dialogKey = 'manager';
             this.dialogTitle = this.$t('planManager.deviceManagement');
             this.dialogPlanInfo = JSON.parse(JSON.stringify(data));
             this.createForm.id = data.id
+            this.isChangeContent = 'source'
+            this.delPlan = ""
+            this.equipDatad = []
+            this.planId = ''
+            this.planId = data.id
+            strategyTerminal({strategyId :data.id}).then(res => {
+              this.equipDatad = res.data
+              this.dialogVisible = true;
+            }).catch(err => {
+              console.log(err)
+            })
             break;
           default:
             this.dialogKey = '--';
@@ -1441,7 +1505,7 @@
           this.isChangeContent = type
       },
       emptySetting() {
-          this.isChangePlan = true
+        this.isChangePlan = true
         this.createVol.timingVol.isOpen = false
         this.createVol.defaultVol.isOpen = false
         this.createForm.weeklyPlan.isOpen = false
@@ -1452,14 +1516,14 @@
           id: Date.now(),
           isAllCheckedWeek: false,
           action: '1',
-          time: '',
+          time: new Date(1534262400000),
           weeks: [],
         })
         this.createForm.specialPlan.planList.splice('');
         this.createForm.specialPlan.planList.push({
           id: Date.now(),
           action: '1',
-          time: '',
+          time: new Date(1534262400000),
           date: (function () {
             const end = new Date();
             const start = new Date();
@@ -1531,22 +1595,36 @@
       },
 
       selectPlanHandle(s) {
-          console.log(s)
         this.delPlan = ""
         for (let key in s) {
           this.delPlan += s[key].id
         }
         this.equipDatadCopy = []
         for(let k in s){
-            console.log()
           this.equipDatadCopy.push(s[k]);
         }
 
-
-          console.log(this.equipDatadCopy)
       },
       changeAllWeeksHandle(arg, id) {
           this.isChangePlan = true
+          /*if(this.createForm.weeklyPlan.planList.length > 1){
+            if(arg[0] === true){
+              this.isWeeks = true;
+              this.isModifySourceWeeklyDay = false
+            }else{
+              this.isWeeks = false;
+              this.isModifySourceWeeklyDay = true
+            }
+          }else {
+            if(arg[0] === true){
+              this.isWeeks = true;
+              this.isModifySourceWeeklyDay = false
+            }else{
+              this.isWeeks = false;
+              this.isModifySourceWeeklyDay = true
+            }
+          }*/
+
           if(arg[0] ===true){
             this.createForm.weeklyPlan.planList[id].isAllCheckedWeek = true;
             this.createForm.weeklyPlan.planList[id].weeks.push('1','2','3','4','5','6','7')
@@ -1564,17 +1642,17 @@
         }
       },
       changeAllVolHandle(arg, id) {
-        this.isChangePlan = true
+        this.isChangePlan = true;
         if(arg[0] ===true){
           this.createVol.timingVol.volList[id].isAllCheckedWeek = true;
-          this.createVol.timingVol.volList[id].weeks.push('1','2','3','4','5','6','7')
+          this.createVol.timingVol.volList[id].weeks.push('1','2','3','4','5','6','7');
         }else {
           this.createVol.timingVol.volList[id].isAllCheckedWeek = false;
-          this.createVol.timingVol.volList[id].weeks.splice('')
+          this.createVol.timingVol.volList[id].weeks.splice('');
         }
       },
       changeVolHandle(arg, id) {
-        this.isChangePlan = true
+        this.isChangePlan = true;
         if(arg[0].length< 7){
           this.createVol.timingVol.volList[id].isAllCheckedWeek = false;
         }else {
@@ -1586,7 +1664,7 @@
           this.createForm.weeklyPlan.planList.push({
             id: Date.now(),
             isAllCheckedWeek: false,
-            time: '',
+            time: new Date(1534262400000),
             planType:"1",
             operation: '1',
             weeks: [],
@@ -1600,7 +1678,7 @@
         this.isChangePlan = true
         this.createForm.specialPlan.planList.push({
           id: Date.now(),
-          time: '',
+          time: new Date(1534262400000),
           planType:"2",
           operation: '2',
           date: (function () {
@@ -1637,6 +1715,13 @@
       },
       changeVolumeTimePicker(val) {
           this.isChangePlan = true
+        if(val === null){
+           this.isVolTimes = false
+           this.isModifyVolumeTimingTime = false
+        }else{
+          this.isVolTimes = true
+          this.isModifyVolumeTimingDay = true
+        }
       },
       addDevice(){
         this.dialogTitle = this.$t('planManager.addDevice');
@@ -1650,10 +1735,18 @@
           this.isManagerDel = true
       },
       addSource(type){
-          //1534262402000 00:00
+        //1534262402000 00:00
+        this.isVolumeBorderColor = false
+        let weeklyTimeArr = []
+        this.createForm.weeklyPlan.planList.filter(item => {
+          weeklyTimeArr.push(new Date(item.time).getTime())
+        })
+        weeklyTimeArr.sort(function (a,b) {
+          return a-b;
+        })
         const gthat = this
         let trueOrFalse = '1';
-        console.log(this.createForm.weeklyPlan.planList)
+        let SpecialTrueOrFalse = 'false'
         if(this.createForm.weeklyPlan.planList.length > 1){
           for(let i = 0,length = this.createForm.weeklyPlan.planList.length;i<length;i++){
             for(let j = i+1,len = this.createForm.weeklyPlan.planList.length;j<len;j++){
@@ -1661,11 +1754,14 @@
                 let that = this
                 $.each(gthat.createForm.weeklyPlan.planList[j].weeks,function () {
                   if(that === this){
-                    if(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time) > gthat.createForm.weeklyPlan.planList[j].time){
-                      console.log(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time))
+                    if(gthat.DateAdd('m',5,weeklyTimeArr[i]) > weeklyTimeArr[j]){
                       trueOrFalse = '2'
                       gthat.dialogVisible = true
                       gthat.isborderColor = true
+                    }else {
+                      trueOrFalse = '1'
+                      gthat.dialogVisible = false
+                      gthat.isborderColor = false
                     }
                   }
                 })
@@ -1673,7 +1769,7 @@
             }
           }
         }
-        if(this.createForm.specialPlan.planList.length > 1){
+        /*if(this.createForm.specialPlan.planList.length > 1){
           for(let i = 0,length = this.createForm.specialPlan.planList.length;i<length;i++){
             for(let j = i+1,len = this.createForm.specialPlan.planList.length;j<len;j++){
               if(gthat.DateAdd('m',5,gthat.createForm.specialPlan.planList[i].time) > gthat.createForm.specialPlan.planList[j].time){
@@ -1685,15 +1781,65 @@
               }
             }
           }
+        }*/
+
+        let weeklySpecialArr = []
+        this.createForm.specialPlan.planList.filter(item => {
+          weeklySpecialArr.push(item.date)
+        })
+        let weeklySpecialTimeArr = []
+        this.createForm.specialPlan.planList.filter(item => {
+          weeklySpecialTimeArr.push(new Date(item.time).getTime())
+        })
+        weeklySpecialTimeArr.sort(function (a,b) {
+          return a-b;
+        })
+        if (weeklySpecialArr.length > 1){
+            let iscopyDate = false
+            for(let i = 0,length = weeklySpecialArr.length;i<length;i++){
+                for(let j = i+1,len = weeklySpecialArr.length;j<len;j++){
+                  if( weeklySpecialArr[j][0] >  weeklySpecialArr[i][0] &&  weeklySpecialArr[j][0] < weeklySpecialArr[i][1]){
+                    iscopyDate = true
+                  }else if( weeklySpecialArr[j][0] <  weeklySpecialArr[i][0] &&  weeklySpecialArr[j][1] > weeklySpecialArr[i][0]){
+                    iscopyDate = true
+                  }else if( weeklySpecialArr[j][0] <  weeklySpecialArr[i][1] &&  weeklySpecialArr[j][1] > weeklySpecialArr[i][1]){
+                    iscopyDate = true
+                  }else {
+                    iscopyDate = false
+                  }
+
+                }
+            }
+            if(iscopyDate === true){
+              for (let i = 0,length = weeklySpecialTimeArr.length;i<length;i++){
+                for (let j = i+1,len = weeklySpecialTimeArr.length;j<len;j++){
+                  if(gthat.DateAdd('m',5,weeklySpecialTimeArr[i]) > weeklySpecialTimeArr[j]){
+                    SpecialTrueOrFalse = 'true'
+                    gthat.dialogVisible = true
+                    gthat.isBorderColor = true
+                  }else {
+                    SpecialTrueOrFalse =  'false'
+                    if(trueOrFalse === '1'){
+                      gthat.dialogVisible = false
+                      gthat.isBorderColor = false
+                    }else {
+                      gthat.dialogVisible = true
+                      gthat.isBorderColor = true
+                    }
+
+                  }
+                }
+              }
+            }
         }
-if(trueOrFalse === '1'){
+
+     if(trueOrFalse === '1' && SpecialTrueOrFalse === 'false'){
         var content = [];
         if (this.createForm.weeklyPlan.isOpen){
         for(let key in this.createForm.weeklyPlan.planList){
           /*delete this.createForm.weeklyPlan.planList[key].id
           delete this.createForm.weeklyPlan.planList[key].isAllCheckedWeek*/
           let obj = {}
-          console.log(this.DateAdd('m',5,this.createForm.weeklyPlan.planList[key].time))
           for(let k in this.createForm.weeklyPlan.planList){
              if(!this.createForm.weeklyPlan.planList[k].time || this.createForm.weeklyPlan.planList[k].weeks.length ===0){
                this.$message.error(this.$t("common.failTips"));
@@ -1736,7 +1882,7 @@ if(trueOrFalse === '1'){
         }
         }
         if(type){
-          saveStrategy({
+         saveStrategy({
             strategyId:this.createForm.id,
             name: this.createForm.name,
             content:JSON.stringify(content),
@@ -1744,12 +1890,23 @@ if(trueOrFalse === '1'){
           }).then(res => {
             this.isborderColor = false
             this.isBorderColor = false
-            this.addSourceSuccess()
-            console.log(res)
+            this.isVolumeBorderColor = false
+            this.$message({
+               message: this.$t('common.operationSucceeds'),
+               type: 'success'
+             });
+           getPlanList({searchKey:this.searchVal,pageSize: this.listQuery.limit}).then(res => {
+             this.tableData = res.data
+           }).catch(err => {
+             console.log(err)
+           })
+
           }).catch(err => {
             this. delerrored()
             console.log(err)
           })
+
+
         }else {
           saveStrategy({
             name: this.createForm.name,
@@ -1758,8 +1915,8 @@ if(trueOrFalse === '1'){
           }).then(res => {
             this.isborderColor = false
             this.isBorderColor = false
+            this.isVolumeBorderColor = false
             this.addSourceSuccess()
-            console.log(res)
           }).catch(err => {
             this. delerrored()
             console.log(err)
@@ -1768,27 +1925,61 @@ if(trueOrFalse === '1'){
         this.dialogVisible = false
       }},
       addVolume(type) {
+        let volumeTimeArr = []
+        this.createVol.timingVol.volList.filter(item => {
+          volumeTimeArr.push(item.date)
+        })
         const gthat = this
         let trueOrFalse = '1';
+        let isVolumeDayCopy = false
         for(let i = 0,length = this.createVol.timingVol.volList.length;i<length;i++){
           for(let j = i+1,len = this.createVol.timingVol.volList.length;j<len;j++){
-
             $.each(gthat.createVol.timingVol.volList[i].weeks,function () {
               let that = this
               $.each(gthat.createVol.timingVol.volList[j].weeks,function () {
                 if(that === this){
-                    console.log(gthat.createVol.timingVol.volList[i].date)
-                  console.log(gthat.DateAdd('m',5,gthat.createVol.timingVol.volList[i].date[1]),gthat.createVol.timingVol.volList[j].date[0])
-                  if(gthat.DateAdd('m',5,Number(gthat.createVol.timingVol.volList[i].date[1])) > gthat.createVol.timingVol.volList[j].date[0]){
+                 /* if(gthat.DateAdd('m',5,Number(gthat.createVol.timingVol.volList[i].date[1])) > gthat.createVol.timingVol.volList[j].date[0]){
                     trueOrFalse = '2'
                     gthat.dialogVisible = true
                     gthat.isborderColor = true
-                  }
+                  }*/
+                 isVolumeDayCopy = true
+                }else {
+                    isVolumeDayCopy = false
                 }
               })
             })
           }
         }
+        let isVolumeTimeCopy = false
+        if(isVolumeDayCopy === true){
+          for(let i = 0,length = volumeTimeArr.length;i<length;i++){
+            for(let j = i+1,len = volumeTimeArr.length;j<len;j++){
+              if( volumeTimeArr[j][0] >  volumeTimeArr[i][0] &&  volumeTimeArr[j][0] < volumeTimeArr[i][1]){
+                isVolumeTimeCopy = true
+              }else if( volumeTimeArr[j][0] <  volumeTimeArr[i][0] &&  volumeTimeArr[j][1] > volumeTimeArr[i][0]){
+                isVolumeTimeCopy = true
+              }else if( volumeTimeArr[j][0] <  volumeTimeArr[i][1] &&  volumeTimeArr[j][1] > volumeTimeArr[i][1]){
+                isVolumeTimeCopy = true
+              }else {
+                isVolumeTimeCopy = false
+              }
+            }
+          }
+        }else {
+          isVolumeTimeCopy = false
+        }
+        if(isVolumeTimeCopy === true){
+          trueOrFalse = '2'
+          //出现提示框以及标红
+          this.dialogVisible = true
+          this.isVolumeBorderColor = true
+        }else {
+          trueOrFalse = '1'
+          this.dialogVisible = false
+          this.isVolumeBorderColor = false
+        }
+
         if(trueOrFalse === '1'){
         var content = []
         if(this.createVol.defaultVol.isOpen){
@@ -1831,12 +2022,21 @@ if(trueOrFalse === '1'){
           }).then(res => {
             this.isborderColor = false
             this.isBorderColor = false
-            this.addSourceSuccess()
-            console.log(res)
+            this.isVolumeBorderColor = false
+            this.$message({
+              message: this.$t('common.operationSucceeds'),
+              type: 'success'
+            });
+            getPlanList({searchKey:this.searchVal,pageSize: this.listQuery.limit}).then(res => {
+              this.tableData = res.data
+            }).catch(err => {
+              console.log(err)
+            })
           }).catch(err => {
             this. delerrored()
             console.log(err)
           })
+
         }else {
           saveStrategy({
             name: this.createForm.name,
@@ -1845,16 +2045,13 @@ if(trueOrFalse === '1'){
           }).then(res => {
             this.isborderColor = false
             this.isBorderColor = false
-
+            this.isVolumeBorderColor = false
             this.addSourceSuccess()
-            console.log(res)
           }).catch(err => {
             this. delerrored()
             console.log(err)
           })
         }
-
-
       }},
       deletePlan(){
         this.$confirm(this.$t('accountManager.isDeletePlan'),this.$t('accountManager.attention'), {
@@ -1864,7 +2061,6 @@ if(trueOrFalse === '1'){
         }).then(() => {
           delStrategys(this.idstr).then(res => {
             this.addSourceSuccess()
-            console.log(res)
           }).catch(err => {
             this.delerrored()
             console.log(err)
@@ -1882,8 +2078,8 @@ if(trueOrFalse === '1'){
       },
 
       changezIndex(){
-          this.isMarginTop = true
-          this.wIndex = 1200
+        this.isMarginTop = true
+        this.wIndex = 1200
         this.zIndex = 1;
         this.isofficeShow = false
       },
@@ -1892,7 +2088,6 @@ if(trueOrFalse === '1'){
       },
       clickInput() {
          this.isChangePlan = true
-
       },
       changePlanType() {
         this.isChangePlan = true
@@ -1905,7 +2100,6 @@ if(trueOrFalse === '1'){
 
       },
       checkOfficeHandle(data, checkedMap) {
-        console.log(8126, this.equipDatad, this.officeData)
         let checkedList = this.$refs['officeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
         if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
           this.zIndex = 1200;
@@ -1971,11 +2165,16 @@ if(trueOrFalse === '1'){
         }
       },
       specialPlanChange(date){
-        console.log(date)
-        if(date[0]<Date.now()){
-            console.log('jfdlf')
-          this.createForm.specialPlan.planList.date=[Date.now(),Date.now()]
+        //console.log(date)
+        if(!date){
+            this.isSpecialDate = false
+        }else{
+          this.isSpecialDate = true
         }
+//        if(date[0]<Date.now()){
+//            //console.log('jfdlf')
+//          this.createForm.specialPlan.planList.date=[Date.now(),Date.now()]
+//        }
       },
       delDevice(){
         if(this.equipDatadCopy) {
@@ -1995,7 +2194,6 @@ if(trueOrFalse === '1'){
         //this.totalOfficeDataList = this.officeVal;
         let officeV = this.officeVal.join();
         strategyRelatedTerminal({strategyId:this.createForm.id,terminalIds:officeV}).then(res => {
-         console.log(res)
           this.$message({
             message: this.$t('common.operationSucceeds'),
             type: 'success'
@@ -2008,7 +2206,6 @@ if(trueOrFalse === '1'){
           this.equipDatad = []
           strategyTerminal({strategyId :this.planId}).then(res => {
             this.equipDatad = res.data
-            console.log(res)
           }).catch(err => {
             console.log(err)
           })
@@ -2020,13 +2217,7 @@ if(trueOrFalse === '1'){
         this.isAddDevice = false
 
       },
-      timeFocusFn() {
-        /*this.isborderColor = false
-         this.isBorderColor = false*/
-
-      },
       disassociation() {
-          console.log('jfdjf')
           /*for (let k in this.equipDatadCopy){
               for (let j in this.equipDatad){
                   console.log(this.equipDatad[j].id)
@@ -2064,41 +2255,19 @@ if(trueOrFalse === '1'){
 
       },
       changeFn(data) {
-          /*const gthat = this
-          console.log(data)
-          console.log(this.createForm.weeklyPlan.planList)
-        if(this.createForm.weeklyPlan.planList.length > 1){
-          for(let i = 0,length = this.createForm.weeklyPlan.planList.length;i<length;i++){
-            for(let j = i+1,len = this.createForm.weeklyPlan.planList.length;j<len;j++){
-              /!*if(this.createForm.weeklyPlan.planList[i].weeks === this.createForm.weeklyPlan.planList[j].weeks){
-                  console.log('重复了')
-              }*!/
+        if(data ===  null){
+          this.isSourceTimes = false
+        }else{
+            this.isSourceTimes = true
+        }
+      },
+      changeSpecialFn(data){
 
-             /!* this.createForm.weeklyPlan.planList[i].weeks.forEach(function(val,index,arr){
-                this.createForm.weeklyPlan.planList[j].weeks.forEach(function(v,i,a){
-                    console.log(val,v)
-                })
-              })*!/
-            $.each(gthat.createForm.weeklyPlan.planList[i].weeks,function () {
-                let that = this
-              $.each(gthat.createForm.weeklyPlan.planList[j].weeks,function () {
-                if(that === this){
-                    console.log('日期重复了')
-                  if(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time) > gthat.createForm.weeklyPlan.planList[j].time){
-                        console.log(gthat.DateAdd('m',5,gthat.createForm.weeklyPlan.planList[i].time))
-                        console.log('时间重复了')
-
-                  }
-
-                }
-              })
-
-            })
-            }
-          }
-        }*/
-
-
+        if(data ===  null){
+          this.isSourceSpcialTimes = false
+        }else{
+          this.isSourceSpcialTimes = true
+        }
       },
 
       handleChange(val, f, k) {
@@ -2108,14 +2277,70 @@ if(trueOrFalse === '1'){
            this.isAddDevice = false
          }
       },
+
       isShowFn() {
         this.dialogKey = "manager";
         this.dialogTitle = this.$t('planManager.deviceManagement');
 
       },
       timePickFn(){
-          console.log('123456789')
           this.isborderColor = false
+      },
+      changeModifySourceWeeklyTimes(data) {
+        this.isChangePlan = true
+        if(data ===null) {
+              this.isModifySourceWeeklyTime = false
+        }else  {
+          this.isModifySourceWeeklyTime = true
+        }
+      },
+      changeChoiseWeekly(data) {
+        this.isChangePlan = true
+        if(data === true){
+            this.isChoiseWeekly = true
+        }else{
+            this.isChoiseWeekly = false
+        }
+      },
+      changeChoiseSpecial(data) {
+        this.isChangePlan = true
+        if(data === true){
+          this.isChoiseSpecial = true
+        }else{
+          this.isChoiseSpecial = false
+        }
+      },
+      changeSpecialTime(data) {
+        this.isChangePlan = true
+        if(data ===null) {
+          this.isModifySourceSpecialTime = false
+        }else  {
+          this.isModifySourceSpecialTime = true
+        }
+      },
+      changeSpecialDay(data) {
+        this.isChangePlan = true
+        if(data ===null) {
+          this.isModifySourceSpecialDay = false
+        }else  {
+          this.isModifySourceSpecialDay = true
+        }
+      },
+      changeChoiseDefaultVolume(data) {
+        this.isChangePlan = true
+        if(data === true){
+          this.isChoiseDefault = true
+        }else{
+          this.isChoiseDefault = false
+        }
+      },
+      changeChoiseTimingVolume(data) {
+        this.isChangePlan = true
+        if(data === true){
+          this.isChoiseTiming = true
+        }else{
+          this.isChoiseTiming = false
+        }
       },
 
    DateAdd(interval, number, date) {
@@ -2175,7 +2400,6 @@ if(trueOrFalse === '1'){
             type: 'success'
           },
           getPlanList({pageSize: this.listQuery.limit}).then(res => {
-            console.log(res)
             this.count = res.count
             this.tableData = res.data
             this.listLoading = false
@@ -2230,7 +2454,7 @@ if(trueOrFalse === '1'){
     .total {
       flex: 1;
     }
-    .selected{
+    .selected {
       flex:1;
     }
     .search {

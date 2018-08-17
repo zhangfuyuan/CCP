@@ -41,8 +41,10 @@ export function validateEmail(email) {
   return re.test(email)
 }
 
-/* ip */
+/* ip 或 域名 */
 export function validateIP(ip) {
-  const reg = /^([a-zA-Z]{2,}:\/\/)?(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(:\d{1,4})?$/
-  return reg.test(ip)
+  const ipReg = /^([a-zA-Z]{2,}:\/\/)?(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])(:\d{1,4})?/;
+  const domainReg = /^([a-zA-Z]{2,}:\/\/)?[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/;
+
+  return ipReg.test(ip) || domainReg.test(ip)
 }

@@ -1,83 +1,127 @@
 ﻿<template>
   <div class="login-container">
-    <el-form class="login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
-      <div style="position: relative;top: 0;transition: top .5s ease-out;" :class="{ 'show-verify-tips': isVerifyFailed }">
-        <!--<div class="logo">-->
+    <template v-if="isEnterLogin">
+      <el-form class="login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
+        <div style="position: relative;top: 0;transition: top .5s ease-out;" :class="{ 'show-verify-tips': isVerifyFailed }">
+          <!--<div class="logo">-->
           <!--<img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" />-->
-        <!--</div>-->
-        <h3 class="title">{{$t('login.title')}}</h3>
-        <div v-show="isVerifyFailed">
-          <el-alert
-            :title="verifyFailedTips"
-            type="error"
-            show-icon
-            :closable="false" style="width: 100%;height: 47px;position: absolute;bottom: -68px;" >
-          </el-alert>
-        </div>
-      </div>
-      <el-form-item prop="username" :class="{ 'error': isUsernameNull }">
-        <span class="svg-container svg-container_login">
-          <svg-icon icon-class="user" />
-        </span>
-        <el-input name="username"
-                  type="text"
-                  v-model="loginForm.username"
-                  autoComplete="on"
-                  autofocus
-                  :placeholder="$t('login.usernamePlaceholder')"
-                  :class="{ 'error': isUsernameNull }"
-                  @focus="clearUsername"
-                  @keyup.enter.native="handleLogin"></el-input>
-      </el-form-item>
-      <el-form-item prop="password" :class="{ 'error': isPasswordNull }">
-        <span class="svg-container">
-          <svg-icon icon-class="password"></svg-icon>
-        </span>
-        <el-input name="password"
-                  :type="pwdType"
-                  @keyup.enter.native="handleLogin"
-                  v-model="loginForm.password"
-                  autoComplete="on"
-                  :placeholder="$t('login.passwordPlaceholder')"
-                  :class="{ 'error': isPasswordNull }" @focus="clearPassword"></el-input>
-          <!--<span class="show-pwd" @click="showPwd"><svg-icon icon-class="eye" /></span>-->
-      </el-form-item>
-      <el-collapse-transition>
-        <div class="code-box" v-show="isVerifyNumThan3">
-          <el-form-item prop="code" :class="{ 'error': isCodeNull }" style="width: 65%;">
-                <el-input class="code-input"
-                          name="code"
-                          type="text"
-                          v-model="loginForm.code"
-                          :placeholder="$t('login.codePlaceholder')"
-                          :class="{ 'error': isCodeNull }"
-                          @focus="clearCode"
-                          @keyup.enter.native="handleLogin"></el-input>
-          </el-form-item>
-          <div class="code-img-box"
-               style="display: flex;height: 50px;cursor: pointer;"
-               @click="updateCodeImgSrc"
-               :title="$t('login.next')">
-            <img :src="codeImgSrc" alt="验证码" style="width: 100px;height: 50px;background-color: #fff;border-radius: 5px;" />
-            <!--<el-button type="text" style="height: 50px;">{{$t('login.notSeeClearly')}}</el-button>-->
+          <!--</div>-->
+          <h3 class="title">{{$t('login.title')}}</h3>
+          <div v-show="isVerifyFailed">
+            <el-alert
+              :title="verifyFailedTips"
+              type="error"
+              show-icon
+              :closable="false" style="width: 100%;height: 47px;position: absolute;bottom: -68px;" >
+            </el-alert>
           </div>
         </div>
-      </el-collapse-transition>
-      <el-form-item>
-        <el-button type="primary" style="width:100%;font-size: 18px;" :loading="loading" @click.native.prevent="handleLogin">
-          {{$t('login.logIn')}}
-        </el-button>
-      </el-form-item>
-      <div class="lang-select">
-        <el-button type="text" @click.native.prevent="handleSetLanguage(language==='en'?'zh':'en')">{{$t('login.language')}}</el-button>
-      </div>
-    </el-form>
+        <el-form-item prop="username" :class="{ 'error': isUsernameNull }">
+          <span class="svg-container svg-container_login">
+            <svg-icon icon-class="user" />
+          </span>
+          <el-input name="username"
+                    type="text"
+                    v-model="loginForm.username"
+                    autoComplete="on"
+                    autofocus
+                    :placeholder="$t('login.usernamePlaceholder')"
+                    :class="{ 'error': isUsernameNull }"
+                    @focus="clearUsername"
+                    @keyup.enter.native="() => { if (!loginForm.username) return false; handleLogin();}"></el-input>
+        </el-form-item>
+        <el-form-item prop="password" :class="{ 'error': isPasswordNull }">
+          <span class="svg-container">
+            <svg-icon icon-class="password"></svg-icon>
+          </span>
+          <el-input name="password"
+                    :type="pwdType"
+                    @keyup.enter.native="handleLogin"
+                    v-model="loginForm.password"
+                    autoComplete="on"
+                    :placeholder="$t('login.passwordPlaceholder')"
+                    :class="{ 'error': isPasswordNull }"
+                    @focus="clearPassword"></el-input>
+          <!--<span class="show-pwd" @click="showPwd"><svg-icon icon-class="eye" /></span>-->
+        </el-form-item>
+        <el-collapse-transition>
+          <div class="code-box" v-show="isVerifyNumThan3">
+            <el-form-item prop="code" :class="{ 'error': isCodeNull }" style="width: 65%;">
+              <el-input class="code-input"
+                        name="code"
+                        type="text"
+                        v-model="loginForm.code"
+                        :placeholder="$t('login.codePlaceholder')"
+                        :class="{ 'error': isCodeNull }"
+                        @focus="clearCode"
+                        @keyup.enter.native="() => { if (!loginForm.code) return false; handleLogin();}"></el-input>
+            </el-form-item>
+            <div class="code-img-box"
+                 style="display: flex;height: 50px;cursor: pointer;"
+                 @click="updateCodeImgSrc"
+                 :title="$t('login.next')">
+              <img :src="codeImgSrc" :alt="$t('login.verificationCode')" style="width: 100px;height: 50px;background-color: #fff;border-radius: 5px;" />
+              <!--<el-button type="text" style="height: 50px;">{{$t('login.notSeeClearly')}}</el-button>-->
+            </div>
+          </div>
+        </el-collapse-transition>
+        <el-form-item>
+          <el-button type="primary"
+                     style="width:100%;font-size: 18px;"
+                     :loading="loading"
+                     @click.native.prevent="handleLogin">{{$t('login.logIn')}}
+          </el-button>
+        </el-form-item>
+        <div class="lang-select">
+          <el-button type="text" @click.native.prevent="handleSetLanguage(language==='en'?'zh':'en')">{{$t('login.language')}}</el-button>
+        </div>
+      </el-form>
+    </template>
+
+    <template v-else>
+      <el-form class="login-form" :model="ipForm" ref="ipForm">
+        <div style="position: relative;top: 0;transition: top .5s ease-out;" :class="{ 'show-verify-tips': isVerifyFailed }">
+          <!--<div class="logo">-->
+          <!--<img src="@/assets/img/logo.png" alt="logo" width="100%" height="100%" />-->
+          <!--</div>-->
+          <h3 class="title">{{$t('login.title')}}</h3>
+        </div>
+
+        <div style="color: #eee;font-size: 16px;margin-bottom: 10px;text-align: center;">{{$t('ipManager.serverIP')}}</div>
+        <el-form-item prop="ip">
+          <span class="svg-container svg-container_login">
+            <svg-icon icon-class="ip" />
+          </span>
+          <el-input name="ip"
+                    type="text"
+                    v-model="ipForm.ip"
+                    autofocus
+                    autoComplete="on"
+                    @keyup.enter.native="confirmIp"></el-input>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button type="primary"
+                     style="width:100%;font-size: 18px;"
+                     :disabled="!ipForm.ip"
+                     :loading="loading"
+                     @click.native.prevent="confirmIp">{{$t('login.nextStep')}}
+          </el-button>
+        </el-form-item>
+
+        <div class="lang-select">
+          <el-button type="text" @click.native.prevent="handleSetLanguage(language==='en'?'zh':'en')">{{$t('login.language')}}</el-button>
+        </div>
+      </el-form>
+    </template>
   </div>
 </template>
 
 <script>
   import { mapGetters } from 'vuex'
   import { findContentByLemmaId } from '@/api/language'
+  import { saveIpSetting } from '@/api/ip'
+  import { validateIP } from '@/utils/validate'
 
 export default {
   name: 'login',
@@ -137,7 +181,12 @@ export default {
         exponent: '',
         modulus: '',
       },
-      isVerifyNumThan3: false
+      isVerifyNumThan3: false,
+      // 服务器ip确认
+      isEnterLogin: true,
+      ipForm: {
+        ip: ''
+      },
     }
   },
   created() {
@@ -149,13 +198,17 @@ export default {
       // 在 reject 中获取加密key
       if (err) {
         try {
-          console.log('获取加密key', err);
           this.publicKeyJson.landingEncryption = err.landingEncryption;
           this.publicKeyJson.exponent = err.publicKeyJson.exponent;
           this.publicKeyJson.modulus = err.publicKeyJson.modulus;
           this.isVerifyNumThan3 = err.isValidateCodeLogin;
         } catch (e) {
-          console.log(e, err);
+          console.log('不加密', err);
+        }
+
+        if (err.needIpAuthentication) {
+          this.ipForm.ip = err.serverIp;
+          this.isEnterLogin = false;
         }
       }
     })
@@ -294,6 +347,7 @@ export default {
     handleSetLanguage(lang) { // 切换语言状态执行方法
       this.$i18n.locale = lang;
       this.$store.dispatch('setLanguage', lang);
+      this.$store.dispatch('setLocaleLanguage', lang);
       location.reload();
     },
     getLocaleLanguage() {
@@ -338,6 +392,28 @@ export default {
     },
     updateCodeImgSrc() {
       this.codeImgSrc = '/prm-web/servlet/validateCodeServlet?' + (new Date().getTime());
+    },
+    confirmIp() {
+      const isValid = validateIP(this.ipForm.ip);
+
+      if (isValid) {
+        this.isEnterLogin = true;
+        saveIpSetting({
+          isDefault: false,
+          serverIp: this.ipForm.ip,
+          teIp: this.ipForm.ip,
+        }).then(res => {
+          console.log(res);
+
+          this.isEnterLogin = true;
+        }).catch(err => {
+          console.log(err);
+
+          this.$message.error(this.$t('common.operationFailure'));
+        })
+      } else {
+        this.$message.error(this.$t('login.ipNotLegal'));
+      }
     },
   },
   watch: {

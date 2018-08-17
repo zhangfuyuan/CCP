@@ -41,7 +41,8 @@
                  :visible.sync="dialogUploadVisible"
                  :close-on-click-modal="false"
                  @close="dialogKey = ''"
-                 :width="dialogWidth">
+                 :width="dialogWidth"
+                 :before-close="beforeCloseDialog">
         <template v-if="dialogKey==='import'">
           <div style="width: 100%;display: flex;align-items: center;margin-bottom: 30px;">
             <div style="width: 100px;font-size: 16px;white-space: nowrap;">{{$t('wordSettings.language')}} *</div>
@@ -193,6 +194,7 @@
         editFileInfo: null,
         // 删除数据
         deleteInfo: null,
+        isSettingsChangeNoSave: false,
       }
     },
     computed: {
@@ -256,6 +258,7 @@
             this.uploadLoading = false;
             this.dialogUploadVisible = false;
             this.dialogKey = '';
+            this.isSettingsChangeNoSave = false;
           }).catch( err => {
             console.log(err)
             this.uploadLoading = false;
@@ -284,6 +287,7 @@
             this.uploadLoading = false;
             this.dialogUploadVisible = false;
             this.dialogKey = '';
+            this.isSettingsChangeNoSave = false;
           }).catch(err => {
             console.log(err)
             this.$message.error(this.$t('common.operationFailure'));
@@ -348,20 +352,31 @@
           this.uploadLoading = false;
           this.dialogUploadVisible = false;
           this.uploadLoading = false;
+          this.isSettingsChangeNoSave = false;
         }).catch( err => {
           console.log(err)
           this.uploadLoading = false;
         })
       },
       checkName() {
+        this.isSettingsChangeNoSave = true;
+
         checkLemmaFileName({
           language: this.dialogKey==='edit' ? this.editInfo.language : this.form.language,
           id: this.dialogKey==='edit' ? this.editInfo.id : '',
         }).then(res => {
-          console.log(res)
-          this.formLanguageErr = '';
+          console.log(res);
+
+          if (this.dialogKey==='edit' && (this.editInfo.language==='中文'||this.editInfo.language==='English')) {
+            this.formLanguageErr = this.$t('wordSettings.repeatLanguagesTips');
+          } else if (this.dialogKey==='import' && (this.form.language==='中文'||this.form.language==='English')) {
+            this.formLanguageErr = this.$t('wordSettings.repeatLanguagesTips');
+          } else {
+            this.formLanguageErr = '';
+          }
         }).catch(err => {
-          console.log(err)
+          console.log(err);
+
           this.formLanguageErr = this.$t('wordSettings.repeatLanguagesTips');
         })
       },
@@ -397,6 +412,8 @@
           this.uploadList = fileList.slice(-1);
           console.log(this.uploadList)
         }
+
+        this.isSettingsChangeNoSave = true;
       },
       removeUpload(file, fileList) {
         console.log('删除文件', file, fileList);
@@ -434,8 +451,23 @@
             break;
         }
 
+        this.isSettingsChangeNoSave = false;
         this.dialogUploadVisible = true;
         console.log('弹窗信息', title, data);
+      },
+      beforeCloseDialog(done) {
+        if (this.isSettingsChangeNoSave) {
+          this.$confirm(this.$t('deviceManager.sureNoSaveLeaveTips'), this.$t('common.notice'), {
+            confirmButtonText: this.$t('common.confirmBtn'),
+            cancelButtonText: this.$t('common.cancelBtn'),
+            type: 'warning'
+          }).then(() => {
+            done();
+          }).catch(() => {
+          });
+        } else {
+          done();
+        }
       }
     }
   }

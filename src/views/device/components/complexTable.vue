@@ -1,7 +1,7 @@
 <template>
   <div class="complexTable-wrapper" style="padding-left: 20px;padding-top: 0;">
     <div class="filter-container">
-      <div class="selected-box" v-if="checkedDeviceList.length>1">
+      <div class="selected-box" v-if="checkedDeviceList.length>0">
         <div :class="[ 'total', { 'total-disabled': checkedDeviceList.length===0 }]"
              @click="clickTotalBoxHandle">
           {{$t('deviceManager.selected')}}
@@ -110,8 +110,11 @@
       </el-table-column>
 
       <el-table-column prop="totalRunningTime"
-                       :label="$t('deviceManager.cumulativeRunningTime')"
-                       sortable>
+                       sortable
+                       :render-header="renderRunningTimeHeader">
+        <template slot-scope="scope">
+          {{scope.row.totalRunningTime | formatDay}}
+        </template>
       </el-table-column>
 
       <el-table-column prop="decimalId"
@@ -146,6 +149,7 @@
                :close-on-press-escape="false"
                :width="dialogWidth"
                id="deviceDialog"
+               :before-close="beforeCloseDialog"
                @close="handleCloseDialog">
       <!--dialog标题-->
       <div slot="title">
@@ -398,7 +402,7 @@
                   <div style="padding-top: 10px;">
                     <el-radio-group v-model="switchingPowerRadioGroup"
                                     style="width: 100%;display: flex;justify-content: space-between;"
-                                    @change="isChangeSetDialog = true">
+                                    @change="isChangeSetDialog = true, isBasicSettingsChangeNoSave = true">
                       <el-radio label="awake"
                                 border
                                 :disabled="(dialogInfo.length===1 && dialogInfo[0].status==='1') ||
@@ -441,7 +445,7 @@
                     input-size="small"
                     :disabled="(dialogInfo.length>1 && !isSetVolumeChecked) ||
                                (dialogInfo.length===1 && dialogInfo[0].status==='0' && !isSetVolumeChecked)"
-                    @change="isChangeSetDialog = true">
+                    @change="isChangeSetDialog = true, isBasicSettingsChangeNoSave = true">
                   </el-slider>
                 </div>
               </div>
@@ -470,7 +474,8 @@
               <template v-if="lockScreenResultList.length===0">
                 <el-form label-position="left" label-width="100">
                   <el-form-item :label="$t('deviceManager.enterLockScreen')">
-                    <el-radio-group v-model="lockScreenRadio">
+                    <el-radio-group v-model="lockScreenRadio"
+                                    @change="isBasicSettingsChangeNoSave = true">
                       <el-radio label="0">{{$t('deviceManager.notLockScreen')}}</el-radio>
                       <el-radio label="5">5{{$t('deviceManager.minute')}}</el-radio>
                       <el-radio label="10">10{{$t('deviceManager.minute')}}</el-radio>
@@ -480,7 +485,9 @@
                   </el-form-item>
 
                   <el-form-item :label="$t('deviceManager.lockScreenMode')" v-show="lockScreenRadio && lockScreenRadio!=='0'">
-                    <el-radio-group v-model="lockScreenImgRadio" :disabled="!lockScreenRadio || lockScreenRadio==='0'">
+                    <el-radio-group v-model="lockScreenImgRadio"
+                                    :disabled="!lockScreenRadio || lockScreenRadio==='0'"
+                                    @change="isBasicSettingsChangeNoSave = true">
                       <el-radio label="0">{{$t('deviceManager.default')}}</el-radio>
                       <el-radio label="1">{{$t('deviceManager.customImage')}}</el-radio>
                     </el-radio-group>
@@ -691,7 +698,10 @@
                 <div style="white-space: nowrap;font-size: 16px;">
                   <div>{{$t('deviceManager.powerPlan')}}</div>
                   <div style="text-align: center;">
-                    <el-button type="text" style="color: #F56C6C;"  @click="deleteTimingPlan(true)">{{$t('common.delete')}}</el-button>
+                    <el-button type="text"
+                               style="color: #F56C6C;"
+                               :disabled="!planDialogUniformPlan['1']"
+                               @click="deleteTimingPlan(true)">{{$t('common.delete')}}</el-button>
                   </div>
                 </div>
 
@@ -734,7 +744,10 @@
                 <div style="white-space: nowrap;font-size: 16px;">
                   <div>{{$t('deviceManager.volumePlan')}}</div>
                   <div style="text-align: center;">
-                    <el-button type="text" style="color: #F56C6C;" @click="deleteTimingPlan(false)">{{$t('common.delete')}}</el-button>
+                    <el-button type="text"
+                               style="color: #F56C6C;"
+                               :disabled="!planDialogUniformPlan['2']"
+                               @click="deleteTimingPlan(false)">{{$t('common.delete')}}</el-button>
                   </div>
                 </div>
 
@@ -774,14 +787,28 @@
           </el-tab-pane>
 
           <el-tab-pane :label="$t('deviceManager.selectPlan')" name="selectPlan">
-            <div style="text-align: right;">
-              <el-input @keyup.enter.native="handleSearchPlan"
-                        style="width: 250px;margin-left: 10px;"
-                        :placeholder="$t('deviceManager.searchPlanName')"
-                        v-model="planListQuery.searchKey">
-                <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleSearchPlan"></i>
-              </el-input>
+            <div style="display: flex;justify-content: space-between;">
+              <el-form ref="selectPlanForm" :model="selectPlanForm" label-width="80px" label-position="left">
+                <el-form-item :label="$t('planManager.functionTypes') + ' *'" style="margin-bottom: 0;">
+                  <el-radio-group v-model="selectPlanForm.type" @change="selectPlanFormChange">
+                    <el-radio label="1">{{$t('planManager.powerSource')}}</el-radio>
+                    <el-radio label="2">{{$t('planManager.volume')}}</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+              </el-form>
+
+              <div>
+                <el-input @keyup.enter.native="handleSearchPlan"
+                          style="width: 250px;margin-left: 10px;"
+                          :placeholder="$t('deviceManager.searchPlanName')"
+                          clearable
+                          suffix-icon="el-icon-search"
+                          v-model="planListQuery.searchKey"
+                          @clear="handleSearchPlan">
+                </el-input>
+              </div>
             </div>
+
 
             <el-table :data="planTableData"
                       :span-method="objectSpanMethod"
@@ -805,11 +832,6 @@
 
               <el-table-column
                 prop="type"
-                :filters="[
-                      { text: $t('planManager.powerSource'), value: '1' },
-                      { text: $t('planManager.volume'), value: '2' }
-                    ]"
-                :filter-method="filterPlanHandler"
                 :label="$t('planManager.functionTypes')"
                 width="100">
                 <template slot-scope="scope">
@@ -1130,6 +1152,9 @@ export default {
       },
       planTableData: [],
       isPlanTableDataLoading: false,
+      selectPlanForm: {
+        type: ''
+      },
       // 锁屏设置
       lockScreenRadio: '',
       lockScreenImgRadio: '',
@@ -1149,6 +1174,7 @@ export default {
       isShowBasicSettingsResult: false,
       basicSettingsResult: '',
       basicSettingsResultList: [],
+      isBasicSettingsChangeNoSave: false,
     }
   },
   filters: {
@@ -1169,7 +1195,7 @@ export default {
         hour = Math.floor((time-day*(1000*60*60*24))/(1000*60*60)),
         min = Math.floor((time-day*(1000*60*60*24)-hour*(1000*60*60))/(1000*60));
 
-      return day + 'd' + ' ' + hour + 'h' + ' ' + min + 'm';
+      return day + 'd' + ' ' + hour + 'h';
     }
   },
   created() {
@@ -1285,6 +1311,28 @@ export default {
             "color": "#F56C6C",
           },
           "attrs": { "title": this.$t('deviceManager.markedRedDevice') },
+        }),
+      ])
+    },
+    renderRunningTimeHeader(h, { column, $index }) {
+      return h("span", {
+        "style": {
+          "position": "relative",
+        }
+      },[
+        h("span", {}, this.$t('deviceManager.cumulativeRunningTime')),
+        h("i", {
+          "class": {
+            "el-icon-info": true
+          },
+          "style": {
+            "position": "absolute",
+            "top": "50%",
+            "margin-top": "-7px",
+            "right": "-50px",
+            "color": "#409EFF",
+          },
+          "attrs": { "title": this.$t('deviceManager.hourlyUpdatedData') },
         }),
       ])
     },
@@ -1418,6 +1466,7 @@ export default {
           this.basicSettingsResultList.push(...result);
           console.log('电源设置结果列表', result);
 
+          this.isBasicSettingsChangeNoSave = false;
           this.$message({
             message: this.$t('common.operationSucceeds'),
             type: 'success'
@@ -1450,6 +1499,7 @@ export default {
         this.basicSettingsResultList.push(...result);
         console.log('音量设置结果列表', result);
 
+        this.isBasicSettingsChangeNoSave = false;
         this.$message({
           message: this.$t('common.operationSucceeds'),
           type: 'success'
@@ -1552,6 +1602,7 @@ export default {
           this.basicSettingsResult = '';
           this.basicSettingsResultList = [];
           this.switchingPowerRadioGroup = '';
+          this.isBasicSettingsChangeNoSave = false;
           break;
         case 'plan':
           this.dialogKey = 'plan';
@@ -1561,6 +1612,9 @@ export default {
           this.isPlanTableDataLoading = true;
           this.planDialogActiveTabsName = 'currentPlan';
           this.planDialogUniformPlan = {};
+          this.selectPlanForm.type = '';
+          this.planListQuery.type = '';
+
           getPlanList(this.planListQuery).then(res => {
             console.log(res)
             this.planTableData = res.data;
@@ -1571,9 +1625,8 @@ export default {
           }).catch(err => {
             console.log(err)
           })
+
           if (this.dialogInfo.length===1) {
-
-
             getPlanOfDevice({ terminalId: this.dialogInfo[0].id }).then(res => {
               console.log('根据设备查计划', res);
 
@@ -1619,6 +1672,14 @@ export default {
               let tree = treeify(arr, 'id', 'parentId', 'children');
 
               this.moveOfficeTree = [tree];
+
+              if (this.dialogInfo.length === 1) {
+                // 无法移动至原机构
+                this.$nextTick(() => {
+                  let pNode = this.$refs['moveOfficeTree'].getNode(this.dialogInfo[0].officeId).data;
+                  pNode['disabled'] = true;
+                });
+              }
               console.log(8126.2, arr, tree)
             }
           }).catch(err => {
@@ -1644,10 +1705,8 @@ export default {
       console.log('当前对话框信息', data)
     },
     handlePlanDialogClick(tab, event) {
-      console.log(tab, event);
     },
     handleDetailsDialogClick(tab, event) {
-      console.log(tab, event);
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex === 4) {
@@ -1692,6 +1751,15 @@ export default {
       if (data.disabled) return false;
     },
     checkMoveOfficeHandle(data, checkedMap) {
+      if (data.disabled) {
+        this.$refs['moveOfficeTree'].setCheckedKeys([]);
+        this.$message({
+          message: this.$t('officeManager.cannotMoveToThisOffice'),
+          type: 'warning'
+        });
+        return false;
+      }
+
       let checkedList = this.$refs['moveOfficeTree'].getCheckedKeys(); // 触发自定义勾选执行方法前，已经将勾选状态改变，故逻辑与点击处理相反
 
       if (checkedList.indexOf(data.id) > -1) { // 无选 -> 选中
@@ -1826,7 +1894,6 @@ export default {
       }).catch(err => {
         console.log(err)
       })
-
     },
     resetBasicSettings() { // todo 重置基础设置
       this.switchingPowerRadioGroup = '';
@@ -1836,6 +1903,7 @@ export default {
       this.isShowBasicSettingsResult = false;
       this.basicSettingsResult = '';
       this.basicSettingsResultList = [];
+      this.isBasicSettingsChangeNoSave = false;
     },
     resetLockScreenSettings() {
       this.lockScreenRadio = '';
@@ -1846,6 +1914,7 @@ export default {
         clearInterval(this.timer);
         this.timer = null;
       }
+      this.isBasicSettingsChangeNoSave = false;
     },
     setLockScreenDevice() { // todo 锁屏设置
       let deviceIds = [];
@@ -1904,6 +1973,7 @@ export default {
                   message: this.$t('common.operationSucceeds'),
                   type: 'success'
                 });
+                this.isBasicSettingsChangeNoSave = false;
               }
             }).catch(e => {
               console.log(e)
@@ -1924,6 +1994,7 @@ export default {
             message: this.$t('common.operationSucceeds'),
             type: 'success'
           });
+          this.isBasicSettingsChangeNoSave = false;
         }
       }).catch(err => {
         console.log(err);
@@ -1991,6 +2062,7 @@ export default {
                   message: this.$t('common.operationSucceeds'),
                   type: 'success'
                 });
+                this.isBasicSettingsChangeNoSave = false;
               }
             }).catch(e => {
               console.log(e);
@@ -2029,6 +2101,7 @@ export default {
         clearInterval(this.timer);
         this.timer = null;
       }
+      this.isBasicSettingsChangeNoSave = false;
     },
     moveDevices() { // todo
       let deviceIds = [];
@@ -2060,6 +2133,20 @@ export default {
     updateDevicesTableData() { //  todo 根据当前条件重新请求数据
       this.resetData();
       this.getList();
+    },
+    beforeCloseDialog(done) {
+      if (this.dialogKey === 'settings' && this.isBasicSettingsChangeNoSave) {
+        this.$confirm(this.$t('deviceManager.sureNoSaveLeaveTips'), this.$t('common.notice'), {
+          confirmButtonText: this.$t('common.confirmBtn'),
+          cancelButtonText: this.$t('common.cancelBtn'),
+          type: 'warning'
+        }).then(() => {
+          done();
+        }).catch(() => {
+        });
+      } else {
+        done();
+      }
     },
     handleCloseDialog() {
       if (this.timer) {
@@ -2104,6 +2191,22 @@ export default {
       const index = this.list.findIndex(item => item.id === id);
 
       return  this.list[index].name;
+    },
+    selectPlanFormChange(val) {
+      console.log('筛选类型',val);
+      this.planListQuery.type = val;
+      this.isPlanTableDataLoading = true;
+
+      getPlanList(this.planListQuery).then(res => {
+        console.log(res)
+
+        this.planTableData= res.data;
+        this.planListQuery.count = res.count;
+        this.curCheckedPlanInfo = null;
+        this.isPlanTableDataLoading = false;
+      }).catch(err => {
+        console.log(err)
+      })
     },
     /** 以下为 webuploader 监听处理方法
      *
@@ -2166,6 +2269,7 @@ export default {
         };
         console.log('上传图片成功数据', this.uploadFileInfo);
       }
+      this.isBasicSettingsChangeNoSave = true;
     },
     webuploader_uploadError(file, reason) {
       console.log('uploadError', file, reason);

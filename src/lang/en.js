@@ -70,6 +70,9 @@ export default {
     verifyErr: "Account or password error",
     verifyCodeErr: "Verification code error",
     next: "Next",
+    nextStep: "Next step",
+    ipNotLegal: "Accessing IP/ domain name is not legal",
+    verificationCode: "Verification code",
   },
   route: {
     deviceManager: "Device Manager",
@@ -208,6 +211,7 @@ export default {
     deviceNameOrId: "Device name /ID",
     noSearchResults: "No search results",
     supportOfflineCommands: "Support offline commands",
+    sureNoSaveLeaveTips: "The new Settings have not been saved yet. Do you want to leave?",
   },
   planManager: {
     associatedApparatus: "Associated apparatus",
@@ -225,7 +229,7 @@ export default {
     plans: "Plans",
     searchPlanName: "Search plan name",
     details: "Details",
-    strategyName: "Name of strategy",
+    strategyName: "Plan name",
     emptySet: "Empty set",
     weeklyPlan: "Weekly plan",
     specialPlan: "Special plan",
@@ -272,6 +276,7 @@ export default {
     cancel: "Cancel",
     back:"back",
     timeErrorTips:"The time interval of the same day should be more than 5 minutes",
+    timeCopySameDay:"Time repeats are present for the same day"
   },
   accountManager: {
     total: "Total",
@@ -306,8 +311,8 @@ export default {
     isDeletePlan:"Do you want to delete the selected plan"
   },
   ipManager: {
-    serverIP: "Server IP/domain name",
-    terminalIP: "Communicate with device IP/domain name",
+    serverIP: "Server IP / domain name",
+    terminalIP: "Communicate with device IP / domain name",
     confirm: "Confirm",
     cancel: "Cancel",
     default: "default",

@@ -483,7 +483,8 @@
             :button-texts="[$t('planManager.deleteEquipment'), $t('planManager.addEquipment')]">
           <span slot-scope="{ option }"
                 :class="{ 'cjc_isHidden': (option.officeid!==curOfficeId) && (officeDeviceVal.indexOf(option.key)===-1),
-                           'cjc_isShow': (option.officeid===curOfficeId) && (officeDeviceVal.indexOf(option.key)===-1) }">{{ option.label }}
+                           'cjc_isShow': (option.officeid===curOfficeId) && (officeDeviceVal.indexOf(option.key)===-1) }"
+                :title="option.label">{{ option.label }}
           </span>
           </el-transfer>
           <el-form style="width: 320px;height: 300px;position: absolute;top: 100px;left: 10px;z-index: 1111" v-if="zIndex === 1">
@@ -741,7 +742,7 @@
           hour = Math.floor((time-day*(1000*60*60*24))/(1000*60*60)),
           min = Math.floor((time-day*(1000*60*60*24)-hour*(1000*60*60))/(1000*60));
 
-        return day + 'd' + ' ' + hour + 'h' + ' ' + min + 'm';
+        return day + 'd' + ' ' + hour + 'h';
       }
     },
     computed: {
@@ -1423,6 +1424,18 @@
 
     .swiper-container {
       overflow: initial;
+    }
+
+    .el-dialog{
+      width: 800px;
+      min-height: 450px;
+    }
+    .el-dialog__body{
+      position: relative;
+    }
+    .span_line:nth-of-type(1)::after{
+      content: '~';
+      display: inline-block;
     }
   }
 </style>

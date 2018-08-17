@@ -11,10 +11,7 @@
         </div>
 
         <div class="search">
-          <!--<el-input @keyup.enter.native="handleSearch" style="width: 200px;" :placeholder="$t('accountManager.searchNameOrUsername')" v-model="searchVal">
-            <i slot="suffix" class="el-input__icon el-icon-search" style="cursor: pointer;" @click="handleSearch"></i>
-          </el-input>-->
-          <div class="el-input el-input--suffix" style="width: 200px;">
+          <!--<div class="el-input el-input&#45;&#45;suffix" style="width: 200px;">
             <input type="text"
                    v-model="searchVal"
                    @input="searchUser"
@@ -26,7 +23,17 @@
             <span class="el-input__suffix" v-show="searchVal" @click="searchVal = '', searchUser()">
               <span class="el-input__suffix-inner" style="cursor: pointer;"><i class="el-input__icon el-icon-circle-close"></i></span>
             </span>
-          </div>
+          </div>-->
+
+          <el-input
+            @keyup.enter.native="searchUser"
+            style="width: 200px;"
+            :placeholder="$t('accountManager.searchNameOrUsername')"
+            v-model="searchVal"
+            clearable
+            @clear="searchUser">
+            <i slot="suffix" style="cursor: pointer;" class="el-input__icon el-icon-search" @click="searchUser"></i>
+          </el-input>
         </div>
       </div>
 

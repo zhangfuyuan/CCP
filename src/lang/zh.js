@@ -70,6 +70,9 @@ export default {
     verifyErr: "用户名或密码错误",
     verifyCodeErr: "验证码错误",
     next: "下一张",
+    nextStep: "下一步",
+    ipNotLegal: "访问IP/域名不合法",
+    verificationCode: "验证码",
   },
   route: {
     deviceManager: "设备管理",
@@ -208,6 +211,7 @@ export default {
     deviceNameOrId: "设备名称/ID",
     noSearchResults: "无搜索结果",
     supportOfflineCommands: "支持离线命令",
+    sureNoSaveLeaveTips: "新的修改设置还未保存，是否离开？",
   },
   planManager: {
     associatedApparatus: "关联设备",
@@ -225,7 +229,7 @@ export default {
     plans: "个计划",
     searchPlanName: "搜索计划名称",
     details: "详情",
-    strategyName: "策略名称",
+    strategyName: "计划名称",
     emptySet: "清空设置",
     weeklyPlan: "周计划",
     specialPlan: "特殊计划",
@@ -272,6 +276,7 @@ export default {
     cancel: "取消",
     back:"返回",
     timeErrorTips:"同一天时间间隔需大于5分钟",
+    timeCopySameDay:"同一天内存在时间重复"
   },
   accountManager: {
     total: "共",

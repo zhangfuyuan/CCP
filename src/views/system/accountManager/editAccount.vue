@@ -28,11 +28,10 @@
                   v-model="accountForm.password"
                   :maxlength="12"
                   style="width: 400px;"
-                  :disabled="!isEditPassword"
-                  @input="isModify = true"></el-input>
+                  :disabled="!isEditPassword"></el-input>
         <el-button type="text"
                    style="color: #F56C6C;margin-left: 10px;"
-                   @click="isEditPassword = true">{{$t('common.modifyPassword')}}</el-button>
+                   @click="isEditPassword = true;isModify = true">{{$t('common.modifyPassword')}}</el-button>
         <el-alert
           :title="showErrMsg.password"
           type="error"
