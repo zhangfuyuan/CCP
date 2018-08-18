@@ -247,15 +247,7 @@ export default {
                 console.log(res);
 
                 this.loading = false;
-                if (this.localeLanguage && this.localeLanguage!=='zh' && this.localeLanguage!=='en') {
-                  this.getLocaleLanguage().then(() => {
-                    this.$router.push({ path: '/' });
-                  }).catch(() => {
-                    this.$router.push({ path: '/' });
-                  });
-                } else {
-                  this.$router.push({ path: '/' });
-                }
+                this.$router.push({ path: '/' });
               }).catch((err) => {
                 console.log(err);
 
@@ -294,15 +286,7 @@ export default {
                 console.log(res)
 
                 this.loading = false;
-                if (this.localeLanguage && this.localeLanguage!=='zh' && this.localeLanguage!=='en') {
-                  this.getLocaleLanguage().then(() => {
-                    this.$router.push({ path: '/' });
-                  }).catch(() => {
-                    this.$router.push({ path: '/' });
-                  });
-                } else {
-                  this.$router.push({ path: '/' });
-                }
+                this.$router.push({ path: '/' });
               }).catch((err) => {
                 console.log(err)
 
@@ -350,27 +334,27 @@ export default {
       this.$store.dispatch('setLocaleLanguage', lang);
       location.reload();
     },
-    getLocaleLanguage() {
-      return new Promise((resolve, reject) => {
-        findContentByLemmaId({
-          id: this.localeLanguage
-        }).then(res => {
-          console.log(res)
-
-          this.$i18n.setLocaleMessage(this.localeLanguage, res.content);
-          this.$i18n.locale = this.localeLanguage;
-          this.$store.dispatch('setLocaleLanguage', this.localeLanguage);
-          this.$message({
-            message: this.$t('common.switchLanguageSuccess'),
-            type: 'success'
-          });
-          resolve();
-        }).catch(err => {
-          console.log(err);
-          reject();
-        })
-      })
-    },
+//    getLocaleLanguage() {
+//      return new Promise((resolve, reject) => {
+//        findContentByLemmaId({
+//          id: this.localeLanguage
+//        }).then(res => {
+//          console.log(res)
+//
+//          this.$i18n.setLocaleMessage(this.localeLanguage, res.content);
+//          this.$i18n.locale = this.localeLanguage;
+//          this.$store.dispatch('setLocaleLanguage', this.localeLanguage);
+//          this.$message({
+//            message: this.$t('common.switchLanguageSuccess'),
+//            type: 'success'
+//          });
+//          resolve();
+//        }).catch(err => {
+//          console.log(err);
+//          reject();
+//        })
+//      })
+//    },
     clearUsername() {
       if(this.isUsernameNull) {
         this.loginForm.username = ''

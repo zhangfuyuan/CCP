@@ -146,31 +146,35 @@ export default {
         this.$i18n.locale = lang
         this.$store.dispatch('setLanguage', lang)
         this.$store.dispatch('setLocaleLanguage', lang);
-        this.$message({
-          message: this.$t('common.switchLanguageSuccess'),
-          type: 'success'
-        });
+//        this.$message({
+//          message: this.$t('common.switchLanguageSuccess'),
+//          type: 'success'
+//        });
         loading.close();
         location.reload();
       } else {
-        findContentByLemmaId({
-          id: lang
-        }).then(res => {
-          console.log(res)
+        this.$store.dispatch('setLocaleLanguage', lang);
+        loading.close();
+        location.reload();
 
-          this.$i18n.setLocaleMessage(lang, res.content);
-          this.$i18n.locale = lang;
-          this.$store.dispatch('setLocaleLanguage', lang);
-          this.$message({
-            message: this.$t('common.switchLanguageSuccess'),
-            type: 'success'
-          });
-          loading.close();
-          location.reload();
-        }).catch(err => {
-          console.log(err);
-          this.$message.error(this.$t('common.operationFailure'));
-        })
+//        findContentByLemmaId({
+//          id: lang
+//        }).then(res => {
+//          console.log(res)
+//
+//          this.$i18n.setLocaleMessage(lang, res.content);
+//          this.$i18n.locale = lang;
+//          this.$store.dispatch('setLocaleLanguage', lang);
+//          this.$message({
+//            message: this.$t('common.switchLanguageSuccess'),
+//            type: 'success'
+//          });
+//          loading.close();
+//          location.reload();
+//        }).catch(err => {
+//          console.log(err);
+//          this.$message.error(this.$t('common.operationFailure'));
+//        })
       }
     }
   }

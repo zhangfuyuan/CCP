@@ -26,11 +26,14 @@
             <el-button
               size="mini"
               type="text"
-              @click="toggleDialog('edit', row)" v-if="$index!==0 && $index!==1">{{$t('wordSettings.modify')}}</el-button>
+              @click="toggleDialog('edit', row)"
+              v-if="$index!==0 && $index!==1">{{$t('wordSettings.modify')}}</el-button>
             <el-button
               size="mini"
               type="text"
-              @click="toggleDialog('delete', row)" style="color: #F56C6C;" v-if="$index!==0 && $index!==1">{{$t('wordSettings.del')}}</el-button>
+              @click="toggleDialog('delete', row)"
+              style="color: #F56C6C;"
+              v-if="$index!==0 && $index!==1">{{$t('wordSettings.del')}}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -198,6 +201,11 @@
       }
     },
     computed: {
+      ...mapGetters([
+        'localeLanguage',
+        'roles',
+        'officeId',
+      ])
     },
     watch: {
     },

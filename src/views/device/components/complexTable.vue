@@ -256,6 +256,12 @@
                 <span>{{dialogInfo.apkVersion}}</span>
               </el-form-item>
 
+              <el-form-item :label="$t('deviceManager.lockScreenMode')" style="width: 30%;">
+                <span>{{dialogInfo.isLockScreen==='true' ?
+                        (dialogInfo.lockScreenTime+'min'+$t('deviceManager.enterLockScreen')) :
+                        $t('deviceManager.notLockScreen')}}</span>
+              </el-form-item>
+
               <el-form-item :label="$t('deviceManager.mark')" style="width: 100%;">
                 <span>{{dialogInfo.remarks}}</span>
               </el-form-item>

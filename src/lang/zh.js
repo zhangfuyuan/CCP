@@ -1,6 +1,7 @@
 export default {
   common: {
     switchLanguageSuccess: "语言切换成功",
+    switchLanguageError: "语言切换失败",
     success: "成功",
     error: "出错",
     platformName: "一体机集控管理系统",

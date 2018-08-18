@@ -81,7 +81,7 @@
                     <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.requestTimeout')}}</span>
                   </template>
                   <template v-else-if="item.screenStatus==='-1'">
-                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.unknownError')}}</span>
+                    <span style="color: #f8f8f8;font-size: 20px;">{{$t('common.unknownError')}}</span>
                   </template>
                   <template v-else>
                     <span style="color: #f8f8f8;font-size: 20px;">...</span>
@@ -279,7 +279,7 @@
                   <span style="color: #fff;font-size: 20px;">{{$t('deviceManager.requestTimeout')}}</span>
                 </template>
                 <template v-else-if="curClickDevice.screenStatus==='-1'">
-                  <span style="color: #f8f8f8;font-size: 20px;">{{$t('deviceManager.unknownError')}}</span>
+                  <span style="color: #f8f8f8;font-size: 20px;">{{$t('common.unknownError')}}</span>
                 </template>
                 <template v-else>
                   <span style="color: #f8f8f8;font-size: 20px;">...</span>

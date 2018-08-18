@@ -431,7 +431,7 @@
           </el-form-item>
 
           <el-form-item :label="$t('planManager.strategyName') + ' *'">
-            <el-input v-model="createForm.name" maxlength = 24 style="display: inline-block;width: 60%;" @focus="focusInput"></el-input>
+            <el-input v-model="createForm.name" maxlength = 24 style="display: inline-block;width: 60%;" @input="isModifyNameFn"></el-input>
             <el-button type="primary" plain style="display: inline-block" @click = "emptySetting">{{$t('planManager.emptySet')}}</el-button>
           </el-form-item>
 
@@ -771,9 +771,9 @@
                    :disabled="!createForm.name ||
                               (!createForm.weeklyPlan.isOpen && !createForm.specialPlan.isOpen) ||
                               ((createForm.weeklyPlan.isOpen && !isChoiseWeeklyFn) ||
-                              (createForm.weeklyPlan.isOpen && !isSourceTimes) ||
-                               (createForm.specialPlan.isOpen && !isSourceSpcialTimes) ||
-                              (createForm.specialPlan.isOpen && !isSpecialDate ))">{{$t('common.confirmBtn')}}
+                              (createForm.weeklyPlan.isOpen && !isChoiseWTimeFn) ||
+                              (createForm.specialPlan.isOpen && !isChoiseSTimeFn) ||
+                              (createForm.specialPlan.isOpen && !isChoiseSDateFn ))">{{$t('common.confirmBtn')}}
         </el-button>
         <el-button type="primary"
                    v-if="isChangeContent === 'volume'"
@@ -781,7 +781,7 @@
                    :disabled="!createForm.name ||
                     (!createVol.defaultVol.isOpen) && (!createVol.timingVol.isOpen) ||
                     (createVol.timingVol.isOpen && !isChoiseVolumeWeekFn) ||
-                     (createVol.timingVol.isOpen && !isVolTimes)">{{$t('common.confirmBtn')}}</el-button>
+                     (createVol.timingVol.isOpen && !isChooiseVolumeTimeFn)">{{$t('common.confirmBtn')}}</el-button>
       </div>
       <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'modify'" style="position: relative">
         <el-alert
@@ -796,11 +796,18 @@
         <el-button type="primary"
                    v-if="isChangeContent === 'source'"
                    @click="dialogVisible = false;addSource('true')"
-                     :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
+                     :disabled="!isChangePlan || !createForm.name ||
+                              (!createForm.weeklyPlan.isOpen && !createForm.specialPlan.isOpen) ||
+                              ((createForm.weeklyPlan.isOpen && !isChoiseWeeklyFn) ||
+                              (createForm.weeklyPlan.isOpen && !isChoiseWTimeFn) ||
+                              (createForm.specialPlan.isOpen && !isChoiseSTimeFn) ||
+                              (createForm.specialPlan.isOpen && !isChoiseSDateFn )) ">{{$t('common.confirmBtn')}}</el-button>
         <el-button type="primary"
                    v-if="isChangeContent === 'volume'"
                    @click="dialogVisible = false;addVolume('true')"
-                   :disabled="!isChangePlan">{{$t('common.confirmBtn')}}</el-button>
+                   :disabled="!isChangePlan ||
+                      (createVol.timingVol.isOpen && !isChoiseVolumeWeekFn) ||
+                      (createVol.timingVol.isOpen && !isChooiseVolumeTimeFn)">{{$t('common.confirmBtn')}}</el-button>
       </div>
       <div slot="footer" class="dialog-footer" v-if="false">  <!--v-if="dialogKey === 'manager'"-->
         <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
@@ -1011,23 +1018,39 @@
         'language',
         'officeId'
       ]),
+      isChoiseSDateFn(){
+        return this.createForm.specialPlan.planList.every(item => item.date !== null)
+      },
+      isChoiseSTimeFn() {
+        return this.createForm.specialPlan.planList.every(item => item.time !== null)
+      },
+      isChoiseWTimeFn() {
+        return this.createForm.weeklyPlan.planList.every(item => item.time !== null)
+      },
       isChoiseWeeklyFn() {
-          let isChoiseWeek = false
-          this.createForm.weeklyPlan.planList.filter(item => {
+          return this.createForm.weeklyPlan.planList.every(item => item.weeks.length >0)
+/*          let isChoiseWeek = false
+          this.createForm.weeklyPlan.planList.map(item => {
               if(item.weeks.length >0){
-                isChoiseWeek = true
+                isChoiseWeek = true;
               }else {
                 isChoiseWeek = false
               }
           })
         if (isChoiseWeek === true){
-              return true
+          console.log(isChoiseWeek);
+              return true;
         }else{
-            return false
-        }
+          console.log(isChoiseWeek);
+            return false;
+        }*/
+      },
+      isChooiseVolumeTimeFn(){
+        return this.createVol.timingVol.volList.every(item => item.date !== null)
       },
       isChoiseVolumeWeekFn(){
-        let isChoiseWeek = false
+        return this.createVol.timingVol.volList.every(item => item.weeks.length >0)
+        /*let isChoiseWeek = false
         this.createVol.timingVol.volList.filter(item => {
           if(item.weeks.length >0){
             isChoiseWeek = true
@@ -1039,7 +1062,7 @@
           return true
         }else{
           return false
-        }
+        }*/
       }
     },
     watch: {
@@ -1087,13 +1110,16 @@
 
     methods: {
       handleSearch() {
-        getPlanList({searchKey:this.searchVal}).then(res => {
+        getPlanList({searchKey:this.searchVal,pageSize: this.listQuery.limit}).then(res => {
           this.tableData = res.data
         }).catch(err => {
           console.log(err)
         })
       },
       handleSizeChange(val) {
+        this.idstr = ""
+        this.idArr = []
+        this.selectedCount = ""
         this.listQuery.limit = val
         getPlanList({pageSize: this.listQuery.limit}).then(res => {
           this.tableData = res.data
@@ -1102,6 +1128,9 @@
         })
       },
       handleCurrentChange(val) {
+        this.idstr = ""
+        this.idArr = []
+        this.selectedCount = ""
         this.listQuery.page = val
         getPlanList({pageNo: this.listQuery.page,pageSize: this.listQuery.limit}).then(res => {
           this.tableData = res.data
@@ -1505,7 +1534,9 @@
           this.isChangeContent = type
       },
       emptySetting() {
-        this.isChangePlan = true
+        this.isVolumeBorderColor = false
+        this.isBorderColor = false
+        this.isborderColor = false
         this.createVol.timingVol.isOpen = false
         this.createVol.defaultVol.isOpen = false
         this.createForm.weeklyPlan.isOpen = false
@@ -1516,6 +1547,7 @@
           id: Date.now(),
           isAllCheckedWeek: false,
           action: '1',
+          operation: '1',
           time: new Date(1534262400000),
           weeks: [],
         })
@@ -1523,6 +1555,7 @@
         this.createForm.specialPlan.planList.push({
           id: Date.now(),
           action: '1',
+          operation:'1',
           time: new Date(1534262400000),
           date: (function () {
             const end = new Date();
@@ -1754,14 +1787,12 @@
                 let that = this
                 $.each(gthat.createForm.weeklyPlan.planList[j].weeks,function () {
                   if(that === this){
-                    if(gthat.DateAdd('m',5,weeklyTimeArr[i]) > weeklyTimeArr[j]){
+                    if( weeklyTimeArr[i]+300000 > weeklyTimeArr[j]){
+                        console.log(weeklyTimeArr[i]+300000)
+                      console.log(weeklyTimeArr[j])
                       trueOrFalse = '2'
                       gthat.dialogVisible = true
                       gthat.isborderColor = true
-                    }else {
-                      trueOrFalse = '1'
-                      gthat.dialogVisible = false
-                      gthat.isborderColor = false
                     }
                   }
                 })
@@ -1769,19 +1800,6 @@
             }
           }
         }
-        /*if(this.createForm.specialPlan.planList.length > 1){
-          for(let i = 0,length = this.createForm.specialPlan.planList.length;i<length;i++){
-            for(let j = i+1,len = this.createForm.specialPlan.planList.length;j<len;j++){
-              if(gthat.DateAdd('m',5,gthat.createForm.specialPlan.planList[i].time) > gthat.createForm.specialPlan.planList[j].time){
-                console.log(gthat.DateAdd('m',5,gthat.createForm.specialPlan.planList[i].time))
-                console.log('时间重复了')
-                trueOrFalse = '2'
-                gthat.dialogVisible = true
-                gthat.isBorderColor = true
-              }
-            }
-          }
-        }*/
 
         let weeklySpecialArr = []
         this.createForm.specialPlan.planList.filter(item => {
@@ -1813,7 +1831,7 @@
             if(iscopyDate === true){
               for (let i = 0,length = weeklySpecialTimeArr.length;i<length;i++){
                 for (let j = i+1,len = weeklySpecialTimeArr.length;j<len;j++){
-                  if(gthat.DateAdd('m',5,weeklySpecialTimeArr[i]) > weeklySpecialTimeArr[j]){
+                  if(weeklySpecialTimeArr[i]+300000> weeklySpecialTimeArr[j]){
                     SpecialTrueOrFalse = 'true'
                     gthat.dialogVisible = true
                     gthat.isBorderColor = true
@@ -1938,11 +1956,6 @@
               let that = this
               $.each(gthat.createVol.timingVol.volList[j].weeks,function () {
                 if(that === this){
-                 /* if(gthat.DateAdd('m',5,Number(gthat.createVol.timingVol.volList[i].date[1])) > gthat.createVol.timingVol.volList[j].date[0]){
-                    trueOrFalse = '2'
-                    gthat.dialogVisible = true
-                    gthat.isborderColor = true
-                  }*/
                  isVolumeDayCopy = true
                 }else {
                     isVolumeDayCopy = false
@@ -1969,6 +1982,8 @@
         }else {
           isVolumeTimeCopy = false
         }
+        this.isBorderColor = false
+        this.isborderColor = false
         if(isVolumeTimeCopy === true){
           trueOrFalse = '2'
           //出现提示框以及标红
@@ -2060,7 +2075,8 @@
           type: 'warning'
         }).then(() => {
           delStrategys(this.idstr).then(res => {
-            this.addSourceSuccess()
+            this.addSourceSuccess();
+            this.selectedCount = ""
           }).catch(err => {
             this.delerrored()
             console.log(err)
@@ -2082,9 +2098,6 @@
         this.wIndex = 1200
         this.zIndex = 1;
         this.isofficeShow = false
-      },
-      focusInput() {
-        this.isChangePlan = true
       },
       clickInput() {
          this.isChangePlan = true
@@ -2261,6 +2274,13 @@
             this.isSourceTimes = true
         }
       },
+      isModifyNameFn(data) {
+          if (data) {
+            this.isChangePlan = true;
+          }else{
+            this.isChangePlan = false;
+          }
+      },
       changeSpecialFn(data){
 
         if(data ===  null){
@@ -2311,8 +2331,8 @@
         }
       },
       changeSpecialTime(data) {
-        this.isChangePlan = true
-        if(data ===null) {
+       // this.isChangePlan = true
+        if(data === null) {
           this.isModifySourceSpecialTime = false
         }else  {
           this.isModifySourceSpecialTime = true
@@ -2343,57 +2363,6 @@
         }
       },
 
-   DateAdd(interval, number, date) {
-   date = new Date(date)
-    switch (interval) {
-      case "y": {
-        date.setFullYear(date.getFullYear() + number);
-        return date;
-        break;
-      }
-      case "q": {
-        date.setMonth(date.getMonth() + number * 3);
-        return date;
-        break;
-      }
-      case "mon": {
-        date.setMonth(date.getMonth() + number);
-        return date;
-        break;
-      }
-      case "w": {
-        date.setDate(date.getDate() + number * 7);
-        return date;
-        break;
-      }
-      case "d": {
-        date.setDate(date.getDate() + number);
-        return date;
-        break;
-      }
-      case "h": {
-        date.setHours(date.getHours() + number);
-        return date;
-        break;
-      }
-      case "m": {
-        date.setMinutes(date.getMinutes() + number);
-        date = new Date(date).getTime()
-        return date;
-        break;
-      }
-      case "s": {
-        date.setSeconds(date.getSeconds() + number);
-        return date;
-        break;
-      }
-      default: {
-        date.setDate(date.getDate() + number);
-        return date;
-        break;
-      }
-    }
-  },
      addSourceSuccess() {
         this.$message({
             message: this.$t('common.operationSucceeds'),

@@ -1,6 +1,7 @@
 export default {
   common: {
     switchLanguageSuccess: "Switch language success",
+    switchLanguageError: "Switch language error",
     success: "Success",
     error: "Error",
     platformName: "Integrated machine control management system",
