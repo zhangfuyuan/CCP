@@ -54,7 +54,7 @@
         </span>
       </div>
 
-      <div v-if="isNoAuth && !isSubRoute"
+      <div v-if="isNoAuth && !isSubRoute && officeId==='1'"
            style="width: 538px;margin: 0 0 10px;border: 1px solid #F56C6C;display: flex;align-items: center;justify-content: space-between;cursor: pointer;border-radius: 4px;background-color: #fff;padding: 0 10px;"
            @click="toggleDialogInfo('verify')">
         <span>
@@ -97,11 +97,11 @@
                              :disabled="isNoAuth">{{$t('officeManager.modifyName')}}
                   </el-button>
                   <el-button type="text"
-                             v-if="!isNoAuth && curClickOfficeParentInfo.id===officeId"
+                             v-if="!isNoAuth && curClickOfficeParentInfo.id===officeId && officeId==='1'"
                              @click="verify(true)">{{$t('officeManager.refreshCertification')}}
                   </el-button>
                   <el-button type="text"
-                             v-if="isNoAuth && curClickOfficeParentInfo.id===officeId"
+                             v-if="isNoAuth && curClickOfficeParentInfo.id===officeId && officeId==='1'"
                              @click="toggleDialogInfo('verify')">{{$t('officeManager.authentication')}}
                   </el-button>
                 </div>
@@ -156,15 +156,15 @@
                            v-if="curClickOfficeInfo.id!==officeId">{{$t('common.delete')}}
                 </el-button>
                 <el-button type="text"
-                           v-if="!isNoAuth && curClickOfficeInfo.id===officeId"
+                           v-if="!isNoAuth && curClickOfficeInfo.id===officeId && officeId==='1'"
                            @click="verify(true)">{{$t('officeManager.refreshCertification')}}
                 </el-button>
                 <el-button type="text"
-                           v-if="isNoAuth && curClickOfficeInfo.id===officeId"
+                           v-if="isNoAuth && curClickOfficeInfo.id===officeId && officeId==='1'"
                            @click="toggleDialogInfo('verify')">{{$t('officeManager.authentication')}}
                 </el-button>
                 <el-button type="text"
-                           v-if="!isNoAuth && curClickOfficeInfo.id===officeId"
+                           v-if="!isNoAuth && curClickOfficeInfo.id===officeId && officeId==='1'"
                            :style="{ color: isNoAuth ? '#c0c4cc' : '#F56C6C' }"
                            @click="toggleDialogInfo('anti')">{{$t('officeManager.anti')}}
                 </el-button>
@@ -243,21 +243,23 @@
                     :maxlength="24"
                     :autofocus="true"></el-input>
         </div>
-        <div v-if="!isNoAuth && curClickOfficeInfo.type===0"
-             style="display: flex;justify-content: space-between;align-items: center;color: #606266;padding-top: 20px;font-size: 16px;">
-          <span>
-            {{$t('officeManager.distributablePoints')}}: &nbsp; <span style="color: #409EFF;">{{newInputTotalNumber-newOfficeForm.inputNumberVal}}</span>
-          </span>
 
-          <span>
-            <el-input-number size="small"
-                             v-model="newOfficeForm.inputNumberVal"
-                             :min="0"
-                             :max="newInputTotalNumber"
-                             @change="changePointsToNewOfficeHandle"
-                             :precision="0"></el-input-number>
-          </span>
-        </div>
+        <!--暂时隐藏新建子机构可分配点数-->
+        <!--<div v-if="!isNoAuth && curClickOfficeInfo.type===0"-->
+             <!--style="display: flex;justify-content: space-between;align-items: center;color: #606266;padding-top: 20px;font-size: 16px;">-->
+          <!--<span>-->
+            <!--{{$t('officeManager.distributablePoints')}}: &nbsp; <span style="color: #409EFF;">{{newInputTotalNumber-newOfficeForm.inputNumberVal}}</span>-->
+          <!--</span>-->
+
+          <!--<span>-->
+            <!--<el-input-number size="small"-->
+                             <!--v-model="newOfficeForm.inputNumberVal"-->
+                             <!--:min="0"-->
+                             <!--:max="newInputTotalNumber"-->
+                             <!--@change="changePointsToNewOfficeHandle"-->
+                             <!--:precision="0"></el-input-number>-->
+          <!--</span>-->
+        <!--</div>-->
         <div v-if="!isNoAuth && curClickOfficeInfo.type!==0" style="color: #909399;padding-top: 20px;">
           {{$t('officeManager.intelligentAllocationPointsMode')}}
         </div>
@@ -287,7 +289,9 @@
         <el-input v-model="editOfficeName" :maxlength="24" :placeholder="$t('officeManager.organizationNameNotExceed24')"></el-input>
 
         <div slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="edit(), isShowDialog = false">{{$t('common.confirm')}}</el-button>
+          <el-button type="primary"
+                     @click="edit(), isShowDialog = false"
+                     :disabled="editOfficeName.length===0">{{$t('common.confirm')}}</el-button>
           <el-button plain @click="isShowDialog = false">{{$t('common.cancel')}}</el-button>
         </div>
       </template>
@@ -1173,6 +1177,7 @@
 
     .el-card.is-always-shadow.cur-card {
       border: 2px solid rgba(65,185,255,.9);
+      box-shadow: 0 0 20px #409EFF;
     }
 
     .el-card__body {

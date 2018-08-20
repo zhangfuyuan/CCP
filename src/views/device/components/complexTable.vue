@@ -457,17 +457,37 @@
               </div>
 
               <div v-show="isShowBasicSettingsResult" style="padding-top: 10px;">
-                <div style="margin-bottom: 10px;color: #666;">{{basicSettingsResult}}</div>
+                <template v-if="dialogInfo.length>1">
+                  <div style="margin-bottom: 5px;">
+                    <el-alert
+                      :title="basicSettingsResult"
+                      type="info"
+                      :closable="false"
+                      show-icon>
+                    </el-alert>
+                  </div>
 
-                <ul class="basicSettings-result">
-                  <li v-for="(item, index) in basicSettingsResultList" :key="index">
-                    <svg-icon icon-class="AIO" /> {{deviceIdTurnName(item.id)}} -
-                    <span v-if="item.status==='0'">{{$t('deviceManager.offline')}}</span>
-                    <span v-else-if="item.status==='1'">{{$t('deviceManager.online')}}</span>
-                    <span v-else-if="item.status==='2'">{{$t('deviceManager.standby')}}</span>
-                    <span v-else-if="item.status==='3'">{{$t('deviceManager.noPointsOffline')}}</span>
-                  </li>
-                </ul>
+                  <ul class="basicSettings-result">
+                    <li v-for="(item, index) in basicSettingsResultList" :key="index">
+                      <svg-icon icon-class="AIO" /> {{deviceIdTurnName(item.id)}} -
+                      <span v-if="item.status==='0'">{{$t('deviceManager.offline')}}</span>
+                      <span v-else-if="item.status==='1'">{{$t('deviceManager.online')}}</span>
+                      <span v-else-if="item.status==='2'">{{$t('deviceManager.standby')}}</span>
+                      <span v-else-if="item.status==='3'">{{$t('deviceManager.noPointsOffline')}}</span>
+                    </li>
+                  </ul>
+                </template>
+
+                <template v-else>
+                  <el-alert
+                    :title="item.title"
+                    :type="item.type"
+                    :closable="false"
+                    show-icon
+                    v-for="(item, index) in basicSettingsResultList"
+                    :key="index" style="margin-bottom: 10px;">
+                  </el-alert>
+                </template>
               </div>
             </template>
           </el-tab-pane>
@@ -668,7 +688,8 @@
                                   (dialogInfo.length>1 && !switchingPowerRadioGroup && !isSetVolumeChecked) ||
                                   (dialogInfo.length===1 && dialogInfo[0].status==='0' && !isSetVolumeChecked)"
                        type="primary"
-                       @click="setBasicDevice">{{$t('common.confirm')}}</el-button>
+                       @click="setBasicDevice"
+                       :loading="isBasicSettingsLoading">{{$t('common.confirm')}}</el-button>
             <el-button plain @click="resetBasicSettings">{{$t('common.resetBtn')}}</el-button>
           </div>
         </template>
@@ -676,7 +697,8 @@
           <div slot="footer" style="text-align: right;">
             <el-button :disabled="(!uploadFileInfo && lockScreenRadio!=='0' && lockScreenImgRadio==='1') || !lockScreenRadio || !!timer"
                        type="primary"
-                       @click="setLockScreenDevice">{{$t('common.confirmBtn')}}</el-button>
+                       @click="setLockScreenDevice"
+                       :loading="isBasicSettingsLoading">{{$t('common.confirmBtn')}}</el-button>
             <el-button plain @click="resetLockScreenSettings">{{$t('common.resetBtn')}}</el-button>
           </div>
         </template>
@@ -684,7 +706,8 @@
           <div slot="footer" style="text-align: right;">
             <el-button :disabled="!uploadAPKInfo || (uploadAPKInfo&&uploadAPKInfo.percentage!==100) || !!timer"
                        type="primary"
-                       @click="updateAPKDevice">{{$t('common.updateBtn')}}</el-button>
+                       @click="updateAPKDevice"
+                       :loading="isBasicSettingsLoading">{{$t('common.updateBtn')}}</el-button>
             <el-button plain @click="resetAPKSettings">{{$t('common.resetBtn')}}</el-button>
           </div>
         </template>
@@ -997,7 +1020,7 @@
 </template>
 
 <script>
-import { formatDate, treeify } from '@/utils'
+import { formatDate, treeify, uniqueArr } from '@/utils'
 import Multiselect from 'vue-multiselect'
 import { mapGetters } from 'vuex'
 import { getDeviceList, getPlanOfDevice, movePlanToDevice, getPlanList, setDevice_powerOff, setDevice_standby,
@@ -1104,6 +1127,22 @@ export default {
 
       return num;
     },
+    actions() {
+      return this.roles.indexOf('root')>-1 ?
+        [
+          { label: this.$t('deviceManager.setting'), val: 'setting' },
+          { label: this.$t('deviceManager.screen'), val: 'screen' },
+          { label: this.$t('deviceManager.timingPlan'), val: 'timingPlan' },
+          { label: this.$t('deviceManager.mobilePacket'), val: 'mobilePacket' },
+          { label: this.$t('common.delete'), val: 'delete' }
+        ] :
+        [
+          { label: this.$t('deviceManager.setting'), val: 'setting' },
+          { label: this.$t('deviceManager.screen'), val: 'screen' },
+          { label: this.$t('deviceManager.timingPlan'), val: 'timingPlan' },
+          { label: this.$t('common.delete'), val: 'delete' }
+        ];
+    }
   },
   data() {
     return {
@@ -1116,7 +1155,7 @@ export default {
       listTotalCount: 0,
       isShowTotalCount: true,
       tableHeight: document.documentElement.clientHeight - 180,
-      actions: [],
+//      actions: [],
       dialogFormVisible: false,
       dialogStatus: '',
       checkedDeviceList: [],
@@ -1181,6 +1220,7 @@ export default {
       basicSettingsResult: '',
       basicSettingsResultList: [],
       isBasicSettingsChangeNoSave: false,
+      isBasicSettingsLoading: false,
     }
   },
   filters: {
@@ -1205,20 +1245,20 @@ export default {
     }
   },
   created() {
-    this.actions = this.roles.indexOf('root')>-1 ?
-      [
-        { label: this.$t('deviceManager.setting'), val: 'setting' },
-        { label: this.$t('deviceManager.screen'), val: 'screen' },
-        { label: this.$t('deviceManager.timingPlan'), val: 'timingPlan' },
-        { label: this.$t('deviceManager.mobilePacket'), val: 'mobilePacket' },
-        { label: this.$t('common.delete'), val: 'delete' }
-      ] :
-      [
-        { label: this.$t('deviceManager.setting'), val: 'setting' },
-        { label: this.$t('deviceManager.screen'), val: 'screen' },
-        { label: this.$t('deviceManager.timingPlan'), val: 'timingPlan' },
-        { label: this.$t('common.delete'), val: 'delete' }
-      ];
+//    this.actions = this.roles.indexOf('root')>-1 ?
+//      [
+//        { label: this.$t('deviceManager.setting'), val: 'setting' },
+//        { label: this.$t('deviceManager.screen'), val: 'screen' },
+//        { label: this.$t('deviceManager.timingPlan'), val: 'timingPlan' },
+//        { label: this.$t('deviceManager.mobilePacket'), val: 'mobilePacket' },
+//        { label: this.$t('common.delete'), val: 'delete' }
+//      ] :
+//      [
+//        { label: this.$t('deviceManager.setting'), val: 'setting' },
+//        { label: this.$t('deviceManager.screen'), val: 'screen' },
+//        { label: this.$t('deviceManager.timingPlan'), val: 'timingPlan' },
+//        { label: this.$t('common.delete'), val: 'delete' }
+//      ];
   },
   mounted() {
 
@@ -1442,8 +1482,11 @@ export default {
       })
     },
     setBasicDevice() { // todo 基础设置 - 电源/音量
+      if (this.isBasicSettingsLoading) return false;
+
       console.log(8126, this.switchingPowerRadioGroup, this.setVolumeSlider, this.isSetVolumeChecked, this.isChangeSetDialog, this.dialogInfo);
 
+      this.isBasicSettingsLoading = true;
       let setDeviceIds = [];
       this.dialogInfo.map(item => {
         setDeviceIds.push(item.id)
@@ -1456,9 +1499,53 @@ export default {
         fun['setDevice_' + this.switchingPowerRadioGroup]({ terminalIds: setDeviceIds }).then(res => {
           console.log(res);
 
+          if (this.dialogInfo.length===1) {
+            this.dialogInfo[0].status = this.switchingPowerRadioGroup;
+            this.basicSettingsResultList.push({
+                title: this.$t('deviceManager.powerSettings') + (res.pass===1?this.$t('common.operationSucceeds'):this.$t('common.operationFailure')),
+                type: res.pass===1 ? 'success' : 'error'
+            });
+          } else if (this.dialogInfo.length>1) {
+            this.basicSettingsResult += '  |  ' + (() => {
+                return '(' + this.$t('deviceManager.powerSettings') + ')' +
+                  this.$t('common.operatingResult') + ': ' +
+                  this.$t('common.success') + res.pass + '  ' +
+                  this.$t('common.error') + res.fail + ' ';
+              })();
+            let result = Object.keys(res.teResultJson).map(item => {
+              return {
+                id: item,
+                status: res.teResultJson[item]
+              }
+            });
+            let tmp = this.basicSettingsResultList.map(item => item.id );
+            this.basicSettingsResultList.push(...result.filter(item => tmp.indexOf(item.id) === -1));
+          }
+
           this.isShowBasicSettingsResult = true;
+          this.isBasicSettingsChangeNoSave = false;
+          setTimeout(() => { this.isBasicSettingsLoading = false; }, 500);
+          console.log('电源设置结果列表', this.basicSettingsResultList);
+        }).catch(err => {
+          console.log(err)
+
+          setTimeout(() => { this.isBasicSettingsLoading = false; }, 500);
+        })
+      }
+
+      if (!this.isSetVolumeChecked && this.dialogInfo.length>1) return false;
+
+      setDeviceVolume({ terminalIds: setDeviceIds, volume: this.setVolumeSlider }).then(res => {
+        console.log(res)
+
+        if (this.dialogInfo.length===1) {
+          this.basicSettingsResultList.push({
+            title: this.$t('deviceManager.volumeSettings') + (res.pass===1?this.$t('common.operationSucceeds'):this.$t('common.operationFailure')),
+            type: res.pass===1 ? 'success' : 'error'
+          });
+        } else if (this.dialogInfo.length>1) {
           this.basicSettingsResult += '  |  ' + (() => {
-              return '(' + this.$t('deviceManager.powerSettings') + ')' +
+              return '(' + this.$t('deviceManager.volumeSettings') + ')' +
                 this.$t('common.operatingResult') + ': ' +
                 this.$t('common.success') + res.pass + '  ' +
                 this.$t('common.error') + res.fail + ' ';
@@ -1469,51 +1556,18 @@ export default {
               status: res.teResultJson[item]
             }
           });
-          this.basicSettingsResultList.push(...result);
-          console.log('电源设置结果列表', result);
-
-          this.isBasicSettingsChangeNoSave = false;
-          this.$message({
-            message: this.$t('common.operationSucceeds'),
-            type: 'success'
-          });
-        }).catch(err => {
-          console.log(err)
-
-          this.$message.error(this.$t('common.operationFailure'));
-        })
-      }
-
-      if (!this.isSetVolumeChecked && this.dialogInfo.length>1) return false;
-
-      setDeviceVolume({ terminalIds: setDeviceIds, volume: this.setVolumeSlider }).then(res => {
-        console.log(res)
+          let tmp = this.basicSettingsResultList.map(item => item.id );
+          this.basicSettingsResultList.push(...result.filter(item => tmp.indexOf(item.id) === -1));
+        }
 
         this.isShowBasicSettingsResult = true;
-        this.basicSettingsResult += '  |  ' + (() => {
-            return '(' + this.$t('deviceManager.volumeSettings') + ')' +
-              this.$t('common.operatingResult') + ': ' +
-              this.$t('common.success') + res.pass + '  ' +
-              this.$t('common.error') + res.fail + ' ';
-          })();
-        let result = Object.keys(res.teResultJson).map(item => {
-          return {
-            id: item,
-            status: res.teResultJson[item]
-          }
-        });
-        this.basicSettingsResultList.push(...result);
-        console.log('音量设置结果列表', result);
-
         this.isBasicSettingsChangeNoSave = false;
-        this.$message({
-          message: this.$t('common.operationSucceeds'),
-          type: 'success'
-        });
+        setTimeout(() => { this.isBasicSettingsLoading = false; }, 500);
+        console.log('音量设置结果列表', this.basicSettingsResultList);
       }).catch(err => {
         console.log(err);
 
-        this.$message.error(this.$t('common.operationFailure'));
+        setTimeout(() => { this.isBasicSettingsLoading = false; }, 500);
       })
     },
     deleteDevices() { // todo   删除终端
@@ -1924,10 +1978,10 @@ export default {
     },
     setLockScreenDevice() { // todo 锁屏设置
       let deviceIds = [];
-      this.appMainLoading = this.showLoading('#deviceDialog');
       this.dialogInfo.map(item => {
         deviceIds.push(item.id)
       });
+      this.isBasicSettingsLoading = true;
 
       setLockScreen({
         terminalIds: deviceIds + '',
@@ -1960,7 +2014,7 @@ export default {
                   txt: r.data[item]===0 ? this.$t('common.error') : (r.data[item]===1?this.$t('common.success'):this.$t('common.processing'))
                 };
               });
-              this.appMainLoading.close();
+              this.isBasicSettingsLoading = false;
 
               if (isHas2) { // 继续轮询
 //                count++;
@@ -1985,7 +2039,7 @@ export default {
               console.log(e)
 
               clearInterval(sId);
-              this.appMainLoading.close();
+              this.isBasicSettingsLoading = false;
               this.$message.error(this.$t('common.operationFailure'));
             });
           }, 5000);
@@ -1995,7 +2049,7 @@ export default {
           this.lockScreenResultList = Object.keys(res.data).map(item => {
             return { id: item, result: res.data[item] };
           });
-          this.appMainLoading.close();
+          this.isBasicSettingsLoading = false;
           this.$message({
             message: this.$t('common.operationSucceeds'),
             type: 'success'
@@ -2004,7 +2058,7 @@ export default {
         }
       }).catch(err => {
         console.log(err);
-        this.appMainLoading.close();
+        this.isBasicSettingsLoading = false;
         this.$message.error(this.$t('common.operationFailure'));
       })
     },
@@ -2014,7 +2068,7 @@ export default {
     },
     updateAPKDevice() {
       let deviceIds = [];
-      this.appMainLoading = this.showLoading('#deviceDialog');
+      this.isBasicSettingsLoading = true;
       this.updateApkStep = '3';
       this.dialogInfo.map(item => {
         deviceIds.push(item.id)
@@ -2049,7 +2103,7 @@ export default {
                   txt: r.data[item]===0 ? this.$t('common.error') : (r.data[item]===1?this.$t('common.success'):this.$t('common.processing'))
                 };
               });
-              this.appMainLoading.close();
+              this.isBasicSettingsLoading = false;
 
               if (isHas2) { // 继续轮询
 //                count++;
@@ -2074,7 +2128,7 @@ export default {
               console.log(e);
 
               clearInterval(this.timer);
-              this.appMainLoading.close();
+              this.isBasicSettingsLoading = false;
               this.$message.error(this.$t('common.operationFailure'));
 //              count++;
 //              if(count >= 5) {
@@ -2094,7 +2148,7 @@ export default {
           this.$message.error(this.$t('common.operationFailure'));
         }
         this.updateApkversion = '--';
-        this.appMainLoading.close();
+        this.isBasicSettingsLoading = false;
       })
     },
     resetAPKSettings() {
@@ -2376,6 +2430,10 @@ export default {
   #planTable th .el-checkbox{
     display: none;
   }
+
+  #tab-basicSettings, #tab-lockScreenSettings, #tab-apkSettings {
+    font-weight: bold;
+  }
 </style>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
@@ -2556,6 +2614,7 @@ export default {
       margin-bottom: 5px;
     }
   }
-}
 
+
+}
 </style>

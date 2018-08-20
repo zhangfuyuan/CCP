@@ -299,7 +299,7 @@ export default {
     nameLengthTips: "The name should not be empty and should not exceed 24 characters in length",
     passwordLengthTips: "The password cannot be empty and is not longer than 12 or less than 6 characters",
     markLengthTips: "The length should not exceed 48 characters",
-    searchNameOrUsername: "Search for a name or username",
+    searchNameOrUsername: "Search for a ID or username",
     createdSuccess:"New success",
     createdError:"New failure",
     createdErr:"Unable to create system administrator role account for this organization",
@@ -309,7 +309,8 @@ export default {
     attention: "Attention",
     logOut:"Account online will be forced to log out",
     ifDelete:"Whether or not to delete",
-    isDeletePlan:"Do you want to delete the selected plan"
+    isDeletePlan:"Do you want to delete the selected plan",
+    accountId: "Account ID",
   },
   ipManager: {
     serverIP: "Server IP / domain name",
@@ -328,6 +329,7 @@ export default {
     username: "Username",
     role: "Role",
     modifyPassword: "Modify password",
+    modifyName: "Modify name",
     logOut: "LogOut",
     newPassword: "New password",
     confirmPassword: "Confirm password",

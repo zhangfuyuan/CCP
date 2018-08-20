@@ -31,7 +31,7 @@
       </div>
       <el-dropdown-menu class="language-dropdown" slot="dropdown">
         <template v-for="item in canSwitchLanguage">
-          <el-dropdown-item :command="item.i18n">
+          <el-dropdown-item :command="item.i18n" :class="{ 'cur-lang': localeLanguage===item.i18n }">
             {{item.txt}}
           </el-dropdown-item>
         </template>
@@ -180,6 +180,15 @@ export default {
   }
 }
 </script>
+
+<style rel="stylesheet/scss" lang="scss">
+  /* reset element-ui css */
+  .language-dropdown {
+    .cur-lang {
+      background-color: #F0F7FF;
+    }
+  }
+</style>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
 @import "src/styles/variables.scss";

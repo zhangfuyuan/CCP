@@ -4,7 +4,10 @@
     <div class="header">
       <!--左侧操作按钮-->
       <div class="btns">
-        <el-button type="primary" @click="confirmHandle" style="width: 100px;">{{$t('common.confirm')}}</el-button>
+        <el-button type="primary"
+                   @click="confirmHandle"
+                   style="width: 100px;"
+                   :disabled="!isOperated">{{$t('common.confirm')}}</el-button>
         <el-button plain @click="cancelHandle" style="margin-left: 50px;width: 100px;">{{$t('common.cancel')}}</el-button>
       </div>
 
@@ -211,6 +214,7 @@
         higherDistributablePoints: 0, // 获取所有父级可分配点数（根据计数器可变）
         childrenHigherDistributablePoints: 0, // 获取子机构的所有父级可分配点数（当前机构+当前机构的所有父级总可分配点数）（根据计数器可变）
         curOfficeIsWisdom: false,
+        isOperated: false,
       }
     },
     computed: {
@@ -315,6 +319,7 @@
       changePointsHandle(args, min, max, obj) {
         console.log('最后变更点数后', args, min, max);
         this.$bus.emit('distribution-points-operated', true);
+        this.isOperated = true;
 
         /**
          *  分配点数原则：
@@ -579,6 +584,7 @@
       },
       changeWisdomSubmit() {
         this.$bus.emit('distribution-points-operated', true);
+        this.isOperated = true;
 
         try {
           let allChildren =  getChildrenByBFS(this.confirmForm.curOfficeInfo, 'children');

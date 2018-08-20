@@ -27,7 +27,7 @@
 
           <el-input
             @keyup.enter.native="searchUser"
-            style="width: 200px;"
+            style="width: 250px;"
             :placeholder="$t('accountManager.searchNameOrUsername')"
             v-model="searchVal"
             clearable
@@ -46,6 +46,11 @@
           highlight-current-row
           stripe
           style="width: 100%">
+          <el-table-column
+            prop="id"
+            :label="$t('accountManager.accountId')">
+          </el-table-column>
+
           <el-table-column
             sortable
             prop="name"

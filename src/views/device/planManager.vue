@@ -968,18 +968,18 @@
             ]
           }
         },
-        actionOptions: [
-          {
-            value: '1',
-            label: this.$t('planManager.startingUp'),
-          }, {
-            value: '3',
-            label: this.$t('planManager.powerOff'),
-          }, {
-            value: '2',
-            label: this.$t('planManager.standBy'),
-          }
-        ],
+//        actionOptions: [
+//          {
+//            value: '1',
+//            label: this.$t('planManager.startingUp'),
+//          }, {
+//            value: '3',
+//            label: this.$t('planManager.powerOff'),
+//          }, {
+//            value: '2',
+//            label: this.$t('planManager.standBy'),
+//          }
+//        ],
         pickerOptions: {
           shortcuts: [{
             text: this.$t('planManager.nextDay'),
@@ -1063,6 +1063,20 @@
         }else{
           return false
         }*/
+      },
+      actionOptions() {
+        return [
+          {
+            value: '1',
+            label: this.$t('planManager.startingUp'),
+          }, {
+            value: '3',
+            label: this.$t('planManager.powerOff'),
+          }, {
+            value: '2',
+            label: this.$t('planManager.standBy'),
+          }
+        ];
       }
     },
     watch: {

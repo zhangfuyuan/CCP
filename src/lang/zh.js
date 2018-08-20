@@ -299,7 +299,7 @@ export default {
     nameLengthTips: "名称不能为空，且长度不超过24个字符",
     passwordLengthTips: "密码不能为空，且长度不超过12或少于6个字符",
     markLengthTips: "长度不超过48个字符",
-    searchNameOrUsername: "搜索名称或用户名",
+    searchNameOrUsername: "搜索ID或用户名",
     createdSuccess:"新建成功！",
     createdError:"新建失败！",
     createdErr: "无法为该机构创建系统管理员角色账号",
@@ -309,7 +309,8 @@ export default {
     attention: "注意",
     logOut: "若账号在线将强制退出登录",
     ifDelete: "是否删除",
-    isDeletePlan: "是否删除所选计划"
+    isDeletePlan: "是否删除所选计划",
+    accountId: "账号ID",
   },
   ipManager: {
     serverIP: "服务器 IP / 域名",
@@ -328,6 +329,7 @@ export default {
     username: "用户名",
     role: "角色",
     modifyPassword: "修改密码",
+    modifyName: "修改名称",
     logOut: "注销登录",
     newPassword: "新密码",
     confirmPassword: "确认密码",

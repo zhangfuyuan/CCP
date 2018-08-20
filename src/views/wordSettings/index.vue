@@ -2,7 +2,7 @@
   <div class="wordSettings-wrapper">
     <div class="btns">
       <el-row style="margin-bottom: 20px;">
-        <el-button ><a href="/prm_file/lemma/替换词条模板.xlsx" download="替换词条模板.xlsx">{{$t('wordSettings.exportWord')}}</a></el-button>
+        <el-button ><a :href="serverIp + '/prm_file/lemma/替换词条模板.xlsx'" download="替换词条模板.xlsx">{{$t('wordSettings.exportWord')}}</a></el-button>
         <el-button type="primary" @click="toggleDialog('import')">{{$t('wordSettings.uploadWord')}}</el-button>
       </el-row>
     </div>
@@ -205,11 +205,14 @@
         'localeLanguage',
         'roles',
         'officeId',
+        'serverIp'
       ])
     },
     watch: {
     },
     created() {
+      console.log('词条模板下载地址', this.serverIp+'/prm_file/lemma/替换词条模板.xlsx')
+
       getLemmaList().then(res => {
         console.log(res)
 
