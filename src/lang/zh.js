@@ -192,6 +192,7 @@ export default {
     pleaseSelectPlanTips: "请先选中一条计划",
     searchPlanName: "搜索计划名称",
     currentWay: "当前方式",
+    currentVersion: "当前版本",
     minute: "分钟",
     enterLockScreen: "进入锁屏",
     notLockScreen: "不锁屏",

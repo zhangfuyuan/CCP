@@ -192,6 +192,7 @@ export default {
     pleaseSelectPlanTips: "Please select a plan first",
     searchPlanName: "Search plan name",
     currentWay: "Current way",
+    currentVersion: "Current version",
     minute: "Minute",
     enterLockScreen: "Enter lock screen",
     notLockScreen: "Don't lock screen",

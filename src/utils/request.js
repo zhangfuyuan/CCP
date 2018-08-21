@@ -8,7 +8,7 @@ import i18n from '@/lang'
 // 创建axios实例
 const service = axios.create({
   baseURL: process.env.BASE_API, // api的base_url
-  timeout: 10000, // 请求超时时间
+  timeout: 1000*100, // 请求超时时间100s
   transformRequest: [function (data) {
 		data = Qs.stringify(data);
 		return data;

@@ -168,6 +168,7 @@
                   default-value=""
                   @change="changeFn"
                   @blur="changeFn"
+                  @focus="elTimePickerFn"
                   :class="{'borderColor':isborderColor}">
                 </el-time-picker>
 
@@ -210,6 +211,7 @@
                     size="mini"
                     style="width: 120px;"
                     :class="{'borderColor':isBorderColor}"
+                    @focus="elTimePickerFn"
                     @change="changeSpecialFn"
                     @blur="changeSpecialFn">
                   </el-time-picker>
@@ -226,6 +228,7 @@
                     :picker-options="pickerOptions"
                     value-format="timestamp"
                     size="mini"
+                    @focus="elTimePickerFn"
                    @change="specialPlanChange">
                   </el-date-picker>
 
@@ -264,6 +267,7 @@
                         size="mini"
                         style="width: 30%;margin-right: 15px"
                         @change="changeVolumeTimePicker"
+                        @focus="elTimePickerFn"
                         value-format="timestamp"
                         :class="{'borderColor':isVolumeBorderColor}">
                       </el-time-picker>
@@ -460,6 +464,7 @@
                   style="width: 120px;"
                   @change="changeModifySourceWeeklyTimes"
                   @blur="changeModifySourceWeeklyTimes"
+                  @focus="elTimePickerFn"
                   :class="{'borderColor':isborderColor}" >
                 </el-time-picker>
 
@@ -503,6 +508,7 @@
                   style="width: 120px;"
                   @change="changeSpecialTime"
                   @blur="changeSpecialTime"
+                  @focus="elTimePickerFn"
                   :class="{'borderColor':isBorderColor}">
                 </el-time-picker>
 
@@ -518,6 +524,7 @@
                   value-format="timestamp"
                   size="mini"
                   @change="changeSpecialDay"
+                  @focus="elTimePickerFn"
                   @blue="changeSpecialDay" >
                 </el-date-picker>
 
@@ -556,6 +563,7 @@
                       size="mini"
                       style="width: 30%;margin-right: 15px"
                       @change="changeVolumeTimePicker"
+                      @focus="elTimePickerFn"
                       value-format="timestamp"
                       format="HH:mm"
                      :class="{'borderColor':isVolumeBorderColor}">
@@ -805,7 +813,7 @@
         <el-button type="primary"
                    v-if="isChangeContent === 'volume'"
                    @click="dialogVisible = false;addVolume('true')"
-                   :disabled="!isChangePlan ||
+                   :disabled="!isChangePlan || !createForm.name ||
                       (createVol.timingVol.isOpen && !isChoiseVolumeWeekFn) ||
                       (createVol.timingVol.isOpen && !isChooiseVolumeTimeFn)">{{$t('common.confirmBtn')}}</el-button>
       </div>
@@ -911,7 +919,7 @@
               {
                 id: Date.now(),
                 isAllCheckedWeek: false,
-                time: new Date(1534262400000),
+                time: new Date(1534262400000).getTime(),
                 planType:"1",
                 operation: '1',
                 weeks: [],
@@ -923,7 +931,7 @@
             planList: [
               {
                 id: Date.now(),
-                time: new Date(1534262400000),
+                time: new Date(1534262400000).getTime(),
                 planType:"2",
                 operation: '2',
                 date: (function () {
@@ -1174,7 +1182,7 @@
             this.createForm.specialPlan.planList = [
               {
                 id: Date.now(),
-                time: new Date(1534262400000),
+                time: new Date(1534262400000).getTime(),
                 planType:"2",
                 operation: '2',
                 date: (function () {
@@ -1190,7 +1198,7 @@
               {
                 id: Date.now(),
                 isAllCheckedWeek: false,
-                time: new Date(1534262400000),
+                time: new Date(1534262400000).getTime(),
                 planType:"1",
                 operation: '1',
                 weeks: [],
@@ -1391,7 +1399,7 @@
                 this.createForm.weeklyPlan.planList.push( {
                   id: Date.now(),
                   isAllCheckedWeek: false,
-                  time: new Date(1534262400000),
+                  time: new Date(1534262400000).getTime(),
                   planType:"1",
                   operation: '1',
                   weeks: [],
@@ -1399,7 +1407,7 @@
               }else if(!this.createForm.specialPlan.isOpen){
                 this.createForm.specialPlan.planList.push( {
                   id: Date.now(),
-                  time: new Date(1534262400000),
+                  time: new Date(1534262400000).getTime(),
                   planType:"2",
                   operation: '2',
                   date: (function () {
@@ -1545,6 +1553,9 @@
 
       },
       isChangeContents(type) {
+          this.isBorderColor = "";
+         this.isborderColor = "";
+         this.isVolumeBorderColor = "";
           this.isChangeContent = type
       },
       emptySetting() {
@@ -1562,7 +1573,7 @@
           isAllCheckedWeek: false,
           action: '1',
           operation: '1',
-          time: new Date(1534262400000),
+          time: new Date(1534262400000).getTime(),
           weeks: [],
         })
         this.createForm.specialPlan.planList.splice('');
@@ -1570,7 +1581,7 @@
           id: Date.now(),
           action: '1',
           operation:'1',
-          time: new Date(1534262400000),
+          time: new Date(1534262400000).getTime(),
           date: (function () {
             const end = new Date();
             const start = new Date();
@@ -1711,7 +1722,7 @@
           this.createForm.weeklyPlan.planList.push({
             id: Date.now(),
             isAllCheckedWeek: false,
-            time: new Date(1534262400000),
+            time: new Date(1534262400000).getTime(),
             planType:"1",
             operation: '1',
             weeks: [],
@@ -1725,7 +1736,7 @@
         this.isChangePlan = true
         this.createForm.specialPlan.planList.push({
           id: Date.now(),
-          time: new Date(1534262400000),
+          time: new Date(1534262400000).getTime(),
           planType:"2",
           operation: '2',
           date: (function () {
@@ -2375,6 +2386,11 @@
         }else{
           this.isChoiseTiming = false
         }
+      },
+      elTimePickerFn(){
+          this.isborderColor = ""
+          this.isBorderColor = ""
+          this.isVolumeBorderColor = ""
       },
 
      addSourceSuccess() {

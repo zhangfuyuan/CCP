@@ -149,7 +149,7 @@
     components: {  },
     data() {
       return {
-        count: 100,
+        count: 0,
         searchVal: '',
         listLoading: false,
         dialogVisible: false,

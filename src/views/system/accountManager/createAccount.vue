@@ -104,7 +104,8 @@
                    @click="submitForm('accountForm')"
                    :disabled="!accountForm.username || accountForm.username.length<6 || showErrMsg.username.length>0 ||
                               !accountForm.name || !accountForm.password || accountForm.password.length<6 ||
-                              !accountForm.roleId || !accountForm.officeId">{{$t('common.confirmBtn')}}
+                              !accountForm.roleId || !accountForm.officeId"
+                   :loading="isSubmitLoading">{{$t('common.confirmBtn')}}
         </el-button>
         <el-button @click="cancelHandle">{{$t('common.cancelBtn')}}</el-button>
       </el-form-item>
@@ -138,11 +139,15 @@
         } else if (value.trim().length>=6 && value.trim().length<=12) {
           this.showErrMsg.username = '';
 
-          this.queryUsernameIsExist().then(() => {
+          this.queryUsernameIsExist().then((res) => {
+            console.log(res);
+
             this.showErrMsg.username = '';
             callback();
-          }).catch(() => {
-            this.showErrMsg.username = this.$t('accountManager.usernameExistsTips');
+          }).catch((err) => {
+            console.log(err);
+
+            if (err.isSuccess===false && err.data==='loginNameRepeat') this.showErrMsg.username = this.$t('accountManager.usernameExistsTips');
             callback(new Error(' '));
           });
         } else {
@@ -220,6 +225,7 @@
           mark: '',
         },
         isTriggerBeforeRouteLeave: true,
+        isSubmitLoading: false
       }
     },
     computed: {
@@ -250,11 +256,15 @@
     },
     methods: {
       submitForm(formName) {
+        this.isSubmitLoading = true;
+
         this.$refs[formName].validate((valid) => {
           if (valid) {
             if(this.accountForm.officeId === '1' && this.accountForm.roleId === '1'){
               this.$message.error(this.$t("accountManager.createdErr"));
-                return
+
+              setTimeout(() => { this.isSubmitLoading = false; }, 1000);
+              return false;
             }else {
               saveAccountInfo({
                 name: this.accountForm.name,
@@ -264,15 +274,21 @@
                 roleIds: this.accountForm.roleId,
                 officeId: this.accountForm.officeId
               }).then(res => {
-                this.successed()
+                this.successed();
+                setTimeout(() => { this.isSubmitLoading = false; }, 1000);
+
                 console.log(res)
               }).catch(err =>{
-                this.errored()
+                this.errored();
+                setTimeout(() => { this.isSubmitLoading = false; }, 1000);
+
                 console.log(err)
               })
             }
           } else {
             console.log('error submit!!');
+
+            setTimeout(() => { this.isSubmitLoading = false; }, 1000);
             return false;
           }
         });
@@ -319,20 +335,13 @@
       queryUsernameIsExist() {
         return new Promise((resolve, reject) => {
           checkAccountName(this.accountForm.username).then(res => {
-            resolve();
+            resolve(res);
           }).catch(err => {
-            reject();
-            console.log(err)
+            reject(err);
           })
-
         })
       },
-
-
-
-
-
-  successed() {
+      successed() {
         this.$message({
             message: this.$t('accountManager.createdSuccess'),
             type: 'success'
