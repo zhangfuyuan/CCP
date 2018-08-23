@@ -231,7 +231,8 @@
     computed: {
       ...mapGetters([
         'language',
-        'officeId'
+        'officeId',
+        'publicKeyJson',
       ]),
     },
     created(){
@@ -266,10 +267,18 @@
               setTimeout(() => { this.isSubmitLoading = false; }, 1000);
               return false;
             }else {
+              let encryptedPswd = this.publicKeyJson.isLandingEncryption ? '' : this.accountForm.password;
+
+              if (this.accountForm.password.length!==256 && this.publicKeyJson.isLandingEncryption){
+                let publicKey = RSAUtils.getKeyPair(this.publicKeyJson.exponent, '', this.publicKeyJson.modulus);
+                encryptedPswd = RSAUtils.encryptedString(publicKey, this.accountForm.password)
+              }
+              console.log('是否加密', this.publicKeyJson.isLandingEncryption, encryptedPswd.length);
+
               saveAccountInfo({
                 name: this.accountForm.name,
                 loginName: this.accountForm.username,
-                password: this.accountForm.password,
+                password: encryptedPswd,
                 remarks: this.accountForm.mark,
                 roleIds: this.accountForm.roleId,
                 officeId: this.accountForm.officeId

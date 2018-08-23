@@ -2094,7 +2094,7 @@ export default {
               this.isSettingsLoading = false;
               this.$message.error(this.$t('common.operationFailure'));
             });
-          }, 5000);
+          }, 3000);
 
         } else { // 不锁屏/默认锁屏
           if (res.data.updateDate) delete res.data.updateDate;
@@ -2187,7 +2187,7 @@ export default {
 //                this.$message.error(this.$t('common.operationFailure'));
 //              }
             });
-          }, 5000);
+          }, 3000);
         }
       }).catch(err => {
         console.log(err);

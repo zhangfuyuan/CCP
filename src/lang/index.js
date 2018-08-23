@@ -8,6 +8,8 @@ import zhLocale from './zh'
 
 Vue.use(VueI18n)
 
+const navigatorLanguage = navigator.language || navigator.userLanguage;
+
 const messages = {
   en: {
     ...enLocale,
@@ -20,7 +22,7 @@ const messages = {
 }
 
 const i18n = new VueI18n({
-  locale: Cookies.get('localeLanguage') || 'zh', // set locale
+  locale: Cookies.get('localeLanguage') || (navigatorLanguage==='zh-CN' ? 'zh' : 'en'), // set locale
   //locale: Cookies.get('language') ? (Cookies.get('language')==='zh' ? 'zh' : 'en') : 'zh', // set locale
   messages // set locale messages
 })

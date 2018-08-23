@@ -198,10 +198,11 @@ export default {
       // 在 reject 中获取加密key
       if (err) {
         try {
-          this.publicKeyJson.landingEncryption = err.landingEncryption;
+          this.publicKeyJson.isLandingEncryption = err.landingEncryption;
           this.publicKeyJson.exponent = err.publicKeyJson.exponent;
           this.publicKeyJson.modulus = err.publicKeyJson.modulus;
           this.isVerifyNumThan3 = err.isValidateCodeLogin;
+          this.$store.commit('SET_PUBLICKEYJSON', this.publicKeyJson);
         } catch (e) {
           console.log('不加密', err);
         }

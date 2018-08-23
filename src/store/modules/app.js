@@ -1,5 +1,7 @@
 import Cookies from 'js-cookie'
 
+const navigatorLanguage = navigator.language || navigator.userLanguage;
+
 const app = {
   state: {
     sidebar: {
@@ -7,9 +9,14 @@ const app = {
       withoutAnimation: false
     },
     device: 'desktop',
-    language: Cookies.get('language') ? (Cookies.get('language')==='zh' ? 'zh' : 'en') : 'zh',
+    language: Cookies.get('language') ? (Cookies.get('language')==='zh' ? 'zh' : 'en') : (navigatorLanguage==='zh-CN' ? 'zh' : 'en'),
     process_env: process.env.NODE_ENV,
-    localeLanguage: Cookies.get('localeLanguage') || 'zh'
+    localeLanguage: Cookies.get('localeLanguage') || (navigatorLanguage==='zh-CN' ? 'zh' : 'en'),
+    publicKeyJson: {
+      isLandingEncryption: false,
+      exponent: '',
+      modulus: '',
+    },
   },
   mutations: {
     TOGGLE_SIDEBAR: state => {
@@ -36,7 +43,14 @@ const app = {
     SET_LOCALELANGUAGE: (state, language) => {
       state.language = language;
       Cookies.set('localeLanguage', language, { expires: 365 })
-    }
+    },
+    SET_PUBLICKEYJSON: (state, json) => {
+      if (json.isLandingEncryption) {
+        state.publicKeyJson.isLandingEncryption = json.isLandingEncryption;
+        state.publicKeyJson.exponent = json.exponent;
+        state.publicKeyJson.modulus = json.modulus;
+      }
+    },
   },
   actions: {
     ToggleSideBar: ({ commit }) => {

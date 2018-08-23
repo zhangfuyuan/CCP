@@ -52,13 +52,11 @@
           </el-table-column>
 
           <el-table-column
-            sortable
             prop="name"
             :label="$t('accountManager.name')">
           </el-table-column>
 
           <el-table-column
-            sortable
             prop="loginName"
             :label="$t('accountManager.username')">
           </el-table-column>
@@ -183,7 +181,6 @@
     },
     watch: {
       $route($r) {
-          console.log('fdjfisdj')
           console.log($r)
         this.isSubRoute = ($r.name==='accountManager-createAccount' || $r.name==='accountManager-editAccount');
         this.tableData = []
@@ -290,7 +287,13 @@
         }).then(res => {
             console.log(res)
           this.count = res.count
-          this.tableData = res.userMsg
+          this.tableData = res.userMsg.map(item => {
+            item.roleName = item.roleArray.reduce((total, item) => {
+              return total + (this.language==='zh' ? item.name : item.enname);
+            }, '');
+            item.updateDate = this.formatDateHandle(item.updateDate);
+            return item;
+          });
         }).catch(err => {
           console.log(err);
         })
@@ -356,7 +359,13 @@
             pageSize: this.listQuery.limit
           }).then(res => {
             this.count = res.count
-            this.tableData = res.userMsg
+            this.tableData = res.userMsg.map(item => {
+              item.roleName = item.roleArray.reduce((total, item) => {
+                return total + (this.language==='zh' ? item.name : item.enname);
+              }, '');
+              item.updateDate = this.formatDateHandle(item.updateDate);
+              return item;
+            });
             this.listLoading = false
           }).catch(err => {
             console.log(err);

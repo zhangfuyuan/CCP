@@ -35,7 +35,7 @@ export default {
       const loading = this.showLoading('document.body', 'loading...');
 
       this.getLocaleLanguage().then(() => {
-        loading.close();
+        setTimeout(() => { loading.close(); }, 500);
       }).catch(() => {
         loading.close();
         this.$message.error(this.$t('common.switchLanguageError'));
