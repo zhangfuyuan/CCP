@@ -121,6 +121,7 @@
   import { mapGetters } from 'vuex'
   import { findContentByLemmaId } from '@/api/language'
   import { saveIpSetting } from '@/api/ip'
+  import { checkIslogin } from '@/api/login'
   import { validateIP } from '@/utils/validate'
 
 export default {
@@ -192,18 +193,19 @@ export default {
   created() {
     this.$i18n.locale = this.language;
 
-    this.$store.dispatch('Login').then((res) => {
-      console.log('已登录！');
+    checkIslogin().then((res) => {
+      console.log('已登录，但前端没用户信息！');
     }).catch(err => {
       // 在 reject 中获取加密key
       if (err) {
-        try {
-          this.publicKeyJson.isLandingEncryption = err.landingEncryption;
+        this.isVerifyNumThan3 = err.isValidateCodeLogin;
+        this.publicKeyJson.isLandingEncryption = err.landingEncryption;
+
+        if (err.landingEncryption) {
           this.publicKeyJson.exponent = err.publicKeyJson.exponent;
           this.publicKeyJson.modulus = err.publicKeyJson.modulus;
-          this.isVerifyNumThan3 = err.isValidateCodeLogin;
           this.$store.commit('SET_PUBLICKEYJSON', this.publicKeyJson);
-        } catch (e) {
+        } else {
           console.log('不加密', err);
         }
 

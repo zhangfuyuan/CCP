@@ -505,7 +505,7 @@
                 <el-form label-position="left" label-width="100">
                   <el-form-item :label="$t('deviceManager.enterLockScreen')">
                     <el-radio-group v-model="lockScreenRadio"
-                                    @change="isSettingsChangeNoSave = true">
+                                    @change="isSettingsChangeNoSave = true, lockScreenImgRadio = '0'">
                       <el-radio label="0">{{$t('deviceManager.notLockScreen')}}</el-radio>
                       <el-radio label="5">5{{$t('deviceManager.minute')}}</el-radio>
                       <el-radio label="10">10{{$t('deviceManager.minute')}}</el-radio>

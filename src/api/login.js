@@ -39,3 +39,11 @@ export function logout() {
     method: 'post'
   })
 }
+
+// 3.检测用户是否登录  /prm-web/f/common/checkIslogin  method=post
+export function checkIslogin() {
+  return request({
+    url: '/f/common/checkIslogin',
+    method: 'post'
+  })
+}

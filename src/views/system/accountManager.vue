@@ -170,7 +170,8 @@
     computed: {
       ...mapGetters([
         'language',
-        'officeId'
+        'officeId',
+        'publicKeyJson',
       ]),
     },
     filters:{
@@ -225,7 +226,17 @@
           return item;
         });
 
-        this.listLoading = false
+        this.listLoading = false;
+
+        if (res.landingEncryption) {
+          this.$store.commit('SET_PUBLICKEYJSON', {
+            isLandingEncryption: res.landingEncryption,
+            exponent: res.publicKeyJson.exponent,
+            modulus: res.publicKeyJson.modulus,
+          });
+        } else {
+          console.log('不加密！');
+        }
       }).catch(err => {
         console.log(err);
       })
