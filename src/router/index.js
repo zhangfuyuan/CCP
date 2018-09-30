@@ -190,6 +190,13 @@ export const asyncRouterMap = [
           }
         ]
       },
+      // 云功能配置
+      {
+        path: 'cloudConfig',
+        name: 'cloudConfig',
+        component: () => import('@/views/system/cloudConfig'),
+        meta: { title: 'cloudConfig', noCache: true }
+      },
     ]
   },
 

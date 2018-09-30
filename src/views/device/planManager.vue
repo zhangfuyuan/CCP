@@ -268,8 +268,9 @@
                         style="width: 30%;margin-right: 15px"
                         @change="changeVolumeTimePicker"
                         @focus="elTimePickerFn"
+                        @blur="elTimePickerBlurFn"
                         value-format="timestamp"
-                        :class="{'borderColor':isVolumeBorderColor}">
+                        :class="{'borderColor':isVolumeBorderColor || isTimeTTS}">
                       </el-time-picker>
                       <el-checkbox v-model="option.isAllCheckedWeek" @change="changeAllVolHandle(arguments, index)" style="margin-right: 5px">{{$t('planManager.totalSelection')}}</el-checkbox>
                       <el-checkbox-group v-model="option.weeks" size="mini" @change="changeVolHandle(arguments, index)">
@@ -564,9 +565,10 @@
                       style="width: 30%;margin-right: 15px"
                       @change="changeVolumeTimePicker"
                       @focus="elTimePickerFn"
+                      @blur="elTimePickerBlurFn"
                       value-format="timestamp"
                       format="HH:mm"
-                     :class="{'borderColor':isVolumeBorderColor}">
+                     :class="{'borderColor':isVolumeBorderColor || isTimeTTS}">
                     </el-time-picker>
                     <el-checkbox v-model="option.isAllCheckedWeek" @change="changeAllVolHandle(arguments, index)" style="margin-right: 5px">{{$t('planManager.totalSelection')}}</el-checkbox>
                     <el-checkbox-group v-model="option.weeks" size="mini" @change="changeVolHandle(arguments, index)">
@@ -757,6 +759,14 @@
       <!--底部按钮-->
       <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'create'" style="position: relative">
         <el-alert
+          :title="$t('planManager.timeErrorTTS')"
+          type="error"
+          show-icon
+          :closable="false"
+          v-if="isTimeTTS"
+          style="width: 300px;position: absolute;top: 0;right: 400px">
+        </el-alert>
+        <el-alert
           :title="$t('planManager.timeErrorTips')"
           type="error"
           show-icon
@@ -772,7 +782,7 @@
           v-if="isVolumeBorderColor"
           style="width: 300px;position: absolute;top: 0;right: 200px">
         </el-alert>
-        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false;isVolumeBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
+        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false;isVolumeBorderColor = false;isTimeTTS = false;" >{{$t('common.cancelBtn')}}</el-button>
         <el-button type="primary"
                    v-if="isChangeContent === 'source'"
                    @click="addSource()"
@@ -789,9 +799,18 @@
                    :disabled="!createForm.name ||
                     (!createVol.defaultVol.isOpen) && (!createVol.timingVol.isOpen) ||
                     (createVol.timingVol.isOpen && !isChoiseVolumeWeekFn) ||
-                     (createVol.timingVol.isOpen && !isChooiseVolumeTimeFn)">{{$t('common.confirmBtn')}}</el-button>
+                     (createVol.timingVol.isOpen && !isChooiseVolumeTimeFn) ||!isTimeTTSs">{{$t('common.confirmBtn')}}</el-button>
       </div>
       <div slot="footer" class="dialog-footer"  v-if="dialogKey === 'modify'" style="position: relative">
+          <el-alert
+          :title="$t('planManager.timeErrorTTS')"
+          type="error"
+          show-icon
+          :closable="false"
+          v-if="isTimeTTS"
+          style="width: 300px;position: absolute;top: 0;right: 400px">
+        </el-alert>
+
         <el-alert
           :title="$t('planManager.timeErrorTips')"
           type="error"
@@ -800,7 +819,7 @@
           v-if="isborderColor"
           style="width: 300px;position: absolute;top: 0;right: 200px">
         </el-alert>
-        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false;isVolumeBorderColor = false" >{{$t('common.cancelBtn')}}</el-button>
+        <el-button @click="dialogVisible = false;isborderColor = false;isBorderColor = false;isVolumeBorderColor = false;isTimeTTS = false;" >{{$t('common.cancelBtn')}}</el-button>
         <el-button type="primary"
                    v-if="isChangeContent === 'source'"
                    @click="dialogVisible = false;addSource('true')"
@@ -815,7 +834,7 @@
                    @click="dialogVisible = false;addVolume('true')"
                    :disabled="!isChangePlan || !createForm.name ||
                       (createVol.timingVol.isOpen && !isChoiseVolumeWeekFn) ||
-                      (createVol.timingVol.isOpen && !isChooiseVolumeTimeFn)">{{$t('common.confirmBtn')}}</el-button>
+                      (createVol.timingVol.isOpen && !isChooiseVolumeTimeFn) ||!isTimeTTSs">{{$t('common.confirmBtn')}}</el-button>
       </div>
       <div slot="footer" class="dialog-footer" v-if="false">  <!--v-if="dialogKey === 'manager'"-->
         <el-button @click="dialogVisible = false" >{{$t('common.cancelBtn')}}</el-button>
@@ -884,6 +903,8 @@
         isModifySourceSpecialDay: true,
         isModifyVolumeTimingTime: true,
         isModifyVolumeTimingDay: true,
+        isTimeTTS: false,
+        isTimeTTSs:true,
         filterText: '',
         treeData: null,
         curofficeId:'',
@@ -892,6 +913,7 @@
         isborderColor: false,
         isBorderColor: false,
         isVolumeBorderColor: false,
+        isResetTimePicer:false,
         defaultProps: {
           children: 'children',
           label: 'name'
@@ -1131,6 +1153,14 @@
     },
 
     methods: {
+      _formatDateHHMM(time) {
+        let date = new Date(time);
+        return formatDate(date,'hh:mm');
+      },
+      _formatDateYMD(time) {
+        let date = new Date(time);
+        return formatDate(date,'yyyy-MM-dd');
+      },
       handleSearch() {
         getPlanList({searchKey:this.searchVal,pageSize: this.listQuery.limit}).then(res => {
           this.tableData = res.data
@@ -1168,14 +1198,15 @@
         this.curAccountInfo = info;
       },
       toggleDialog(title, data) {
-        this.isChangePlan = false
+        this.isChangePlan = false;
         switch (title) {
           case 'create':
-            this.createForm.name = ''
-            this.createForm.weeklyPlan.isOpen = false
-            this.createForm.specialPlan.isOpen = false
-            this.createVol.defaultVol.isOpen = false
-            this.createVol.timingVol.isOpen = false
+            this.createForm.name = '';
+            this.createForm.weeklyPlan.isOpen = false;
+            this.createForm.specialPlan.isOpen = false;
+            this.createVol.defaultVol.isOpen = false;
+            this.createVol.timingVol.isOpen = false;
+            this.isTimeTTS = false;
             this.dialogKey = 'create';
             this.dialogTitle = this.$t('planManager.newTimingPlan');
             this.dialogPlanInfo = null;
@@ -1296,6 +1327,7 @@
             break;
           case 'modify':
             this.dialogKey = 'modify';
+            this.isTimeTTS = ""
             this.dialogTitle = this.$t('planManager.modifyTimingPlan');
             this.dialogPlanInfo = JSON.parse(JSON.stringify(data));
             this.createForm.weeklyPlan.planList = []
@@ -1556,10 +1588,12 @@
           this.isBorderColor = "";
          this.isborderColor = "";
          this.isVolumeBorderColor = "";
+         this.isTimeTTS = "";
           this.isChangeContent = type
       },
       emptySetting() {
         this.isVolumeBorderColor = false
+        this.isTimeTTS = false
         this.isBorderColor = false
         this.isborderColor = false
         this.createVol.timingVol.isOpen = false
@@ -1795,6 +1829,7 @@
       addSource(type){
         //1534262402000 00:00
         this.isVolumeBorderColor = false
+        this.isTimeTTS = false
         let weeklyTimeArr = []
         this.createForm.weeklyPlan.planList.filter(item => {
           weeklyTimeArr.push(new Date(item.time).getTime())
@@ -1934,6 +1969,7 @@
             this.isborderColor = false
             this.isBorderColor = false
             this.isVolumeBorderColor = false
+            this.isTimeTTS = false
             this.$message({
                message: this.$t('common.operationSucceeds'),
                type: 'success'
@@ -1959,6 +1995,7 @@
             this.isborderColor = false
             this.isBorderColor = false
             this.isVolumeBorderColor = false
+            this.isTimeTTS = false
             this.addSourceSuccess()
           }).catch(err => {
             this. delerrored()
@@ -1975,6 +2012,7 @@
         const gthat = this
         let trueOrFalse = '1';
         let isVolumeDayCopy = false
+        let isVolumeTimeCopy = false
         for(let i = 0,length = this.createVol.timingVol.volList.length;i<length;i++){
           for(let j = i+1,len = this.createVol.timingVol.volList.length;j<len;j++){
             $.each(gthat.createVol.timingVol.volList[i].weeks,function () {
@@ -1982,25 +2020,20 @@
               $.each(gthat.createVol.timingVol.volList[j].weeks,function () {
                 if(that === this){
                  isVolumeDayCopy = true
-                }else {
-                    isVolumeDayCopy = false
                 }
               })
             })
           }
         }
-        let isVolumeTimeCopy = false
         if(isVolumeDayCopy === true){
           for(let i = 0,length = volumeTimeArr.length;i<length;i++){
             for(let j = i+1,len = volumeTimeArr.length;j<len;j++){
-              if( volumeTimeArr[j][0] >  volumeTimeArr[i][0] &&  volumeTimeArr[j][0] < volumeTimeArr[i][1]){
+              if( volumeTimeArr[j][0] >=  volumeTimeArr[i][0] &&  volumeTimeArr[j][0] <= volumeTimeArr[i][1]){
                 isVolumeTimeCopy = true
-              }else if( volumeTimeArr[j][0] <  volumeTimeArr[i][0] &&  volumeTimeArr[j][1] > volumeTimeArr[i][0]){
+              }else if( volumeTimeArr[j][0] <=  volumeTimeArr[i][0] &&  volumeTimeArr[j][1] >= volumeTimeArr[i][0]){
                 isVolumeTimeCopy = true
-              }else if( volumeTimeArr[j][0] <  volumeTimeArr[i][1] &&  volumeTimeArr[j][1] > volumeTimeArr[i][1]){
+              }else if( volumeTimeArr[j][0] <=  volumeTimeArr[i][1] &&  volumeTimeArr[j][1] >= volumeTimeArr[i][1]){
                 isVolumeTimeCopy = true
-              }else {
-                isVolumeTimeCopy = false
               }
             }
           }
@@ -2014,11 +2047,25 @@
           //出现提示框以及标红
           this.dialogVisible = true
           this.isVolumeBorderColor = true
-        }else {
-          trueOrFalse = '1'
-          this.dialogVisible = false
-          this.isVolumeBorderColor = false
         }
+
+        /*this.createVol.timingVol.volList = this.createVol.timingVol.volList.map(item =>{
+          var YMD = this._formatDateYMD(new Date())
+          var one = this._formatDateHHMM(item.date[0])
+          var two = this._formatDateHHMM(item.date[1])
+          var oneTime = new Date(YMD+" "+one).getTime()
+          var twoTime = new Date(YMD+" "+two).getTime()
+          var nowStampone = new Date().getTime()
+          var nowStamptwo = new Date().getTime()+300000
+          if(oneTime > twoTime){
+            timeTTS = '2'
+            this.dialogVisible = true
+            this.isTimeTTS = true
+            this.isResetTimePicer = true;
+          }
+          item.date = [oneTime,twoTime]
+          return item
+        })*/
 
         if(trueOrFalse === '1'){
         var content = []
@@ -2063,6 +2110,8 @@
             this.isborderColor = false
             this.isBorderColor = false
             this.isVolumeBorderColor = false
+            this.isTimeTTS = false
+            this.isResetTimePicer = false
             this.$message({
               message: this.$t('common.operationSucceeds'),
               type: 'success'
@@ -2086,6 +2135,8 @@
             this.isborderColor = false
             this.isBorderColor = false
             this.isVolumeBorderColor = false
+            this.isTimeTTS = false
+            this.isResetTimePicer = false
             this.addSourceSuccess()
           }).catch(err => {
             this. delerrored()
@@ -2282,7 +2333,6 @@
            obj.label = decaimalName
            this.officeData.push(obj)
          }
-
         }).catch(err => {
          console.log(err)
         })
@@ -2388,9 +2438,50 @@
         }
       },
       elTimePickerFn(){
+
           this.isborderColor = ""
           this.isBorderColor = ""
           this.isVolumeBorderColor = ""
+          this.isTimeTTS = ""
+        console.log('kkkk')
+        console.log(this.isResetTimePicer)
+          if(this.isResetTimePicer){
+              console.log('ggg')
+            this.createVol.timingVol.volList = this.createVol.timingVol.volList.map(item =>{
+              var nowStampone = new Date().getTime()
+              var nowStamptwo = new Date().getTime()+300000
+              item.date = [nowStampone,nowStamptwo]
+              return item
+            })
+        }
+
+      },
+      elTimePickerBlurFn(){
+        this.isResetTimePicer = false
+        this.createVol.timingVol.volList = this.createVol.timingVol.volList.map(item =>{
+          let YMD = this._formatDateYMD(new Date())
+          let one = this._formatDateHHMM(item.date[0])
+          let two = this._formatDateHHMM(item.date[1])
+          let oneTime = new Date(YMD+" "+one).getTime()
+          let twoTime = new Date(YMD+" "+two).getTime()
+          item.date = [oneTime,twoTime]
+          return item
+        })
+
+        this.createVol.timingVol.volList.map(item =>{
+          let YMD = this._formatDateYMD(new Date())
+          let one = this._formatDateHHMM(item.date[0])
+          let two = this._formatDateHHMM(item.date[1])
+          let oneTime = new Date(YMD+" "+one).getTime()
+          let twoTime = new Date(YMD+" "+two).getTime()
+          if(oneTime > twoTime){
+            this.isTimeTTSs = false
+            this.isTimeTTS = true
+            this.isResetTimePicer = true
+          }else{
+            this.isTimeTTSs = true
+          }
+        })
       },
 
      addSourceSuccess() {

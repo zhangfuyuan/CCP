@@ -16,7 +16,7 @@
 
             <el-collapse-transition>
               <div class="list" v-if="checkedOfficeList.length>0 && isShowCheckedOfficeList">
-                <div class="all-clear" style="height: 30px;line-height: 30px;text-align: right;">
+                <div class="all-clear" style="height: 30px;line-height: 30px;text-align: right;padding: 0 10px;">
                   <el-button type="text"
                              style="color: #F56C6C;"
                              size="mini"
@@ -354,7 +354,6 @@ export default {
       overflow-y: auto;
       overflow-x: hidden;
       box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.4);
-      padding: 0 10px;
     }
 
     .list-item {
@@ -364,6 +363,11 @@ export default {
       color: #303133;
       height: 50px;
       border-bottom: 1px solid #F2F6FC;
+      padding: 0 10px;
+      &:hover {
+        background-color: #F0F7FF;
+      }
+
       .list-office {
         display: flex;
         flex-direction: column;

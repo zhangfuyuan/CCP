@@ -8,7 +8,7 @@
                    @click="confirmHandle"
                    style="width: 100px;"
                    :disabled="!isOperated">{{$t('common.confirm')}}</el-button>
-        <el-button plain @click="cancelHandle" style="margin-left: 50px;width: 100px;">{{$t('common.cancel')}}</el-button>
+        <el-button plain @click="cancelHandle" style="margin-left: 20px;width: 100px;">{{$t('common.cancel')}}</el-button>
       </div>
 
       <!--右侧上级及可分配点数-->

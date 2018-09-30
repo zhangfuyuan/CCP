@@ -8,14 +8,21 @@
 
 @mixin scrollBar {
   &::-webkit-scrollbar-track-piece {
+    display: none;
     background: #d3dce6;
   }
   &::-webkit-scrollbar {
-    width: 6px;
+    width: 8px;
+    height: 10px;
   }
   &::-webkit-scrollbar-thumb {
+    display: none;
     background: #99a9bf;
     border-radius: 20px;
+  }
+
+  &:hover::-webkit-scrollbar-thumb, &:hover::-webkit-scrollbar-track-piece {
+    display: block;
   }
 }
 

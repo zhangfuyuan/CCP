@@ -4,7 +4,7 @@ const getters = {
   language: state => state.app.language,
   localeLanguage: state => state.app.localeLanguage,
   process_env: state => state.app.process_env,
-  public_path: state => state.app.process_env==='production' ? '/PRM' : '',
+  public_path: state => state.app.process_env==='production' ? '/CMS' : '',
   publicKeyJson: state => state.app.publicKeyJson,
   id: state => state.user.id,
   loginName: state => state.user.loginName,

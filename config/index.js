@@ -12,7 +12,8 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/prm-web/**': {
-        target: 'http://192.168.1.155:8283',
+        // target: 'http://119.23.61.139',
+        target: 'http://119.23.61.139:8283',
       },
     },
 
@@ -67,7 +68,7 @@ module.exports = {
      * then assetsPublicPath should be set to "/bar/".
      * In most cases please use '/' !!!
      */
-    assetsPublicPath: '/PRM/', // If you are deployed on the root path, please use '/'
+    assetsPublicPath: '/CMS/', // If you are deployed on the root path, please use '/'
 
     /**
      * Source Maps

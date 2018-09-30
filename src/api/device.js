@@ -240,12 +240,12 @@ export function setDeviceVolume(info) {
 export function setLockScreen(info) {
   let data = {
     terminalIds: info.terminalIds + '',
-    isLockScreen: info.isLockScreen,
+   // isLockScreen: info.isLockScreen,
   };
 
-  if (info['isLockScreen']) data.lockScreenTime = info['lockScreenTime'];
-  if (info['isLockScreen']) data.lockingMode = info['lockingMode'];
-  if (info['isLockScreen'] && info['lockingMode']==='1') data.fid = info['fid'];
+  /*if (info['isLockScreen']) data.lockScreenTime = info['lockScreenTime'];
+  if (info['isLockScreen']) data.lockingMode = info['lockingMode'];*/
+  if (info['lockScreenImgRadio']==='1') data.fid = info['fid'];
 
   return request({
     url: '/a/terminalSettings/sendSetLockScreen',

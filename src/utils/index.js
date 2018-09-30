@@ -474,6 +474,36 @@ export function listClassify(list, key, between) {
 }
 
 /**
+ *  对象数组根据指定元素属性进行分类，返回一个根据此属性区分的对象
+ *  key 不能为 'undefined'
+ * */
+
+export function listClassifyMap(list, key) {
+  if (!list || list.length===0) return null;
+
+  let obj = {
+    'undefined': []
+  };
+
+  list.reduce(function (total, item) {
+    if (item.hasOwnProperty(key) && item[key]) {
+      if (total.indexOf(item[key]) === -1) {
+        total.push(item[key]);
+        obj[item[key]] = [];
+      }
+
+      obj[item[key]].push(item);
+    } else {
+      obj['undefined'].push(item);
+    }
+
+    return total;
+  }, []);
+
+  return obj;
+}
+
+/**
  *  图片自适应处理函数（基于JQ的DOM操作）
  *
  * */

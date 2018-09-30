@@ -45,10 +45,19 @@ const permission = {
   actions: {
     GenerateRoutes({ commit }, data) {
       return new Promise(resolve => {
-        const { roles } = data
-        let accessedRouters
+        const { roles } = data;
+        const { officeId } = data;
+        let accessedRouters;
+
         if (roles.indexOf('root') >= 0) {
-          accessedRouters = asyncRouterMap
+          if (officeId === '1') {
+            accessedRouters = asyncRouterMap;
+          } else {
+            let index = asyncRouterMap[0].children.findIndex(item => item.name === 'ipManager');
+
+            asyncRouterMap[0].children.splice(index, 1);
+            accessedRouters = asyncRouterMap;
+          }
         } else {
           accessedRouters = filterAsyncRouter(asyncRouterMap, roles)
         }

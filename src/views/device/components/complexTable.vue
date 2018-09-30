@@ -13,7 +13,7 @@
         </div>
 
         <div class="list" v-if="checkedDeviceList.length>0 && isShowCheckedDeviceList">
-          <div class="all-clear" style="height: 30px;line-height: 30px;text-align: right;">
+          <div class="all-clear" style="height: 30px;line-height: 30px;text-align: right;padding: 0 10px;">
             <el-button type="text"
                        style="color: #F56C6C;"
                        size="mini"
@@ -75,6 +75,7 @@
               style="width: 100%;"
               tooltip-effect="dark"
               show-overflow-tooltip
+              @select="handleSelection"
               @selection-change="handleSelectionChange"
               :height="tableHeight"
               v-tabelLoadmore="tableLoadMore"
@@ -256,10 +257,10 @@
                 <span>{{dialogInfo.apkVersion}}</span>
               </el-form-item>
 
-              <el-form-item :label="$t('deviceManager.lockScreenMode')" style="width: 30%;">
-                <span>{{dialogInfo.isLockScreen==='true' ?
-                        (dialogInfo.lockScreenTime+'min'+$t('deviceManager.enterLockScreen')) :
-                        $t('deviceManager.notLockScreen')}}</span>
+              <el-form-item :label="$t('deviceManager.lockScreenImage')" style="width: 30%;">
+                <span>{{dialogInfo.lockScreenStyle==='0' ?
+                        $t('deviceManager.defaultM') :
+                        $t('deviceManager.customize')}}</span>
               </el-form-item>
 
               <el-form-item :label="$t('deviceManager.mark')" style="width: 100%;">
@@ -390,13 +391,14 @@
                  style="min-height: 300px;"
                  v-model="settingsDialogActiveTabsName"
                  :before-leave="leaveSettingsTabs">
+          <!--基础设置-->
           <el-tab-pane :label="$t('deviceManager.basicSettings')" name="basicSettings" style="height: 500px;">
             <template v-if="settingsDialogActiveTabsName === 'basicSettings'">
               <div style="margin-bottom: 20px;border-bottom: 1px solid #DCDFE6;padding-bottom: 20px;">
                 <div style="color: #333;font-size: 16px;margin-bottom: 20px;">{{$t('deviceManager.powerSettings')}}</div>
 
                 <div v-if="dialogInfo.length===1" style="color: #666;margin-bottom: 20px;">
-                  {{$t('deviceManager.currentState')}}:
+                  {{$t('deviceManager.currentState')}} :
                   <span v-if="dialogInfo[0].status==='1'" style="color: #333;">{{$t('deviceManager.online')}}</span>
                   <span v-else-if="dialogInfo[0].status==='2'" style="color: #333;">{{$t('deviceManager.standby')}}</span>
                   <span v-else style="color: #333;">{{$t('deviceManager.offline')}}</span>
@@ -496,13 +498,109 @@
             </template>
           </el-tab-pane>
 
+          <!--通道设置-->
+          <el-tab-pane name="channelSettings"
+                       class="channelSettings-box"
+                       style="height: 500px;">
+            <span slot="label">
+              <span :title="$t('deviceManager.cloudFeature')"><svg-icon icon-class="cloud" /></span>
+              {{$t('deviceManager.channelSettings')}}
+            </span>
+
+            <template v-if="settingsDialogActiveTabsName === 'channelSettings'">
+              <template v-if="dialogInfo.length===1">
+                <div style="color: #666;margin-bottom: 20px;padding-bottom: 20px;border-bottom: 1px solid #DCDFE6;">
+                  {{$t('deviceManager.bootChannel')}} :
+                  <span style="color: #333;" v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey] && dialogInfo[0].defaultSources">
+                    {{[channelMap[dialogInfo[0].apiKey], dialogInfo[0].defaultSources] | findInMap}}</span>
+                  <span style="color: #333;" v-else>-</span>
+                </div>
+
+                <div style="color: #666;">
+                  <div style="margin-bottom: 10px;">
+                    {{$t('deviceManager.setBootChannel')}}
+                  </div>
+
+                  <el-radio-group v-model="switchChannelRadioGroup"
+                                  style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;"
+                                  @change="isSettingsChangeNoSave = true"
+                                  v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey]">
+                    <el-radio v-for="(channel, index) in channelMap[dialogInfo[0].apiKey]"
+                              :key="index"
+                              :label="channel.name"
+                              border
+                              style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"
+                              @click.native="switchChannelRadioGroup = ''"
+                              :title="channel.detail">{{channel.detail}}</el-radio>
+                  </el-radio-group>
+
+                  <div v-else style="color: #999;padding-top: 10px;">
+                    {{$t('deviceManager.untypedPrompt')}}
+                  </div>
+                </div>
+              </template>
+
+              <template v-if="dialogInfo.length>1">
+                <div style="color: #666;">
+                  <div style="margin-bottom: 20px;">
+                    {{$t('deviceManager.setBootChannel')}}
+                  </div>
+
+                  <div v-for="(key, index) in Object.keys(dialogInfoClassifyMap)"
+                       :key="index"
+                       style="margin-bottom: 20px;padding-bottom: 10px;border-bottom: 1px solid #DCDFE6;" >
+                    <div style="color: #666;display: flex;">
+                      <div style="flex: 1;">
+                        <span>{{$t('deviceManager.type')}} {{index+1}}</span>
+                        <span style="padding-left: 10px;">{{dialogInfoClassifyMap[key].length}} {{$t('deviceManager.machine')}}</span>
+                        <span style="padding-left: 20px;">{{$t('deviceManager.bootChannel')}}</span>
+                        <span style="color: #409EFF;" v-show="switchChannelRadioGroupMap[key]">
+                          >> {{[channelMap[key], switchChannelRadioGroupMap[key]] | findInMap}}</span>
+                      </div>
+
+                      <span style="cursor: pointer;"
+                            @click="switchChannelRadioGroupShowMap[key] = !switchChannelRadioGroupShowMap[key]">
+                        <i class="el-icon-arrow-down" v-show="switchChannelRadioGroupShowMap[key]"></i>
+                        <i class="el-icon-arrow-up" v-show="!switchChannelRadioGroupShowMap[key]"></i>
+                      </span>
+                    </div>
+
+                    <el-radio-group v-model="switchChannelRadioGroupMap[key]"
+                                    style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;padding-top: 10px;"
+                                    @change="isSettingsChangeNoSave = true"
+                                    v-show="switchChannelRadioGroupShowMap[key]">
+                      <el-radio v-for="(channel, i) in channelMap[key]"
+                                :key="i"
+                                :label="channel.name"
+                                border style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"
+                                @click.native="switchChannelRadioGroupMap[key] = ''"
+                                :title="channel.detail">{{channel.detail}}</el-radio>
+                    </el-radio-group>
+                  </div>
+
+                  <div v-if="dialogInfoUnknownNum > 0">
+                    <div style="color: #666;">
+                      <span>{{$t('deviceManager.untypedType')}}</span>
+                      <span style="padding-left: 10px;">{{dialogInfoUnknownNum}} {{$t('deviceManager.machine')}}</span>
+                    </div>
+
+                    <div style="color: #999;padding-top: 10px;">
+                      {{$t('deviceManager.untypedPrompt')}}
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </template>
+          </el-tab-pane>
+
+          <!--锁屏设置-->
           <el-tab-pane :label="$t('deviceManager.lockScreenSettings')"
                        name="lockScreenSettings"
                        class="lockScreenSettings-box"
                        style="height: 500px;">
             <template v-if="settingsDialogActiveTabsName === 'lockScreenSettings'">
               <template v-if="lockScreenResultList.length===0">
-                <el-form label-position="left" label-width="100">
+                <!--<el-form label-position="left" label-width="100">
                   <el-form-item :label="$t('deviceManager.enterLockScreen')">
                     <el-radio-group v-model="lockScreenRadio"
                                     @change="isSettingsChangeNoSave = true, lockScreenImgRadio = '0'">
@@ -522,10 +620,26 @@
                       <el-radio label="1">{{$t('deviceManager.customImage')}}</el-radio>
                     </el-radio-group>
                   </el-form-item>
+                </el-form>-->
+                <el-form label-position="left" label-width="100">
+                  <el-form-item :label="$t('deviceManager.currentImage')" style="text-decoration: solid" v-if=" dialogInfo.length===1">
+                     <span>
+                       {{dialogInfo[0].lockScreenStyle === '0' ? $t('deviceManager.default') : $t('deviceManager.customImage')}}
+                     </span>
+                  </el-form-item>
+
+
+                  <el-form-item :label="$t('deviceManager.lockScreenImage')">
+                    <el-radio-group v-model="lockScreenImgRadio"
+                                    @change="isSettingsChangeNoSave = true">
+                      <el-radio label="0">{{$t('deviceManager.default')}}</el-radio>
+                      <el-radio label="1">{{$t('deviceManager.customImage')}}</el-radio>
+                    </el-radio-group>
+                  </el-form-item>
                 </el-form>
 
                 <div class="upload-box"
-                     v-if="lockScreenImgRadio==='1' && lockScreenRadio!=='0'"
+                     v-if="lockScreenImgRadio==='1'"
                      style="padding: 24px;">
                   <template v-if="!uploadFileInfo">
                     <div class="upload-wrapper" style="width: 360px;">
@@ -571,16 +685,30 @@
 
               <template v-else>
                 <el-form label-position="left" label-width="100" style="margin-bottom: 10px;">
-                  <el-form-item :label="$t('deviceManager.enterLockScreen')">
+                <!--  <el-form-item :label="$t('deviceManager.enterLockScreen')">
                     {{lockScreenRadio!=='0' ?
                     (lockScreenRadio+'min'+$t('deviceManager.enterLockScreen')) :
                     $t('deviceManager.notLockScreen')}}
-                  </el-form-item>
+                  </el-form-item>-->
 
-                  <el-form-item :label="$t('deviceManager.lockScreenMode')" v-show="lockScreenRadio && lockScreenRadio!=='0'">
+                  <el-form-item :label="$t('deviceManager.lockScreenChange')" >
                     {{lockScreenImgRadio==='0' ?
                     $t('deviceManager.default') :
                     $t('deviceManager.customImage')}}
+                      <!--<el-popover
+                      placement="right"
+                      width="400"
+                      trigger="click"
+                    content="kkkk">
+                        <span>kjkjlkjl</span>
+                      <el-button slot="reference" size="mini">查看</el-button>
+                    </el-popover>-->
+                    <span style="color: #409EFF;cursor: pointer" @click="showadAptiveImage" v-if="lockScreenImgRadio ==='1'">查看</span>
+                    <!--<img :src="uploadFileInfo.path" class="adaptive-img adaptiveImage" alt="uploadImg" style="position: absolute;z-index: 19999" v-if="isShowadAptiveImage" />-->
+                    <div class="adaptive-img-box" style="width: 400px;height: 225px;position: absolute;z-index: 19999" v-show="isShowadAptiveImage" v-if="lockScreenImgRadio ==='1'">
+                      <img :src="uploadFileInfo.path" class="adaptive-img adaptiveImage" alt="uploadImg" />
+                    </div>
+
                   </el-form-item>
                 </el-form>
 
@@ -612,7 +740,6 @@
                       <a class="el-upload-list__item-name">
                         <svg-icon icon-class="AIO" /> {{deviceIdTurnName(item.id)}} - {{item.txt}}
                       </a>
-
                       <!--<el-progress :percentage="item.result===1 ? 100 : (item.result===0 ? 0 : 50)"-->
                       <!--:status="item.result===1 ? 'success' : (item.result===0 ? 'exception' : '')"></el-progress>-->
                     </li>
@@ -622,11 +749,12 @@
             </template>
           </el-tab-pane>
 
+          <!--APK升级-->
           <el-tab-pane :label="$t('deviceManager.apkUpgrade')" name="apkSettings" style="height: 500px;">
             <template v-if="settingsDialogActiveTabsName === 'apkSettings'">
               <div style="width: 100%;position: relative;padding-bottom: 10px;border-bottom: 1px solid #DCDFE6;">
                 <div style="display: flex;align-items: center;">
-                  <div style="width: 80px;">{{$t('deviceManager.currentVersion')}}:</div>
+                  <div style="width: 80px;">{{$t('deviceManager.currentVersion')}} :</div>
                   <span v-if="updateApkStep==='3'">
                     >> {{updateApkversion}}
                   </span>
@@ -744,18 +872,39 @@
             <el-button plain @click="resetBasicSettings">{{$t('common.resetBtn')}}</el-button>
           </div>
         </template>
+
+        <template v-else-if="settingsDialogActiveTabsName === 'channelSettings'">
+          <div slot="footer" style="text-align: right;" v-if="isChannelConfirmShow">
+            <el-button type="primary"
+                       @click="isSettingsLoading = true, confirmChannel()"
+                       :loading="isSettingsLoading">{{$t('common.confirm')}}</el-button>
+            <el-button plain
+                       @click="resetChannelSettings"
+                       v-show="!isSettingsLoading">{{$t('common.resetBtn')}}</el-button>
+          </div>
+
+          <div slot="footer" style="height: 40px;" v-else></div><!--占位-->
+        </template>
+
+        <!--锁屏设置按钮-->
         <template v-else-if="settingsDialogActiveTabsName === 'lockScreenSettings'">
-          <div slot="footer" style="text-align: right;">
-            <el-button :disabled="(!uploadFileInfo && lockScreenRadio!=='0' && lockScreenImgRadio==='1') ||
-                                  !lockScreenRadio ||
-                                  !!timer ||
-                                  (lockScreenRadio!=='0' && !lockScreenImgRadio)"
+           <span style="position: absolute;left: 106px;bottom: 0;color: #999;font-size: 12px;">
+          * {{$t('deviceManager.offlineDeviceTips')}}
+        </span>
+          <div slot="footer" style="text-align: right;"  v-if="lockScreenImgRadio ==='0' || lockScreenImgRadio ==='1'">
+
+            <el-button :disabled="(!uploadFileInfo && lockScreenImgRadio==='1') ||
+                                        lockScreenImgRadio !=='0' &&
+                                        lockScreenImgRadio !=='1'"
                        type="primary"
                        @click="setLockScreenDevice"
-                       :loading="isSettingsLoading">{{$t('common.confirmBtn')}}</el-button>
-            <el-button plain @click="resetLockScreenSettings">{{$t('common.resetBtn')}}</el-button>
+                       :loading="isSettingsLoading" :class="{isShowBtn:isSuccessedActive}">{{$t('common.confirmBtn')}}</el-button>
+            <el-button plain @click="resetLockScreenSettings">{{$t('common.returnBtn')}}</el-button>
           </div>
+
+          <div slot="footer" style="height: 40px;" v-else></div><!--占位-->
         </template>
+
         <template v-else-if="settingsDialogActiveTabsName === 'apkSettings'">
           <div slot="footer" style="text-align: right;">
             <el-button :disabled="!uploadAPKInfo || (uploadAPKInfo&&uploadAPKInfo.percentage!==100) || !!timer"
@@ -1074,7 +1223,7 @@
 </template>
 
 <script>
-import { formatDate, treeify, uniqueArr, imgHistoryScreenCapture } from '@/utils'
+import { formatDate, treeify, uniqueArr, imgHistoryScreenCapture, listClassifyMap } from '@/utils'
 import Multiselect from 'vue-multiselect'
 import { mapGetters } from 'vuex'
 import { getDeviceList, getPlanOfDevice, movePlanToDevice, getPlanList, setDevice_powerOff, setDevice_standby,
@@ -1083,6 +1232,7 @@ import { getDeviceList, getPlanOfDevice, movePlanToDevice, getPlanList, setDevic
 import { getOfficeList } from '@/api/office'
 import Webuploader from '@/components/Webuploader'
 import { myMixin } from '@/assets/js/mixins'
+import { terminalPassSetting } from '@/api/channel'
 
 export default {
   name: 'complexTable',
@@ -1196,6 +1346,30 @@ export default {
           { label: this.$t('deviceManager.timingPlan'), val: 'timingPlan' },
           { label: this.$t('common.delete'), val: 'delete' }
         ];
+    },
+    isChannelConfirmShow() {
+      let isShow = false;
+
+      if (this.switchChannelRadioGroupMap) {
+        isShow = Object.keys(this.switchChannelRadioGroupMap).some(key => !!this.switchChannelRadioGroupMap[key]);
+      }
+
+      return !!this.switchChannelRadioGroup || isShow;
+    },
+    batchSyncListItems() {
+      let res = [];
+
+      this.checkedDeviceList.map(item => {
+        let index = this.list.findIndex(i => i.id === item.id);
+
+        if (index > -1) {
+          res.push(this.list[index]);
+        } else {
+          res.push(item);
+        }
+      });
+
+      return res;
     }
   },
   data() {
@@ -1232,6 +1406,8 @@ export default {
       isChangeSetDialog: false,
       searchPlanVal: '',
       curCheckedPlanInfo: null,
+      isShowadAptiveImage: false,
+      isSuccessedActive:false,
       // 移动分组
       moveOfficeTree: [],
       moveOfficeProps: { // 移动机构树的设置
@@ -1255,7 +1431,6 @@ export default {
         type: ''
       },
       // 锁屏设置
-      lockScreenRadio: '',
       lockScreenImgRadio: '',
       uploadFileInfo: null, // 记录上传队列中的文件信息
       appMainLoading: null,
@@ -1275,6 +1450,14 @@ export default {
       basicSettingsResultList: [],
       isSettingsChangeNoSave: false,
       isSettingsLoading: false,
+      isSettingsChangeSubmit: false,
+      //通道设置
+      switchChannelRadioGroup: '',
+      dialogInfoClassifyMap: null,
+      dialogInfoUnknownNum: 0,
+      switchChannelRadioGroupMap: null,
+      switchChannelRadioGroupShowMap: null,
+      channelMap: null,
     }
   },
   filters: {
@@ -1296,6 +1479,18 @@ export default {
         min = Math.floor((time-day*(1000*60*60*24)-hour*(1000*60*60))/(1000*60));
 
       return day + 'd' + ' ' + hour + 'h';
+    },
+    findInMap([map, label]){
+      console.log('当前终端已设置的通道', map, label);
+      let res = [];
+
+      map.map(item => {
+        if (label.indexOf(item.name) > -1) {
+          res.push(item.detail)
+        }
+      });
+
+      return res.length>0 ? res + '' : '-';
     }
   },
   created() {
@@ -1348,8 +1543,22 @@ export default {
             this.listTotalCount = res.count;
             this.list.push(...res.data);
             this.searching = false;
+            this.channelMap = res.apiKeyPass;
 
-            if (isSelectAll) this.$refs['deviceTable'].toggleAllSelection();
+            if (isSelectAll) {
+              this.$refs['deviceTable'].toggleAllSelection();
+            } else if (this.checkedDeviceList.length > 0) {
+              this.$nextTick(() => {
+                this.checkedDeviceList.map((row, index, arr) => {
+                  if (!row) return;
+
+                  let i = this.list.findIndex(item => row.id === item.id);
+
+                  if (i > -1) this.$refs['deviceTable'].toggleRowSelection(this.list[i], true);
+                });
+              })
+
+            }
           }
         }).catch(err => {
           console.log(err);
@@ -1365,6 +1574,20 @@ export default {
           this.list.push(...res.data);
           this.busy = false;
           this.listLoading = false;
+          this.channelMap = res.apiKeyPass;
+
+          if (this.checkedDeviceList.length > 0) {
+              this.$nextTick(() => {
+                this.checkedDeviceList.map((row, index, arr) => {
+                  if (!row) return;
+
+                  let i = this.list.findIndex(item => row.id === item.id);
+
+                  if (i > -1) this.$refs['deviceTable'].toggleRowSelection(this.list[i], true);
+                });
+              })
+
+          }
         }).catch(err => {
           console.log(err);
 
@@ -1380,8 +1603,29 @@ export default {
       this.searching = true;
       this.getList(true);
     },
-    handleSelectionChange(val) {
-      this.checkedDeviceList = val;
+    handleSelection(selection, row) {
+      if (selection.length===0 && (this.checkedDeviceList.length-this.list.length===0)) {
+        this.checkedDeviceList = [];
+      } else if (selection.findIndex(item => item.id===row.id) === -1) {
+        this.uncheckedOneRow(row)
+      }
+    },
+    handleSelectionChange(selection) {
+      if (selection.length > 0) {
+        let ids = [];
+
+        this.checkedDeviceList.map(item => {
+          if (!item) return;
+
+          ids.push(item.id);
+        });
+
+        selection.map(item => {
+          if (!item) return;
+
+          if (ids.indexOf(item.id) === -1) this.checkedDeviceList.push(item);
+        });
+      }
     },
     tableLoadMore() { // this.listQuery.pageNo*this.listQuery.pageSize this.listTotalCount
       if (!this.busy && this.listQuery.pageNo*this.listQuery.pageSize<this.listTotalCount) {
@@ -1494,28 +1738,33 @@ export default {
       console.log(actionVal);
     },
     batchSetting() {
-      this.toggleDialog('settings', this.checkedDeviceList);
-      console.log('批量设置', this.checkedDeviceList)
+      this.toggleDialog('settings', this.batchSyncListItems);
+      console.log('批量设置', this.batchSyncListItems)
     },
     batchScreen() {
-      this.$bus.emit('screen', this.checkedDeviceList);
+      this.$bus.emit('screen', this.batchSyncListItems);
     },
     batchTimingPlan() {
-      this.toggleDialog('plan', this.checkedDeviceList);
-      console.log('定时计划', this.checkedDeviceList);
+      this.toggleDialog('plan', this.batchSyncListItems);
+      console.log('定时计划', this.batchSyncListItems);
     },
     batchMobilePacket() {
-      this.toggleDialog('move', this.checkedDeviceList);
+      this.toggleDialog('move', this.batchSyncListItems);
     },
     batchDelete() {
-      this.toggleDialog('delete', this.checkedDeviceList);
+      this.toggleDialog('delete', this.batchSyncListItems);
     },
     resetChecked() {
       this.isShowCheckedDeviceList = false;
+      this.checkedDeviceList = [];
       this.$refs['deviceTable'].clearSelection();
     },
     uncheckedOneRow(row) {
-      this.$refs['deviceTable'].toggleRowSelection(row, false);
+      let index = this.checkedDeviceList.findIndex(item => item.id === row.id);
+      this.checkedDeviceList.splice(index, 1);
+
+      let i = this.list.findIndex(item => item.id === row.id);
+      this.$refs['deviceTable'].toggleRowSelection(this.list[i], false);
     },
     modifyDevice() {  // todo 修改终端信息
       submitTeInfo({
@@ -1578,6 +1827,7 @@ export default {
 
           this.isShowBasicSettingsResult = true;
           this.isSettingsChangeNoSave = false;
+          this.isSettingsChangeSubmit = true;
           setTimeout(() => { this.isSettingsLoading = false; }, 500);
           console.log('电源设置结果列表', this.basicSettingsResultList);
         }).catch(err => {
@@ -1616,6 +1866,7 @@ export default {
 
         this.isShowBasicSettingsResult = true;
         this.isSettingsChangeNoSave = false;
+        this.isSettingsChangeSubmit = true;
         setTimeout(() => { this.isSettingsLoading = false; }, 500);
         console.log('音量设置结果列表', this.basicSettingsResultList);
       }).catch(err => {
@@ -1675,7 +1926,6 @@ export default {
           this.detailsDialogActiveTabsName = 'details';
           getPlanOfDevice({ terminalId: data.id }).then(res => {
             console.log(res);
-
             if (res['1']) this.dialogInfo['1'] = res['1'];
             if (res['2']) this.dialogInfo['2'] = res['2'];
             if (res['name1']) this.dialogInfo['name1'] = res['name1'];
@@ -1698,16 +1948,16 @@ export default {
         case 'settings':
           this.dialogKey = 'settings';
           this.dialogInfo = JSON.parse(JSON.stringify(data)); // 多对象数组
-          this.dialogWidth = '50%';
+          this.dialogWidth = '720px';
           this.isChangeSetDialog = false;
           this.settingsDialogActiveTabsName = 'basicSettings';
           this.isSetVolumeChecked = false;
-          this.isChangeSetDialog = false;
           this.setVolumeSlider = this.dialogInfo.length===1 ? +this.dialogInfo[0].volume : 20;
-          this.lockScreenRadio = '';
           this.lockScreenImgRadio = '';
           this.uploadFileInfo = null;
           this.lockScreenResultList = [];
+          this.isShowadAptiveImage = false;
+          this.isSuccessedActive = false;
           this.updateApkStep = '1';
           this.isShowApkList = false;
           this.uploadAPKInfo = null;
@@ -1718,6 +1968,48 @@ export default {
           this.basicSettingsResultList = [];
           this.switchingPowerRadioGroup = '';
           this.isSettingsChangeNoSave = false;
+          this.isSettingsChangeSubmit = false;
+          this.switchChannelRadioGroup = '';
+          this.dialogInfoClassifyMap = null;
+          this.dialogInfoUnknownNum = 0;
+          this.switchChannelRadioGroupMap = null;
+          this.switchChannelRadioGroupShowMap = null;
+
+          if (this.dialogInfo.length > 1) {
+            this.dialogInfoClassifyMap = ( map => {
+              if (map['undefined'].length > 0) {
+                this.dialogInfoUnknownNum = map['undefined'].length;
+                delete map['undefined'];
+              }
+
+              Object.keys(map).map(key => {
+                if (!this.channelMap[key]) {
+                  this.dialogInfoUnknownNum += map[key].length;
+                  delete map[key];
+                }
+              });
+
+              return map;
+            })(listClassifyMap(this.dialogInfo, 'apiKey'));
+
+            this.switchChannelRadioGroupMap = ( map => {
+              let obj = {};
+
+              Object.keys(map).map(key => { obj[key] = ''; });
+
+              return obj;
+            })(this.dialogInfoClassifyMap);
+
+            this.switchChannelRadioGroupShowMap = ( map => {
+              let obj = {};
+
+              Object.keys(map).map(key => { obj[key] = true; });
+
+              return obj;
+            })(this.dialogInfoClassifyMap);
+
+            console.log('通道分类', this.dialogInfoClassifyMap, this.switchChannelRadioGroupMap, this.dialogInfoUnknownNum);
+          }
           break;
         case 'plan':
           this.dialogKey = 'plan';
@@ -1894,9 +2186,9 @@ export default {
       this.isShowCheckedDeviceList = false;
       this.isShowTotalCount = true;
 
-      this.$refs['deviceTable'].clearSelection();
-      this.$refs['deviceTable'].clearSort();
-      this.$refs['deviceTable'].clearFilter();
+//      this.$refs['deviceTable'].clearSelection();
+//      this.$refs['deviceTable'].clearSort();
+//      this.$refs['deviceTable'].clearFilter();
     },
     uniformPlan() {
       movePlanToDevice({
@@ -2021,7 +2313,8 @@ export default {
       this.isSettingsChangeNoSave = false;
     },
     resetLockScreenSettings() {
-      this.lockScreenRadio = '';
+        this.isSuccessedActive = false;
+      this.isShowadAptiveImage = false;
       this.lockScreenImgRadio = '';
       this.uploadFileInfo =  null;
       this.lockScreenResultList = [];
@@ -2040,14 +2333,12 @@ export default {
 
       setLockScreen({
         terminalIds: deviceIds + '',
-        isLockScreen: this.lockScreenRadio!=='0',
-        lockScreenTime: this.lockScreenRadio,
-        lockingMode: this.lockScreenImgRadio,
+        lockScreenImgRadio: this.lockScreenImgRadio,
         fid: this.uploadFileInfo ? this.uploadFileInfo.fid : '',
       }).then(res => {
         console.log('请求锁屏设置', res);
 
-        if (this.lockScreenRadio!=='0' && this.lockScreenImgRadio==='1' && res.uuid) { // 自定义图像
+        if (this.lockScreenImgRadio==='1' && res.uuid) { // 自定义图像
           let uuid = res.uuid;
           let count = 1;
 
@@ -2056,6 +2347,7 @@ export default {
             this.timer = null;
           }
 
+          //轮询查看后台是否下载完成图片
           this.timer = setInterval(() => {
             getLockScreenInfo({ uuid }).then(r => {
               console.log(r)
@@ -2082,22 +2374,30 @@ export default {
 //                  this.appMainLoading.close();
 //                  this.$message.error(this.$t('common.operationFailure'));
 //                }
-              } else { // 没有2（处理中）状态则轮询结束
-                clearInterval(this.timer);
-
+              } else { // 没有2（处理中）状态则轮询结束 8126
                 this.isSettingsChangeNoSave = false;
+                this.isSettingsChangeSubmit = true;
+                clearInterval(this.timer);
               }
+              this.isSuccessedActive = true;
             }).catch(e => {
               console.log(e)
 
               clearInterval(this.timer);
               this.isSettingsLoading = false;
+              this.isSuccessedActive = true;
               this.$message.error(this.$t('common.operationFailure'));
             });
           }, 3000);
 
         } else { // 不锁屏/默认锁屏
           if (res.data.updateDate) delete res.data.updateDate;
+
+//          deviceIds.map(item => {
+//            let index = this.list.findIndex(i => i.id === item);
+//
+//            this.list[index].lockScreenStyle = this.lockScreenImgRadio;
+//          });
           this.lockScreenResultList = Object.keys(res.data).map(item => {
             return {
               id: item,
@@ -2107,11 +2407,14 @@ export default {
           });
           this.isSettingsLoading = false;
           this.isSettingsChangeNoSave = false;
+          this.isSettingsChangeSubmit = true;
+          this.isSuccessedActive = true;
         }
       }).catch(err => {
         console.log(err);
 
         this.isSettingsLoading = false;
+        this.isSuccessedActive = true;
         this.$message.error(this.$t('common.operationFailure'));
       })
     },
@@ -2173,6 +2476,7 @@ export default {
                 clearInterval(this.timer);
 
                 this.isSettingsChangeNoSave = false;
+                this.isSettingsChangeSubmit = true;
               }
             }).catch(e => {
               console.log(e);
@@ -2267,11 +2571,16 @@ export default {
         this.timer = null;
       }
 
-      if (this.dialogKey === 'settings' && (this.basicSettingsResultList.length>0 || this.updateAPKResultList.length>0 || this.lockScreenResultList.length>0)) {
+      if (this.dialogKey === 'settings' && this.isSettingsChangeSubmit) {
         this.updateDevicesTableData();
       }
 
       this.dialogKey = '';
+    },
+    showadAptiveImage(){
+      this.isShowadAptiveImage === false ? this.isShowadAptiveImage = true : this.isShowadAptiveImage = false ;
+      imgHistoryScreenCapture($('.adaptiveImage').attr('src'), $('.adaptiveImage'));
+      console.log($('.adaptiveImage').attr('src'))
     },
     leaveSettingsTabs() {
       if (this.timer) {
@@ -2295,16 +2604,24 @@ export default {
       }
     },
     handleSelectAll(selection) {
-      if (this.list.length < this.listTotalCount) {
+      if (this.list.length < this.listTotalCount && selection.length>0) {
         console.log('第一次筛选请求全部数据！')
 
         this.getList(true, true);
+      } else if (selection.length===0) {
+        if (this.checkedDeviceList.length-this.list.length === 0) {
+          this.checkedDeviceList = [];
+        } else {
+          this.list.map(item => {
+            this.uncheckedOneRow(item)
+          });
+        }
       }
     },
     deviceIdTurnName(id) {
-      const index = this.list.findIndex(item => item.id === id);
+      const index = this.checkedDeviceList.findIndex(item => item.id === id);
 
-      return  this.list[index].name;
+      return  this.checkedDeviceList[index].name;
     },
     selectPlanFormChange(val) {
       console.log('筛选类型',val);
@@ -2340,6 +2657,76 @@ export default {
       }, []);
 
       return obj[val] ? obj[val].length : 0;
+    },
+    confirmChannel() {
+      let json = [];
+
+      if (this.dialogInfo.length === 1) {
+        json.push({
+          "terminalIds": this.dialogInfo[0].id,
+          "defaultSources": this.switchChannelRadioGroup // 目前仅支持单选通道
+        })
+      } else if (this.dialogInfo.length > 1 && this.dialogInfoClassifyMap) {
+        Object.keys(this.dialogInfoClassifyMap).map(key => {
+          if (this.switchChannelRadioGroupMap[key]) {
+            json.push({
+              "terminalIds": this.dialogInfoClassifyMap[key].reduce((total, item) => {
+                total.push(item.id);
+                return total;
+              }, []) + '',
+              "defaultSources": this.switchChannelRadioGroupMap[key] // 目前仅支持单选通道
+            });
+          }
+        })
+      }
+
+      terminalPassSetting({
+        json: JSON.stringify(json)
+      }).then(res => {
+        console.log('发送设置终端通道命令成功', res);
+
+        if (this.dialogInfo.length === 1) {
+//          let index = this.list.findIndex(item => item.id === this.dialogInfo[0].id);
+//
+//          this.list[index].defaultSources = this.switchChannelRadioGroup;
+          this.dialogInfo[0].defaultSources = this.switchChannelRadioGroup;
+        }
+//        else if (this.dialogInfo.length > 1 && this.dialogInfoClassifyMap) {
+//          Object.keys(this.dialogInfoClassifyMap).map(key => {
+//            if (this.switchChannelRadioGroupMap[key]) {
+//              this.dialogInfoClassifyMap[key].map(item => {
+//                let index = this.list.findIndex(i => i.id === item.id);
+//
+//                this.list[index].defaultSources = this.switchChannelRadioGroupMap[key];
+//              })
+//            }
+//          });
+//        }
+
+        this.resetChannelSettings();
+        this.isSettingsLoading = false;
+        this.isSettingsChangeNoSave = false;
+        this.isSettingsChangeSubmit = true;
+        this.$message({
+          message: this.$t('common.operationSucceeds'),
+          type: 'success'
+        });
+      }).catch(err => {
+        console.log('发送设置终端通道命令失败', err);
+
+        this.isSettingsLoading = false;
+        this.$message.error(this.$t('common.operationFailure'));
+      })
+    },
+    resetChannelSettings() {
+      if (this.switchChannelRadioGroupMap) {
+        Object.keys(this.switchChannelRadioGroupMap).map(key => {
+          this.switchChannelRadioGroupMap[key] = '';
+        });
+      }
+
+      this.switchChannelRadioGroup = '';
+      this.isSettingsChangeNoSave = false;
     },
     /** 以下为 webuploader 监听处理方法
      *
@@ -2410,6 +2797,7 @@ export default {
         console.log('上传图片成功数据', this.uploadFileInfo);
       }
       this.isSettingsChangeNoSave = true;
+      this.isSettingsChangeSubmit = true;
     },
     webuploader_uploadError(file, reason) {
       console.log('uploadError', file, reason);
@@ -2448,6 +2836,7 @@ export default {
       }
 
       this.isSettingsChangeNoSave = true;
+      this.isSettingsChangeSubmit = true;
     },
     webuploader_uploadComplete(file) {
       console.log('uploadComplete', file);
@@ -2519,7 +2908,7 @@ export default {
     display: none;
   }
 
-  #tab-basicSettings, #tab-lockScreenSettings, #tab-apkSettings {
+  #tab-basicSettings, #tab-channelSettings, #tab-lockScreenSettings, #tab-apkSettings {
     font-weight: bold;
   }
 </style>
@@ -2539,7 +2928,6 @@ export default {
   .handle-box {
     display: flex;
     align-items: center;
-
   }
 
   .selected-box {
@@ -2579,7 +2967,7 @@ export default {
       overflow-y: auto;
       overflow-x: hidden;
       box-shadow: 3px 4px 5px rgba(0, 0, 0, 0.4);
-      padding: 0 10px;
+
     }
 
     .list-item {
@@ -2589,6 +2977,11 @@ export default {
       color: #303133;
       height: 50px;
       border-bottom: 1px solid #F2F6FC;
+      padding: 0 10px;
+      &:hover {
+        background-color: #F0F7FF;
+      }
+
       .list-office {
         display: flex;
         flex-direction: column;
@@ -2665,12 +3058,7 @@ export default {
     margin-bottom: 20px;
   }
 
-  .lockScreenSettings-box {
-    @include scrollBar;
-    overflow: auto;
-  }
-
-  .ApkUpdate-box {
+  .channelSettings-box, .lockScreenSettings-box, .ApkUpdate-box {
     @include scrollBar;
     overflow: auto;
   }
@@ -2681,7 +3069,9 @@ export default {
     height: 300px;
     overflow: auto;
   }
-
+   .isShowBtn{
+     display: none;
+   }
   .apk-list {
     @include scrollBar;
     width: 50%;
