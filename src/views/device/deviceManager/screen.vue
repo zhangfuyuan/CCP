@@ -159,7 +159,8 @@
     <!--列表模式-->
     <div class="single-model" v-else>
       <!--左侧设备列表-->
-      <div class="left-list" :style="{ 'height': singleHeight + 'px' }">
+      <!--<div class="left-list" :style="{ 'height': singleHeight + 'px' }">-->
+      <div class="left-list" style="height: 846px;">
         <div class="left-list-wrapper">
           <div class="header">
             <div class="header-btns">
@@ -186,7 +187,8 @@
           </div>
 
           <div class="devices-list" v-loading="(curClickDevice&&curClickDevice.isLoading) || isMultipleLoading">
-            <ul class="devices-list-ul" :style="{ 'height': (!isShowSearchBtn ? devicesListUlHeight : devicesListUlHeight+40) + 'px' }">
+            <!--<ul class="devices-list-ul" :style="{ 'height': (!isShowSearchBtn ? devicesListUlHeight : devicesListUlHeight+40) + 'px' }">-->
+            <ul class="devices-list-ul" style="height: 714px;">
               <template v-if="showDeviceList.length>0">
                 <li v-for="(item, index) in showDeviceList"
                     :class="[ 'devices-list-li', { 'is-cur': item.id === curClickDevice.id } ]"
@@ -229,7 +231,8 @@
       </div>
 
       <!--右侧单图内容-->
-      <div class="right-img" :style="{ 'height': singleHeight + 'px' }">
+      <!--<div class="right-img" :style="{ 'height': singleHeight + 'px' }">-->
+      <div class="right-img" style="height: 846px;">
         <template v-if="curClickDevice">
           <div class="right-img-wrapper">
             <div class="header" style="display: flex;justify-content: space-between;align-items: flex-start;margin-bottom: 10px;">
@@ -311,7 +314,8 @@
               </div>
             </div>
 
-            <div class="footer" :style="{ 'height': footerHeight + 'px' }">
+            <!--<div class="footer" :style="{ 'height': footerHeight + 'px' }">-->
+            <div class="footer" style="height: 280px;">
               <div class="title" style="font-size: 18px;margin: 15px 0;">
                 {{$t('deviceManager.historyScreenshots')}}
               </div>

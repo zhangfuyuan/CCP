@@ -499,99 +499,99 @@
           </el-tab-pane>
 
           <!--通道设置-->
-          <el-tab-pane name="channelSettings"
-                       class="channelSettings-box"
-                       style="height: 500px;">
-            <span slot="label">
-              <span :title="$t('deviceManager.cloudFeature')"><svg-icon icon-class="cloud" /></span>
-              {{$t('deviceManager.channelSettings')}}
-            </span>
+          <!--<el-tab-pane name="channelSettings"-->
+                       <!--class="channelSettings-box"-->
+                       <!--style="height: 500px;">-->
+            <!--<span slot="label">-->
+              <!--<span :title="$t('deviceManager.cloudFeature')"><svg-icon icon-class="cloud" /></span>-->
+              <!--{{$t('deviceManager.channelSettings')}}-->
+            <!--</span>-->
 
-            <template v-if="settingsDialogActiveTabsName === 'channelSettings'">
-              <template v-if="dialogInfo.length===1">
-                <div style="color: #666;margin-bottom: 20px;padding-bottom: 20px;border-bottom: 1px solid #DCDFE6;">
-                  {{$t('deviceManager.bootChannel')}} :
-                  <span style="color: #333;" v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey] && dialogInfo[0].defaultSources">
-                    {{[channelMap[dialogInfo[0].apiKey], dialogInfo[0].defaultSources] | findInMap}}</span>
-                  <span style="color: #333;" v-else>-</span>
-                </div>
+            <!--<template v-if="settingsDialogActiveTabsName === 'channelSettings'">-->
+              <!--<template v-if="dialogInfo.length===1">-->
+                <!--<div style="color: #666;margin-bottom: 20px;padding-bottom: 20px;border-bottom: 1px solid #DCDFE6;">-->
+                  <!--{{$t('deviceManager.bootChannel')}} :-->
+                  <!--<span style="color: #333;" v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey] && dialogInfo[0].defaultSources">-->
+                    <!--{{[channelMap[dialogInfo[0].apiKey], dialogInfo[0].defaultSources] | findInMap}}</span>-->
+                  <!--<span style="color: #333;" v-else>-</span>-->
+                <!--</div>-->
 
-                <div style="color: #666;">
-                  <div style="margin-bottom: 10px;">
-                    {{$t('deviceManager.setBootChannel')}}
-                  </div>
+                <!--<div style="color: #666;">-->
+                  <!--<div style="margin-bottom: 10px;">-->
+                    <!--{{$t('deviceManager.setBootChannel')}}-->
+                  <!--</div>-->
 
-                  <el-radio-group v-model="switchChannelRadioGroup"
-                                  style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;"
-                                  @change="isSettingsChangeNoSave = true"
-                                  v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey]">
-                    <el-radio v-for="(channel, index) in channelMap[dialogInfo[0].apiKey]"
-                              :key="index"
-                              :label="channel.name"
-                              border
-                              style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"
-                              @click.native="switchChannelRadioGroup = ''"
-                              :title="channel.detail">{{channel.detail}}</el-radio>
-                  </el-radio-group>
+                  <!--<el-radio-group v-model="switchChannelRadioGroup"-->
+                                  <!--style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;"-->
+                                  <!--@change="isSettingsChangeNoSave = true"-->
+                                  <!--v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey]">-->
+                    <!--<el-radio v-for="(channel, index) in channelMap[dialogInfo[0].apiKey]"-->
+                              <!--:key="index"-->
+                              <!--:label="channel.name"-->
+                              <!--border-->
+                              <!--style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"-->
+                              <!--@click.native="switchChannelRadioGroup = ''"-->
+                              <!--:title="channel.detail">{{channel.detail}}</el-radio>-->
+                  <!--</el-radio-group>-->
 
-                  <div v-else style="color: #999;padding-top: 10px;">
-                    {{$t('deviceManager.untypedPrompt')}}
-                  </div>
-                </div>
-              </template>
+                  <!--<div v-else style="color: #999;padding-top: 10px;">-->
+                    <!--{{$t('deviceManager.untypedPrompt')}}-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</template>-->
 
-              <template v-if="dialogInfo.length>1">
-                <div style="color: #666;">
-                  <div style="margin-bottom: 20px;">
-                    {{$t('deviceManager.setBootChannel')}}
-                  </div>
+              <!--<template v-if="dialogInfo.length>1">-->
+                <!--<div style="color: #666;">-->
+                  <!--<div style="margin-bottom: 20px;">-->
+                    <!--{{$t('deviceManager.setBootChannel')}}-->
+                  <!--</div>-->
 
-                  <div v-for="(key, index) in Object.keys(dialogInfoClassifyMap)"
-                       :key="index"
-                       style="margin-bottom: 20px;padding-bottom: 10px;border-bottom: 1px solid #DCDFE6;" >
-                    <div style="color: #666;display: flex;">
-                      <div style="flex: 1;">
-                        <span>{{$t('deviceManager.type')}} {{index+1}}</span>
-                        <span style="padding-left: 10px;">{{dialogInfoClassifyMap[key].length}} {{$t('deviceManager.machine')}}</span>
-                        <span style="padding-left: 20px;">{{$t('deviceManager.bootChannel')}}</span>
-                        <span style="color: #409EFF;" v-show="switchChannelRadioGroupMap[key]">
-                          >> {{[channelMap[key], switchChannelRadioGroupMap[key]] | findInMap}}</span>
-                      </div>
+                  <!--<div v-for="(key, index) in Object.keys(dialogInfoClassifyMap)"-->
+                       <!--:key="index"-->
+                       <!--style="margin-bottom: 20px;padding-bottom: 10px;border-bottom: 1px solid #DCDFE6;" >-->
+                    <!--<div style="color: #666;display: flex;">-->
+                      <!--<div style="flex: 1;">-->
+                        <!--<span>{{$t('deviceManager.type')}} {{index+1}}</span>-->
+                        <!--<span style="padding-left: 10px;">{{dialogInfoClassifyMap[key].length}} {{$t('deviceManager.machine')}}</span>-->
+                        <!--<span style="padding-left: 20px;">{{$t('deviceManager.bootChannel')}}</span>-->
+                        <!--<span style="color: #409EFF;" v-show="switchChannelRadioGroupMap[key]">-->
+                          <!--&gt;> {{[channelMap[key], switchChannelRadioGroupMap[key]] | findInMap}}</span>-->
+                      <!--</div>-->
 
-                      <span style="cursor: pointer;"
-                            @click="switchChannelRadioGroupShowMap[key] = !switchChannelRadioGroupShowMap[key]">
-                        <i class="el-icon-arrow-down" v-show="switchChannelRadioGroupShowMap[key]"></i>
-                        <i class="el-icon-arrow-up" v-show="!switchChannelRadioGroupShowMap[key]"></i>
-                      </span>
-                    </div>
+                      <!--<span style="cursor: pointer;"-->
+                            <!--@click="switchChannelRadioGroupShowMap[key] = !switchChannelRadioGroupShowMap[key]">-->
+                        <!--<i class="el-icon-arrow-down" v-show="switchChannelRadioGroupShowMap[key]"></i>-->
+                        <!--<i class="el-icon-arrow-up" v-show="!switchChannelRadioGroupShowMap[key]"></i>-->
+                      <!--</span>-->
+                    <!--</div>-->
 
-                    <el-radio-group v-model="switchChannelRadioGroupMap[key]"
-                                    style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;padding-top: 10px;"
-                                    @change="isSettingsChangeNoSave = true"
-                                    v-show="switchChannelRadioGroupShowMap[key]">
-                      <el-radio v-for="(channel, i) in channelMap[key]"
-                                :key="i"
-                                :label="channel.name"
-                                border style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"
-                                @click.native="switchChannelRadioGroupMap[key] = ''"
-                                :title="channel.detail">{{channel.detail}}</el-radio>
-                    </el-radio-group>
-                  </div>
+                    <!--<el-radio-group v-model="switchChannelRadioGroupMap[key]"-->
+                                    <!--style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;padding-top: 10px;"-->
+                                    <!--@change="isSettingsChangeNoSave = true"-->
+                                    <!--v-show="switchChannelRadioGroupShowMap[key]">-->
+                      <!--<el-radio v-for="(channel, i) in channelMap[key]"-->
+                                <!--:key="i"-->
+                                <!--:label="channel.name"-->
+                                <!--border style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"-->
+                                <!--@click.native="switchChannelRadioGroupMap[key] = ''"-->
+                                <!--:title="channel.detail">{{channel.detail}}</el-radio>-->
+                    <!--</el-radio-group>-->
+                  <!--</div>-->
 
-                  <div v-if="dialogInfoUnknownNum > 0">
-                    <div style="color: #666;">
-                      <span>{{$t('deviceManager.untypedType')}}</span>
-                      <span style="padding-left: 10px;">{{dialogInfoUnknownNum}} {{$t('deviceManager.machine')}}</span>
-                    </div>
+                  <!--<div v-if="dialogInfoUnknownNum > 0">-->
+                    <!--<div style="color: #666;">-->
+                      <!--<span>{{$t('deviceManager.untypedType')}}</span>-->
+                      <!--<span style="padding-left: 10px;">{{dialogInfoUnknownNum}} {{$t('deviceManager.machine')}}</span>-->
+                    <!--</div>-->
 
-                    <div style="color: #999;padding-top: 10px;">
-                      {{$t('deviceManager.untypedPrompt')}}
-                    </div>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </el-tab-pane>
+                    <!--<div style="color: #999;padding-top: 10px;">-->
+                      <!--{{$t('deviceManager.untypedPrompt')}}-->
+                    <!--</div>-->
+                  <!--</div>-->
+                <!--</div>-->
+              <!--</template>-->
+            <!--</template>-->
+          <!--</el-tab-pane>-->
 
           <!--锁屏设置-->
           <el-tab-pane :label="$t('deviceManager.lockScreenSettings')"
@@ -1797,20 +1797,21 @@ export default {
       this.basicSettingsResult = '';
       this.basicSettingsResultList = [];
 
-      if (this.switchingPowerRadioGroup) {
-        let fun = { setDevice_powerOff, setDevice_standby, setDevice_awake, setDevice_restart };
-        fun['setDevice_' + this.switchingPowerRadioGroup]({ terminalIds: setDeviceIds }).then(res => {
-          console.log(res);
+      //先请求音量接口
+      if (!this.isSetVolumeChecked && this.dialogInfo.length>1) { //多设备，不勾选“统一音量”，则不请求接口
+
+      } else {
+        setDeviceVolume({ terminalIds: setDeviceIds, volume: this.setVolumeSlider }).then(res => {
+          console.log(res)
 
           if (this.dialogInfo.length===1) {
-            this.dialogInfo[0].status = this.switchingPowerRadioGroup;
             this.basicSettingsResultList.push({
-                title: this.$t('deviceManager.powerSettings') + (res.pass===1?this.$t('common.operationSucceeds'):this.$t('common.operationFailure')),
-                type: res.pass===1 ? 'success' : 'error'
+              title: this.$t('deviceManager.volumeSettings') + (res.pass===1?this.$t('common.operationSucceeds'):this.$t('common.operationFailure')),
+              type: res.pass===1 ? 'success' : 'error'
             });
           } else if (this.dialogInfo.length>1) {
             this.basicSettingsResult += '  |  ' + (() => {
-                return '(' + this.$t('deviceManager.powerSettings') + ')' +
+                return '(' + this.$t('deviceManager.volumeSettings') + ')' +
                   this.$t('common.operatingResult') + ': ' +
                   this.$t('common.success') + res.pass + '  ' +
                   this.$t('common.error') + res.fail + ' ';
@@ -1829,51 +1830,56 @@ export default {
           this.isSettingsChangeNoSave = false;
           this.isSettingsChangeSubmit = true;
           setTimeout(() => { this.isSettingsLoading = false; }, 500);
-          console.log('电源设置结果列表', this.basicSettingsResultList);
+          console.log('音量设置结果列表', this.basicSettingsResultList);
         }).catch(err => {
-          console.log(err)
+          console.log(err);
 
           setTimeout(() => { this.isSettingsLoading = false; }, 500);
-        })
+        });
       }
 
-      if (!this.isSetVolumeChecked && this.dialogInfo.length>1) return false;
+      //后请求电源接口
+      if (this.switchingPowerRadioGroup) {
+        setTimeout(() => {
+          let fun = { setDevice_powerOff, setDevice_standby, setDevice_awake, setDevice_restart };
+          fun['setDevice_' + this.switchingPowerRadioGroup]({ terminalIds: setDeviceIds }).then(res => {
+            console.log(res);
 
-      setDeviceVolume({ terminalIds: setDeviceIds, volume: this.setVolumeSlider }).then(res => {
-        console.log(res)
-
-        if (this.dialogInfo.length===1) {
-          this.basicSettingsResultList.push({
-            title: this.$t('deviceManager.volumeSettings') + (res.pass===1?this.$t('common.operationSucceeds'):this.$t('common.operationFailure')),
-            type: res.pass===1 ? 'success' : 'error'
-          });
-        } else if (this.dialogInfo.length>1) {
-          this.basicSettingsResult += '  |  ' + (() => {
-              return '(' + this.$t('deviceManager.volumeSettings') + ')' +
-                this.$t('common.operatingResult') + ': ' +
-                this.$t('common.success') + res.pass + '  ' +
-                this.$t('common.error') + res.fail + ' ';
-            })();
-          let result = Object.keys(res.teResultJson).map(item => {
-            return {
-              id: item,
-              status: res.teResultJson[item]
+            if (this.dialogInfo.length===1) {
+              this.dialogInfo[0].status = this.switchingPowerRadioGroup;
+              this.basicSettingsResultList.push({
+                title: this.$t('deviceManager.powerSettings') + (res.pass===1?this.$t('common.operationSucceeds'):this.$t('common.operationFailure')),
+                type: res.pass===1 ? 'success' : 'error'
+              });
+            } else if (this.dialogInfo.length>1) {
+              this.basicSettingsResult += '  |  ' + (() => {
+                  return '(' + this.$t('deviceManager.powerSettings') + ')' +
+                    this.$t('common.operatingResult') + ': ' +
+                    this.$t('common.success') + res.pass + '  ' +
+                    this.$t('common.error') + res.fail + ' ';
+                })();
+              let result = Object.keys(res.teResultJson).map(item => {
+                return {
+                  id: item,
+                  status: res.teResultJson[item]
+                }
+              });
+              let tmp = this.basicSettingsResultList.map(item => item.id );
+              this.basicSettingsResultList.push(...result.filter(item => tmp.indexOf(item.id) === -1));
             }
+
+            this.isShowBasicSettingsResult = true;
+            this.isSettingsChangeNoSave = false;
+            this.isSettingsChangeSubmit = true;
+            setTimeout(() => { this.isSettingsLoading = false; }, 500);
+            console.log('电源设置结果列表', this.basicSettingsResultList);
+          }).catch(err => {
+            console.log(err);
+
+            setTimeout(() => { this.isSettingsLoading = false; }, 500);
           });
-          let tmp = this.basicSettingsResultList.map(item => item.id );
-          this.basicSettingsResultList.push(...result.filter(item => tmp.indexOf(item.id) === -1));
-        }
-
-        this.isShowBasicSettingsResult = true;
-        this.isSettingsChangeNoSave = false;
-        this.isSettingsChangeSubmit = true;
-        setTimeout(() => { this.isSettingsLoading = false; }, 500);
-        console.log('音量设置结果列表', this.basicSettingsResultList);
-      }).catch(err => {
-        console.log(err);
-
-        setTimeout(() => { this.isSettingsLoading = false; }, 500);
-      })
+        }, 1000);
+      }
     },
     deleteDevices() { // todo   删除终端
       let deviceIds = [];
