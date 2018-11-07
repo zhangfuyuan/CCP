@@ -195,9 +195,10 @@
               </el-form-item>
 
               <el-form-item :label="$t('deviceManager.state')" style="width: 30%;">
-                <span v-if="dialogInfo.status==='1'">{{$t('deviceManager.online')}}</span>
+                <span v-if="dialogInfo.status==='0'">{{$t('deviceManager.offline')}}</span>
+                <span v-else-if="dialogInfo.status==='1'">{{$t('deviceManager.online')}}</span>
                 <span v-else-if="dialogInfo.status==='2'">{{$t('deviceManager.standby')}}</span>
-                <span v-else>{{$t('deviceManager.offline')}}</span>
+                <span v-else>{{$t('deviceManager.noPointsOffline')}}</span>
               </el-form-item>
 
               <el-form-item :label="$t('deviceManager.onlineTime')" style="width: 30%;">
@@ -286,7 +287,7 @@
                       <span v-else-if="item.operation==='2'">{{$t('deviceManager.standby')}}</span>
                       <span v-else>{{$t('deviceManager.powerOff')}}</span>
                       &nbsp;
-                      <span>{{+item.time | formatDateTime}}</span>
+                      <span>{{item.time | formatDateTime}}</span>
                       &nbsp;
                       <template v-if="item.planType==='1'">
                         <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
@@ -326,7 +327,7 @@
                       <template v-else>
                         <span>{{$t('deviceManager.volume')}}: {{item.volume}}</span>
                         &nbsp;
-                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{+date | formatDateTime}}<span v-if="i===0">~</span></span>
+                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{date | formatDateTime}}<span v-if="i===0">~</span></span>
                         &nbsp;
                         <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
                         <span v-if="item.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
@@ -399,9 +400,10 @@
 
                 <div v-if="dialogInfo.length===1" style="color: #666;margin-bottom: 20px;">
                   {{$t('deviceManager.currentState')}} :
-                  <span v-if="dialogInfo[0].status==='1'" style="color: #333;">{{$t('deviceManager.online')}}</span>
+                  <span v-if="dialogInfo[0].status==='0'" style="color: #333;">{{$t('deviceManager.offline')}}</span>
+                  <span v-else-if="dialogInfo[0].status==='1'" style="color: #333;">{{$t('deviceManager.online')}}</span>
                   <span v-else-if="dialogInfo[0].status==='2'" style="color: #333;">{{$t('deviceManager.standby')}}</span>
-                  <span v-else style="color: #333;">{{$t('deviceManager.offline')}}</span>
+                  <span v-else style="color: #333;">{{$t('deviceManager.noPointsOffline')}}</span>
                 </div>
 
                 <div style="color: #666;">
@@ -410,27 +412,31 @@
                   <div style="padding-top: 10px;">
                     <el-radio-group v-model="switchingPowerRadioGroup"
                                     style="width: 100%;display: flex;justify-content: space-between;"
-                                    @change="isChangeSetDialog = true, isSettingsChangeNoSave = true">
+                                    @change="isChangeSetDialog = true, isSettingsChangeNoSave = true"> awake powerOff restart standby
                       <el-radio label="awake"
                                 border
                                 :disabled="(dialogInfo.length===1 && dialogInfo[0].status==='1') ||
-                                         (dialogInfo.length===1 && dialogInfo[0].status==='0')">{{$t('deviceManager.awake')}}
+                                         (dialogInfo.length===1 && dialogInfo[0].status==='0') ||
+                                         (dialogInfo.length===1 && dialogInfo[0].status==='3')">{{$t('deviceManager.awake')}}
                       </el-radio>
 
                       <el-radio label="powerOff"
                                 border
-                                :disabled="dialogInfo.length===1 && dialogInfo[0].status==='0'">{{$t('deviceManager.powerOff')}}
+                                :disabled="(dialogInfo.length===1 && dialogInfo[0].status==='0') ||
+                                         (dialogInfo.length===1 && dialogInfo[0].status==='3')">{{$t('deviceManager.powerOff')}}
                       </el-radio>
 
                       <el-radio label="restart"
                                 border
-                                :disabled="dialogInfo.length===1 && dialogInfo[0].status==='0'">{{$t('deviceManager.restart')}}
+                                :disabled="(dialogInfo.length===1 && dialogInfo[0].status==='0')||
+                                         (dialogInfo.length===1 && dialogInfo[0].status==='3')">{{$t('deviceManager.restart')}}
                       </el-radio>
 
                       <el-radio label="standby"
                                 border
                                 :disabled="(dialogInfo.length===1 && dialogInfo[0].status==='0') ||
-                                         (dialogInfo.length===1 && dialogInfo[0].status==='2')">{{$t('deviceManager.standby')}}
+                                         (dialogInfo.length===1 && dialogInfo[0].status==='2')||
+                                         (dialogInfo.length===1 && dialogInfo[0].status==='3')">{{$t('deviceManager.standby')}}
                       </el-radio>
                     </el-radio-group>
                   </div>
@@ -456,7 +462,8 @@
                     show-input
                     input-size="small"
                     :disabled="(dialogInfo.length>1 && !isSetVolumeChecked) ||
-                               (dialogInfo.length===1 && dialogInfo[0].status==='0' && !isSetVolumeChecked)"
+                               (dialogInfo.length===1 && dialogInfo[0].status==='0' && !isSetVolumeChecked) ||
+                               (dialogInfo.length===1 && dialogInfo[0].status==='3')"
                     @change="isChangeSetDialog = true, isSettingsChangeNoSave = true">
                   </el-slider>
                 </div>
@@ -499,99 +506,99 @@
           </el-tab-pane>
 
           <!--通道设置-->
-          <!--<el-tab-pane name="channelSettings"-->
-                       <!--class="channelSettings-box"-->
-                       <!--style="height: 500px;">-->
-            <!--<span slot="label">-->
-              <!--<span :title="$t('deviceManager.cloudFeature')"><svg-icon icon-class="cloud" /></span>-->
-              <!--{{$t('deviceManager.channelSettings')}}-->
-            <!--</span>-->
+          <el-tab-pane name="channelSettings"
+                       class="channelSettings-box"
+                       style="height: 500px;">
+            <span slot="label">
+              <span :title="$t('deviceManager.cloudFeature')"><svg-icon icon-class="cloud" /></span>
+              {{$t('deviceManager.channelSettings')}}
+            </span>
 
-            <!--<template v-if="settingsDialogActiveTabsName === 'channelSettings'">-->
-              <!--<template v-if="dialogInfo.length===1">-->
-                <!--<div style="color: #666;margin-bottom: 20px;padding-bottom: 20px;border-bottom: 1px solid #DCDFE6;">-->
-                  <!--{{$t('deviceManager.bootChannel')}} :-->
-                  <!--<span style="color: #333;" v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey] && dialogInfo[0].defaultSources">-->
-                    <!--{{[channelMap[dialogInfo[0].apiKey], dialogInfo[0].defaultSources] | findInMap}}</span>-->
-                  <!--<span style="color: #333;" v-else>-</span>-->
-                <!--</div>-->
+            <template v-if="settingsDialogActiveTabsName === 'channelSettings'">
+              <template v-if="dialogInfo.length===1">
+                <div style="color: #666;margin-bottom: 20px;padding-bottom: 20px;border-bottom: 1px solid #DCDFE6;">
+                  {{$t('deviceManager.bootChannel')}} :
+                  <span style="color: #333;" v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey] && dialogInfo[0].defaultSources">
+                    {{[channelMap[dialogInfo[0].apiKey], dialogInfo[0].defaultSources] | findInMap}}</span>
+                  <span style="color: #333;" v-else>-</span>
+                </div>
 
-                <!--<div style="color: #666;">-->
-                  <!--<div style="margin-bottom: 10px;">-->
-                    <!--{{$t('deviceManager.setBootChannel')}}-->
-                  <!--</div>-->
+                <div style="color: #666;">
+                  <div style="margin-bottom: 10px;">
+                    {{$t('deviceManager.setBootChannel')}}
+                  </div>
 
-                  <!--<el-radio-group v-model="switchChannelRadioGroup"-->
-                                  <!--style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;"-->
-                                  <!--@change="isSettingsChangeNoSave = true"-->
-                                  <!--v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey]">-->
-                    <!--<el-radio v-for="(channel, index) in channelMap[dialogInfo[0].apiKey]"-->
-                              <!--:key="index"-->
-                              <!--:label="channel.name"-->
-                              <!--border-->
-                              <!--style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"-->
-                              <!--@click.native="switchChannelRadioGroup = ''"-->
-                              <!--:title="channel.detail">{{channel.detail}}</el-radio>-->
-                  <!--</el-radio-group>-->
+                  <el-radio-group v-model="switchChannelRadioGroup"
+                                  style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;"
+                                  @change="isSettingsChangeNoSave = true"
+                                  v-if="dialogInfo[0].apiKey && channelMap[dialogInfo[0].apiKey]">
+                    <el-radio v-for="(channel, index) in channelMap[dialogInfo[0].apiKey]"
+                              :key="index"
+                              :label="channel.name"
+                              border
+                              style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"
+                              @click.native="switchChannelRadioGroup = ''"
+                              :title="channel.detail">{{channel.detail}}</el-radio>
+                  </el-radio-group>
 
-                  <!--<div v-else style="color: #999;padding-top: 10px;">-->
-                    <!--{{$t('deviceManager.untypedPrompt')}}-->
-                  <!--</div>-->
-                <!--</div>-->
-              <!--</template>-->
+                  <div v-else style="color: #999;padding-top: 10px;">
+                    {{$t('deviceManager.untypedPrompt')}}
+                  </div>
+                </div>
+              </template>
 
-              <!--<template v-if="dialogInfo.length>1">-->
-                <!--<div style="color: #666;">-->
-                  <!--<div style="margin-bottom: 20px;">-->
-                    <!--{{$t('deviceManager.setBootChannel')}}-->
-                  <!--</div>-->
+              <template v-if="dialogInfo.length>1">
+                <div style="color: #666;">
+                  <div style="margin-bottom: 20px;">
+                    {{$t('deviceManager.setBootChannel')}}
+                  </div>
 
-                  <!--<div v-for="(key, index) in Object.keys(dialogInfoClassifyMap)"-->
-                       <!--:key="index"-->
-                       <!--style="margin-bottom: 20px;padding-bottom: 10px;border-bottom: 1px solid #DCDFE6;" >-->
-                    <!--<div style="color: #666;display: flex;">-->
-                      <!--<div style="flex: 1;">-->
-                        <!--<span>{{$t('deviceManager.type')}} {{index+1}}</span>-->
-                        <!--<span style="padding-left: 10px;">{{dialogInfoClassifyMap[key].length}} {{$t('deviceManager.machine')}}</span>-->
-                        <!--<span style="padding-left: 20px;">{{$t('deviceManager.bootChannel')}}</span>-->
-                        <!--<span style="color: #409EFF;" v-show="switchChannelRadioGroupMap[key]">-->
-                          <!--&gt;> {{[channelMap[key], switchChannelRadioGroupMap[key]] | findInMap}}</span>-->
-                      <!--</div>-->
+                  <div v-for="(key, index) in Object.keys(dialogInfoClassifyMap)"
+                       :key="index"
+                       style="margin-bottom: 20px;padding-bottom: 10px;border-bottom: 1px solid #DCDFE6;" >
+                    <div style="color: #666;display: flex;">
+                      <div style="flex: 1;">
+                        <span>{{$t('deviceManager.type')}} {{index+1}}</span>
+                        <span style="padding-left: 10px;">{{dialogInfoClassifyMap[key].length}} {{$t('deviceManager.machine')}}</span>
+                        <span style="padding-left: 20px;">{{$t('deviceManager.bootChannel')}}</span>
+                        <span style="color: #409EFF;" v-show="switchChannelRadioGroupMap[key]">
+                          >> {{[channelMap[key], switchChannelRadioGroupMap[key]] | findInMap}}</span>
+                      </div>
 
-                      <!--<span style="cursor: pointer;"-->
-                            <!--@click="switchChannelRadioGroupShowMap[key] = !switchChannelRadioGroupShowMap[key]">-->
-                        <!--<i class="el-icon-arrow-down" v-show="switchChannelRadioGroupShowMap[key]"></i>-->
-                        <!--<i class="el-icon-arrow-up" v-show="!switchChannelRadioGroupShowMap[key]"></i>-->
-                      <!--</span>-->
-                    <!--</div>-->
+                      <span style="cursor: pointer;"
+                            @click="switchChannelRadioGroupShowMap[key] = !switchChannelRadioGroupShowMap[key]">
+                        <i class="el-icon-arrow-down" v-show="switchChannelRadioGroupShowMap[key]"></i>
+                        <i class="el-icon-arrow-up" v-show="!switchChannelRadioGroupShowMap[key]"></i>
+                      </span>
+                    </div>
 
-                    <!--<el-radio-group v-model="switchChannelRadioGroupMap[key]"-->
-                                    <!--style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;padding-top: 10px;"-->
-                                    <!--@change="isSettingsChangeNoSave = true"-->
-                                    <!--v-show="switchChannelRadioGroupShowMap[key]">-->
-                      <!--<el-radio v-for="(channel, i) in channelMap[key]"-->
-                                <!--:key="i"-->
-                                <!--:label="channel.name"-->
-                                <!--border style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"-->
-                                <!--@click.native="switchChannelRadioGroupMap[key] = ''"-->
-                                <!--:title="channel.detail">{{channel.detail}}</el-radio>-->
-                    <!--</el-radio-group>-->
-                  <!--</div>-->
+                    <el-radio-group v-model="switchChannelRadioGroupMap[key]"
+                                    style="width: 100%;display: flex;flex-wrap: wrap;justify-content: space-between;padding-top: 10px;"
+                                    @change="isSettingsChangeNoSave = true"
+                                    v-show="switchChannelRadioGroupShowMap[key]">
+                      <el-radio v-for="(channel, i) in channelMap[key]"
+                                :key="i"
+                                :label="channel.name"
+                                border style="margin: 5px 0 5px;width: 20.1%;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;"
+                                @click.native="switchChannelRadioGroupMap[key] = ''"
+                                :title="channel.detail">{{channel.detail}}</el-radio>
+                    </el-radio-group>
+                  </div>
 
-                  <!--<div v-if="dialogInfoUnknownNum > 0">-->
-                    <!--<div style="color: #666;">-->
-                      <!--<span>{{$t('deviceManager.untypedType')}}</span>-->
-                      <!--<span style="padding-left: 10px;">{{dialogInfoUnknownNum}} {{$t('deviceManager.machine')}}</span>-->
-                    <!--</div>-->
+                  <div v-if="dialogInfoUnknownNum > 0">
+                    <div style="color: #666;">
+                      <span>{{$t('deviceManager.untypedType')}}</span>
+                      <span style="padding-left: 10px;">{{dialogInfoUnknownNum}} {{$t('deviceManager.machine')}}</span>
+                    </div>
 
-                    <!--<div style="color: #999;padding-top: 10px;">-->
-                      <!--{{$t('deviceManager.untypedPrompt')}}-->
-                    <!--</div>-->
-                  <!--</div>-->
-                <!--</div>-->
-              <!--</template>-->
-            <!--</template>-->
-          <!--</el-tab-pane>-->
+                    <div style="color: #999;padding-top: 10px;">
+                      {{$t('deviceManager.untypedPrompt')}}
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </template>
+          </el-tab-pane>
 
           <!--锁屏设置-->
           <el-tab-pane :label="$t('deviceManager.lockScreenSettings')"
@@ -949,7 +956,7 @@
                       <span v-else-if="item.operation==='2'">{{$t('deviceManager.standby')}}</span>
                       <span v-else>{{$t('deviceManager.powerOff')}}</span>
                       &nbsp;
-                      <span>{{+item.time | formatDateTime}}</span>
+                      <span>{{item.time | formatDateTime}}</span>
                       &nbsp;
                       <template v-if="item.planType==='1'">
                         <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
@@ -997,7 +1004,7 @@
                       <template v-else>
                         <span>{{$t('deviceManager.volume')}}: {{item.volume}}</span>
                         &nbsp;
-                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{+date | formatDateTime}}<span v-if="i===0">~</span></span>
+                        <span v-for="(date, i) in item.date.split(',')" :key="i">{{date | formatDateTime}}<span v-if="i===0">~</span></span>
                         &nbsp;
                         <span v-if="item.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
                         <span v-if="item.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
@@ -1093,7 +1100,7 @@
                         <span v-else-if="c.operation==='2'">{{$t('deviceManager.standby')}}</span>
                         <span v-else>{{$t('deviceManager.powerOff')}}</span>
                         &nbsp;
-                        <span>{{+c.time | formatDateTime}}</span>
+                        <span>{{c.time | formatDateTime}}</span>
                         &nbsp;
                         <template v-if="c.planType==='1'">
                           <span v-if="c.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
@@ -1121,7 +1128,7 @@
                         <template v-else>
                           <span>{{$t('deviceManager.volume')}}: {{c.volume}}</span>
                           &nbsp;
-                          <span v-for="(date, ind) in c.date.split(',')" :key="ind">{{+date | formatDateTime}}<span v-if="ind===0">~</span></span>
+                          <span v-for="(date, ind) in c.date.split(',')" :key="ind">{{date | formatDateTime}}<span v-if="ind===0">~</span></span>
                           &nbsp;
                           <span v-if="c.weeks.indexOf('1')>-1">{{$t('deviceManager.monday')}}</span>
                           <span v-if="c.weeks.indexOf('2')>-1">{{$t('deviceManager.tuesday')}}</span>
@@ -1462,15 +1469,15 @@ export default {
   },
   filters: {
     formatDate(time){
-      let date = new Date(time);
+      let date = /Invalid/.test(new Date(time)) ? (new Date(+time)) : (new Date(time));
       return formatDate(date,'yyyy-MM-dd hh:mm');
     },
     formatDateDate(time){
-      let date = new Date(time);
+      let date = /Invalid/.test(new Date(time)) ? (new Date(+time)) : (new Date(time));
       return formatDate(date,'yyyy-MM-dd');
     },
     formatDateTime(time){
-      let date = new Date(time);
+      let date = /Invalid/.test(new Date(time)) ? (new Date(+time)) : (new Date(time));
       return formatDate(date,'hh:mm');
     },
     formatDay(time) {
@@ -1846,7 +1853,7 @@ export default {
             console.log(res);
 
             if (this.dialogInfo.length===1) {
-              this.dialogInfo[0].status = this.switchingPowerRadioGroup;
+              this.dialogInfo[0].status = res.teResultJson[setDeviceIds+''];
               this.basicSettingsResultList.push({
                 title: this.$t('deviceManager.powerSettings') + (res.pass===1?this.$t('common.operationSucceeds'):this.$t('common.operationFailure')),
                 type: res.pass===1 ? 'success' : 'error'
@@ -2380,7 +2387,7 @@ export default {
 //                  this.appMainLoading.close();
 //                  this.$message.error(this.$t('common.operationFailure'));
 //                }
-              } else { // 没有2（处理中）状态则轮询结束 8126
+              } else { // 没有2（处理中）状态则轮询结束
                 this.isSettingsChangeNoSave = false;
                 this.isSettingsChangeSubmit = true;
                 clearInterval(this.timer);
@@ -2454,15 +2461,16 @@ export default {
 
           this.timer = setInterval(() => {
             getApkUpdateInfo({ uuid }).then(r => {
-              console.log(r)
-              const isHas2 = (Object.keys(r.data).map(item => r.data[item] ).indexOf(2) > -1);
-
               if (r.data.updateDate) delete r.data.updateDate;
+
+              let isHas2 = (Object.keys(r.data).map(item => r.data[item]).indexOf(2) > -1);
+              console.log('轮询升级APK结果：', r, Object.keys(r.data).map(item => r.data[item]).indexOf(2) > -1);
+
               this.updateAPKResultList = Object.keys(r.data).map(item => {
                 return {
                   id: item,
                   result: r.data[item],
-                  txt: r.data[item]===0 ? this.$t('common.error') : (r.data[item]===1?this.$t('common.success'):this.$t('common.processing'))
+                  txt: r.data[item]+''==='0' ? this.$t('common.error') : (r.data[item]+''==='1'?this.$t('common.success'):this.$t('common.processing'))
                 };
               });
               this.isSettingsLoading = false;
@@ -2608,6 +2616,12 @@ export default {
           });
         })
       }
+
+      this.$nextTick(() => {
+        if ($('.adaptive-img').length > 0) {
+          imgHistoryScreenCapture($('.adaptive-img').attr('src'), $('.adaptive-img'));
+        }
+      });
     },
     handleSelectAll(selection) {
       if (this.list.length < this.listTotalCount && selection.length>0) {
@@ -2756,9 +2770,9 @@ export default {
       console.log('fileDequeued', file)
     },
     webuploader_uploadFinished() {
-      console.log('uploadFinished')
+      console.log('uploadFinished', this.uploadAPKInfo)
       this.appMainLoading.close();
-      if (this.settingsDialogActiveTabsName==='apkSettings') this.updateApkStep = '2';
+      if (this.settingsDialogActiveTabsName==='apkSettings' && this.uploadAPKInfo) this.updateApkStep = '2';
     },
     webuploader_uploadStart(file) {
       console.log('uploadStart', file)
@@ -2782,12 +2796,12 @@ export default {
     webuploader_uploadSuccess(file, response) {
       console.log('uploadSuccess', file, response)
 
-      if (file.ext === 'apk') {
+      if (file.ext==='apk'  && this.settingsDialogActiveTabsName==='apkSettings') {
         this.uploadAPKInfo.fid = response.fid;
         this.uploadAPKInfo.status = 'success';
 
         console.log('上传APK成功数据', this.uploadAPKInfo);
-      } else {
+      } else if (this.settingsDialogActiveTabsName === 'lockScreenSettings') {
         this.uploadFileInfo = {
           md5: file.md5,
           name: file.name,
@@ -2801,6 +2815,8 @@ export default {
         });
 
         console.log('上传图片成功数据', this.uploadFileInfo);
+      } else {
+        this.$message.error(this.$t('common.fileTypeNotFit'));
       }
       this.isSettingsChangeNoSave = true;
       this.isSettingsChangeSubmit = true;
@@ -2809,13 +2825,13 @@ export default {
       console.log('uploadError', file, reason);
 
       if (reason.msg === 'success' && reason.fid) {
-        if (file.ext === 'apk') {
+        if (file.ext==='apk' && this.settingsDialogActiveTabsName==='apkSettings') {
           this.uploadAPKInfo.fid = reason.fid;
           this.uploadAPKInfo.percentage = 100;
           this.uploadAPKInfo.status = 'success';
 
           console.log('秒传APK成功数据', this.uploadAPKInfo);
-        } else {
+        } else if (this.settingsDialogActiveTabsName === 'lockScreenSettings') {
           this.uploadFileInfo = {
             md5: file.md5,
             name: file.name,
@@ -2829,6 +2845,8 @@ export default {
           });
 
           console.log('秒传图片成功数据', this.uploadFileInfo);
+        } else {
+          this.$message.error(this.$t('common.fileTypeNotFit'));
         }
       } else {
         if (file.ext === 'apk') {
@@ -2847,10 +2865,10 @@ export default {
     webuploader_uploadComplete(file) {
       console.log('uploadComplete', file);
       this.appMainLoading.close();
-      if (this.settingsDialogActiveTabsName==='apkSettings') this.updateApkStep = '2';
+      if (this.settingsDialogActiveTabsName==='apkSettings' && this.uploadAPKInfo) this.updateApkStep = '2';
     },
     webuploader_error(errorMessage) {
-      console.log('uploadComplete', errorMessage);
+      console.log('error', errorMessage);
 
       if (errorMessage === 'F_EXCEED_SIZE') {
         this.$message.error(this.$t('common.fileSizeCannotExceed') + '2M');

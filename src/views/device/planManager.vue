@@ -415,7 +415,7 @@
               width="180">
             </el-table-column>
             <el-table-column
-              prop="id"
+              prop="decimalId"
               :label="$t('planManager.equipmentID')">
             </el-table-column>
           </el-table>
@@ -644,7 +644,7 @@
 
 
              <el-table-column
-               prop="id"
+               prop="decimalId"
                :label="$t('planManager.equipmentID')">
              </el-table-column>
 
@@ -1117,15 +1117,15 @@
     },
     filters:{
       formatDate(time){
-        let date = new Date(time);
+        let date = /Invalid/.test(new Date(time)) ? (new Date(+time)) : (new Date(time));
         return formatDate(date,'yyyy-MM-dd hh:mm');
       },
       formatDated(time){
-        let date = new Date(time);
+        let date = /Invalid/.test(new Date(time)) ? (new Date(+time)) : (new Date(time));
         return formatDate(date,'hh:mm');
       },
       formatDatet(time){
-        let date = new Date(time);
+        let date = /Invalid/.test(new Date(time)) ? (new Date(+time)) : (new Date(time));
         return formatDate(date,'yyyy-MM-dd');
       },
     },
@@ -2454,7 +2454,7 @@
               return item
             })
         }
-
+        this.isChangePlan = true;
       },
       elTimePickerBlurFn(){
         this.isResetTimePicer = false

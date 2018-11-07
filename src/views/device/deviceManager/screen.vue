@@ -1111,13 +1111,6 @@
 
         if (model === 'single') {
           this.showDeviceList = JSON.parse(JSON.stringify(this.totalDeviceList));
-          this.$nextTick(() => {
-            console.log('轮播图', $('.adaptive-img-history'));
-
-            $('.adaptive-img-history').each(function(){
-              imgHistoryScreenCapture($(this).attr('src'), $(this));
-            });
-          })
         }
 
         this.isFilter = false;
@@ -1129,6 +1122,14 @@
 //          return item;
 //        });
         this.showModel = model;
+
+        this.$nextTick(() => {
+          $('.adaptive-img').each(function(){
+            imgHistoryScreenCapture($(this).attr('src'), $(this));
+          });
+
+          console.log('轮播图', $('.adaptive-img'));
+        });
       },
       handleClearAll() {
         this.showDeviceList = [];
@@ -1586,6 +1587,7 @@
           width: 332px;
           height: 186.75px;
           text-align: center;
+          margin-right: 10px;
           .history-list-img {
             width: 100%;
             height: 100%;
